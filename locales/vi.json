@@ -1,0 +1,292 @@
+{
+  "common": {
+    "language": "Ngôn ngữ",
+    "scrollToDesigns": "Xem thiết kế",
+    "viewDetails": "Xem chi tiết",
+    "seeDesign": "Xem thiết kế",
+    "addToCart": "Thêm vào giỏ",
+    "requestChanges": "Yêu cầu thiết kế này với thay đổi",
+    "backToGallery": "Quay lại bộ sưu tập",
+    "donate": "Quyên góp",
+    "contact": "Liên hệ",
+    "about": "Giới thiệu",
+    "gallery": "Bộ sưu tập",
+    "custom": "Tùy chỉnh",
+    "close": "Đóng"
+  },
+  "hero": {
+    "headline": "TXD — Bọc Phim Vinyl Cao Cấp Cho Xe Máy",
+    "subheading": "Bộ bọc phim thiết kế cho nhiều dòng xe máy. Khám phá mẫu sẵn có hoặc tạo thiết kế riêng của bạn.",
+    "ctaPrimary": "Khám phá thiết kế",
+    "ctaSecondary": "Tạo thiết kế riêng"
+  },
+  "interactiveCreate": {
+    "title": "bạn",
+    "titleStrikethrough": "xe",
+    "titleAfter": "tạo ngay",
+    "upload": "Tải lên",
+    "uploadDescription": "Tải lên bản xem trước hoặc render thiết kế của bạn",
+    "create": "Tạo",
+    "createDescription": "Tạo thiết kế tùy chỉnh",
+    "order": "Đặt hàng",
+    "orderDescription": "Đặt hàng thiết kế sẵn có hoặc tùy chỉnh"
+  },
+  "gallery": {
+    "title": "Bộ Sưu Tập Thiết Kế",
+    "subtitle": "Chọn dòng xe máy và khám phá các thiết kế cao cấp",
+    "selectModel": "Chọn Dòng Xe",
+    "noDesigns": "Chưa có thiết kế nào cho dòng xe này."
+  },
+  "donate": {
+    "title": "Quyên góp cho sự phát triển dự án",
+    "description": "TXD đang phát triển các công cụ sáng tạo cho thiết kế bọc phim xe máy. Quyên góp của bạn hỗ trợ các mẫu xe mới, template và tính năng giúp tùy chỉnh dễ dàng và dễ tiếp cận hơn.",
+    "button": "Quyên góp"
+  },
+  "process": {
+    "title": "Quy Trình",
+    "step1": {
+      "title": "Sáng Tạo / Tải Lên Tham Khảo",
+      "description": "Cung cấp brief hoặc tải lên thiết kế tham khảo. Có sẵn tùy chọn tạo bằng AI."
+    },
+    "step2": {
+      "title": "Thanh Toán Trước",
+      "description": "Một phần chi phí được thanh toán trước để bắt đầu sản xuất."
+    },
+    "step3": {
+      "title": "In Ấn",
+      "description": "Phim vinyl cao cấp được in với thiết kế của bạn trên bộ bọc phim."
+    },
+    "step4": {
+      "title": "Giao Hàng",
+      "description": "Bộ kit hoàn chỉnh được vận chuyển trực tiếp đến địa chỉ của bạn."
+    },
+    "step5": {
+      "title": "Lắp Đặt",
+      "description": "Lắp đặt qua thợ của bạn, dịch vụ địa phương hoặc tự làm."
+    }
+  },
+  "testimonials": {
+    "title": "Khách Hàng Nói Gì",
+    "subtitle": "Chất lượng cao cấp, kết quả xuất sắc"
+  },
+  "faq": {
+    "title": "Câu Hỏi Thường Gặp",
+    "durability": {
+      "question": "Bọc phim vinyl bền như thế nào?",
+      "answer": "Bọc phim vinyl cao cấp của chúng tôi được thiết kế để sử dụng 3-5 năm nếu chăm sóc đúng cách. Chúng chống tia UV và chống thời tiết."
+    },
+    "quality": {
+      "question": "Bạn sử dụng loại phim chất lượng nào?",
+      "answer": "Chúng tôi sử dụng phim vinyl cao cấp từ các nhà sản xuất hàng đầu, đảm bảo màu sắc sống động và độ bền lâu dài."
+    },
+    "installation": {
+      "question": "Tôi có thể tự lắp đặt không?",
+      "answer": "Có, bộ kit của chúng tôi đi kèm hướng dẫn chi tiết. Tuy nhiên, nên lắp đặt chuyên nghiệp để có kết quả tốt nhất."
+    },
+    "shipping": {
+      "question": "Bạn có giao hàng quốc tế không?",
+      "answer": "Có, chúng tôi giao hàng toàn cầu. Chi phí và thời gian vận chuyển tùy theo địa điểm."
+    },
+    "custom": {
+      "question": "Thiết kế tùy chỉnh mất bao lâu?",
+      "answer": "Thiết kế tùy chỉnh thường mất 5-7 ngày làm việc để phê duyệt thiết kế, cộng thời gian sản xuất và vận chuyển."
+    }
+  },
+  "contact": {
+    "title": "Yêu Cầu Thiết Kế Tùy Chỉnh",
+    "subtitle": "Cho chúng tôi biết về ý tưởng của bạn và chúng tôi sẽ biến nó thành hiện thực",
+    "name": "Tên",
+    "email": "Email",
+    "phone": "Điện thoại / Messenger",
+    "model": "Dòng Xe Máy",
+    "message": "Tin nhắn / Brief",
+    "send": "Gửi Yêu Cầu",
+    "success": "Cảm ơn! Chúng tôi sẽ liên hệ lại sớm.",
+    "error": "Đã xảy ra lỗi. Vui lòng thử lại."
+  },
+  "footer": {
+    "description": "Thiết kế bọc phim vinyl cao cấp cho xe máy. Bộ bọc phim tùy chỉnh và sẵn có.",
+    "links": {
+      "about": "Giới thiệu",
+      "gallery": "Bộ sưu tập",
+      "custom": "Thiết Kế Tùy Chỉnh",
+      "donate": "Quyên góp",
+      "contact": "Liên hệ"
+    },
+    "social": "Theo dõi chúng tôi",
+    "rights": "Bảo lưu mọi quyền"
+  },
+  "hero3d": {
+    "selectModel": "Chọn Dòng Xe",
+    "designs": "Thiết Kế",
+    "selected": "Đã chọn",
+    "howItWorks": "Cách Hoạt Động",
+    "howItWorksDescription": "Chọn dòng xe máy từ menu phía trên, sau đó nhấp vào bất kỳ thẻ thiết kế nào để xem nó được áp dụng cho mô hình 3D theo thời gian thực. Cảnh 3D sử dụng biến thể vật liệu hoặc hoán đổi kết cấu để hiển thị các thiết kế bọc phim vinyl khác nhau.",
+    "note": "Lưu ý:",
+    "noteDescription": "Đặt các tệp mô hình .glb của bạn trong",
+    "andTextureImages": "và hình ảnh kết cấu trong"
+  },
+  "menu": {
+    "inter": "Truy cập",
+    "contact": "Liên hệ",
+    "donate": "Quyên góp"
+  },
+  "inter": {
+    "title": "Truy cập",
+    "subtitle": "Đăng nhập bảng quản trị",
+    "username": "Tên đăng nhập",
+    "password": "Mật khẩu",
+    "usernamePlaceholder": "Nhập tên đăng nhập",
+    "passwordPlaceholder": "Nhập mật khẩu",
+    "login": "Đăng nhập",
+    "logging": "Đang đăng nhập...",
+    "cancel": "Hủy",
+    "error": "Tên đăng nhập hoặc mật khẩu không đúng"
+  },
+  "contact": {
+    "title": "Liên hệ",
+    "subtitle": "Thông tin cho nhà đầu tư, đặt hàng trước, đề xuất hợp tác",
+    "name": "Tên",
+    "email": "Email",
+    "type": "Loại yêu cầu",
+    "typeInvestor": "Đầu tư",
+    "typePreorder": "Đặt hàng trước",
+    "typePartnership": "Hợp tác",
+    "message": "Tin nhắn",
+    "messagePlaceholder": "Cho chúng tôi biết về yêu cầu của bạn...",
+    "send": "Gửi",
+    "sending": "Đang gửi...",
+    "cancel": "Hủy",
+    "success": "Tin nhắn đã được gửi!",
+    "successDescription": "Chúng tôi sẽ liên hệ với bạn sớm"
+  },
+  "donate": {
+    "title": "Quyên góp",
+    "subtitle": "Những người ủng hộ hào phóng có thể đầu tư vào dự án",
+    "name": "Tên",
+    "email": "Email",
+    "amount": "Số tiền đầu tư (USD)",
+    "message": "Tin nhắn (tùy chọn)",
+    "messagePlaceholder": "Ý muốn hoặc câu hỏi của bạn...",
+    "invest": "Đầu tư",
+    "investing": "Đang gửi...",
+    "cancel": "Hủy",
+    "success": "Cảm ơn sự ủng hộ của bạn!",
+    "successDescription": "Chúng tôi sẽ liên hệ để làm rõ chi tiết"
+  },
+  "page": {
+    "chooseDesign": "Chọn thiết kế của bạn hoặc tạo thiết kế riêng",
+    "swipeToExplore": "Vuốt để khám phá →",
+    "loading3D": "Đang tải Trình xem 3D..."
+  },
+  "usp": {
+    "title": "Tại Sao Chọn TXD?",
+    "subtitle": "Chất lượng cao cấp gặp gỡ thiết kế tiên tiến",
+    "premiumMaterials": {
+      "title": "Vật Liệu Cao Cấp",
+      "description": "Phim vinyl được chứng nhận 3M™ với bảo hành độ bền 5 năm"
+    },
+    "fastInstallation": {
+      "title": "Lắp Đặt Nhanh",
+      "description": "Lắp đặt chuyên nghiệp trong 2-3 giờ tại địa điểm của bạn"
+    },
+    "customDesign": {
+      "title": "Thiết Kế Tùy Chỉnh",
+      "description": "Thiết kế độc đáo hoặc tạo của riêng bạn - không giới hạn tùy chọn"
+    },
+    "protectionIncluded": {
+      "title": "Bảo Vệ Đi Kèm",
+      "description": "Bảo vệ sơn gốc khỏi trầy xước và hư hại tia UV"
+    },
+    "certified": "Được Chứng Nhận 3M™",
+    "warranty": "Bảo Hành 5 Năm",
+    "clients": "500+ Khách Hàng Hài Lòng",
+    "consultation": "Tư Vấn Miễn Phí"
+  },
+  "process": {
+    "title": "Cách Hoạt Động",
+    "subtitle": "Từ lựa chọn đến lắp đặt - chúng tôi làm cho nó đơn giản",
+    "step1": {
+      "title": "Chọn Thiết Kế Của Bạn",
+      "description": "Duyệt danh mục của chúng tôi hoặc tải lên thiết kế tùy chỉnh của bạn. Xem trước trong 3D trên mô hình xe máy của bạn.",
+      "duration": "5 phút"
+    },
+    "step2": {
+      "title": "Đặt Lịch Lắp Đặt",
+      "description": "Chọn ngày và địa điểm ưa thích của bạn. Chúng tôi đến với bạn - nhà, văn phòng hoặc bất cứ nơi nào thuận tiện.",
+      "duration": "2 phút"
+    },
+    "step3": {
+      "title": "Bọc Phim Chuyên Nghiệp",
+      "description": "Các chuyên gia được chứng nhận của chúng tôi áp dụng phim vinyl 3M cao cấp với độ chính xác. Đảm bảo chất lượng.",
+      "duration": "2-3 giờ"
+    },
+    "step4": {
+      "title": "Lái Xe Phong Cách",
+      "description": "Xe máy của bạn đã sẵn sàng! Tận hưởng sự bảo vệ tối đa và thiết kế thu hút trong nhiều năm.",
+      "duration": "Mãi mãi"
+    },
+    "startJourney": "Bắt Đầu Hành Trình"
+  },
+  "gallery": {
+    "title": "Tác Phẩm Của Chúng Tôi",
+    "subtitle": "Bọc phim thật, biến đổi thật",
+    "allModels": "Tất Cả Dòng Xe",
+    "wantMore": "Muốn xem thêm?",
+    "viewPortfolio": "Xem Toàn Bộ Portfolio"
+  },
+  "testimonials": {
+    "title": "Người Dùng Nói Gì",
+    "subtitle": "Tham gia 500+ khách hàng hài lòng lái xe phong cách",
+    "rating": "4.9",
+    "reviews": "/ 500+ đánh giá",
+    "trusted": "Được tin tưởng bởi người dùng trên khắp Việt Nam",
+    "bestRated": "🏆 Được Đánh Giá Tốt Nhất 2024",
+    "premiumPartner": "✨ Đối Tác Cao Cấp",
+    "securePayment": "🔒 Thanh Toán An Toàn",
+    "support": "📱 Hỗ Trợ 24/7"
+  },
+  "faq": {
+    "title": "Câu Hỏi Thường Gặp",
+    "subtitle": "Mọi thứ bạn cần biết về bọc phim vinyl",
+    "stillQuestions": "Vẫn còn câu hỏi?",
+    "contactSupport": "Liên Hệ Hỗ Trợ"
+  },
+  "cta": {
+    "limitedOffer": "Ưu Đãi Có Hạn - Đặt Tuần Này & Tiết Kiệm 20%",
+    "readyToTransform": "Sẵn Sàng Biến Đổi",
+    "yourRide": "Xe Của Bạn?",
+    "subtitle": "Tham gia 500+ người dùng hài lòng. Xem trước 3D miễn phí, lắp đặt chuyên nghiệp, bảo hành 5 năm. Bọc phim hoàn hảo của bạn chỉ cách một cú nhấp chuột.",
+    "getPreview": "Nhận Xem Trước 3D Miễn Phí",
+    "scheduleCall": "Đặt Lịch Cuộc Gọi",
+    "freeConsultation": "Tư Vấn Miễn Phí",
+    "noCommitment": "Không Ràng Buộc",
+    "responseTime": "Thời Gian Phản Hồi 2 Giờ",
+    "happyRiders": "Người Dùng Hài Lòng",
+    "averageRating": "Đánh Giá Trung Bình",
+    "warranty": "Bảo Hành"
+  },
+  "contactSection": {
+    "title": "Bắt Đầu Ngay",
+    "subtitle": "Chọn cách bạn muốn liên hệ với chúng tôi",
+    "contactMethods": "Phương Thức Liên Hệ",
+    "followUs": "Theo Dõi Chúng Tôi",
+    "businessHours": "Giờ Làm Việc",
+    "mondaySaturday": "Thứ Hai - Thứ Bảy: 8:00 - 20:00",
+    "sunday": "Chủ Nhật: 9:00 - 18:00",
+    "sendMessage": "Gửi Tin Nhắn",
+    "yourName": "Tên Của Bạn",
+    "phoneNumber": "Số Điện Thoại",
+    "scooterModel": "Dòng Xe Máy",
+    "selectModel": "Chọn dòng xe của bạn",
+    "messageOptional": "Tin Nhắn (Tùy Chọn)",
+    "messagePlaceholder": "Cho chúng tôi biết về sở thích thiết kế của bạn...",
+    "send": "Gửi Tin Nhắn",
+    "privacyNote": "Bằng cách gửi, bạn đồng ý với chính sách bảo mật của chúng tôi. Chúng tôi sẽ phản hồi trong vòng 2 giờ.",
+    "chatNow": "Chat Ngay",
+    "callNow": "Gọi Ngay",
+    "sendEmail": "Gửi Email",
+    "getDirections": "Xem Chỉ Đường"
+  }
+}
+

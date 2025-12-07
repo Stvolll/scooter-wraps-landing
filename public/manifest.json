@@ -1,0 +1,28 @@
+{
+  "name": "DecalWrap - Dán Decal Xe Máy",
+  "short_name": "DecalWrap",
+  "description": "Chuyên dán decal, bọc phim xe máy cao cấp tại Nha Trang",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff6b6b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["shopping", "automotive"],
+  "lang": "vi-VN",
+  "dir": "ltr"
+}
+

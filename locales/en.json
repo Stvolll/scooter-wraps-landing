@@ -1,0 +1,292 @@
+{
+  "common": {
+    "language": "Language",
+    "scrollToDesigns": "Scroll to designs",
+    "viewDetails": "View details",
+    "seeDesign": "See design",
+    "addToCart": "Add to cart",
+    "requestChanges": "Request this design with changes",
+    "backToGallery": "Back to gallery",
+    "donate": "Donate",
+    "contact": "Contact",
+    "about": "About",
+    "gallery": "Gallery",
+    "custom": "Custom",
+    "close": "Close"
+  },
+  "hero": {
+    "headline": "TXD — Premium Vinyl Wraps for Scooters",
+    "subheading": "Designed cover-sets for multiple scooter models. Explore ready-made styles or create your own.",
+    "ctaPrimary": "Explore designs",
+    "ctaSecondary": "Create your own design"
+  },
+  "interactiveCreate": {
+    "title": "you",
+    "titleStrikethrough": "bike",
+    "titleAfter": "create now",
+    "upload": "Upload",
+    "uploadDescription": "Upload your design preview or render",
+    "create": "Create",
+    "createDescription": "Generate a custom design",
+    "order": "Order",
+    "orderDescription": "Order existing or custom design"
+  },
+  "gallery": {
+    "title": "Design Collections",
+    "subtitle": "Choose your scooter model and explore premium designs",
+    "selectModel": "Select Model",
+    "noDesigns": "No designs available for this model yet."
+  },
+  "donate": {
+    "title": "Donate for development of the project",
+    "description": "TXD is developing innovative tools for scooter vinyl design. Your donations support new models, templates, and features that make customization easier and more accessible.",
+    "button": "Donate"
+  },
+  "process": {
+    "title": "How It Works",
+    "step1": {
+      "title": "Creative / Reference Upload",
+      "description": "Provide your brief or upload a reference design. AI generation options available."
+    },
+    "step2": {
+      "title": "Prepayment",
+      "description": "A portion of the cost is paid upfront to begin production."
+    },
+    "step3": {
+      "title": "Printing",
+      "description": "Premium vinyl is printed with your design on cover-sets."
+    },
+    "step4": {
+      "title": "Delivery",
+      "description": "Complete kits are shipped directly to your address."
+    },
+    "step5": {
+      "title": "Installation",
+      "description": "Install via your own contractor, local service, or DIY."
+    }
+  },
+  "testimonials": {
+    "title": "What Our Customers Say",
+    "subtitle": "Premium quality, exceptional results"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "durability": {
+      "question": "How durable are the vinyl wraps?",
+      "answer": "Our premium vinyl wraps are designed to last 3-5 years with proper care. They are UV-resistant and weatherproof."
+    },
+    "quality": {
+      "question": "What quality of film do you use?",
+      "answer": "We use premium-grade vinyl films from leading manufacturers, ensuring vibrant colors and long-lasting durability."
+    },
+    "installation": {
+      "question": "Can I install it myself?",
+      "answer": "Yes, our kits come with detailed instructions. However, professional installation is recommended for best results."
+    },
+    "shipping": {
+      "question": "Do you ship internationally?",
+      "answer": "Yes, we ship worldwide. Shipping costs and times vary by location."
+    },
+    "custom": {
+      "question": "How long does a custom design take?",
+      "answer": "Custom designs typically take 5-7 business days for design approval, plus production and shipping time."
+    }
+  },
+  "contact": {
+    "title": "Request a Custom Design",
+    "subtitle": "Tell us about your vision and we'll bring it to life",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone / Messenger",
+    "model": "Scooter Model",
+    "message": "Message / Brief",
+    "send": "Send Request",
+    "success": "Thank you! We'll get back to you soon.",
+    "error": "Something went wrong. Please try again."
+  },
+  "footer": {
+    "description": "Premium vinyl wrap designs for scooters. Custom and ready-made cover-sets.",
+    "links": {
+      "about": "About",
+      "gallery": "Gallery",
+      "custom": "Custom Design",
+      "donate": "Donate",
+      "contact": "Contact"
+    },
+    "social": "Follow us",
+    "rights": "All rights reserved"
+  },
+  "hero3d": {
+    "selectModel": "Select Model",
+    "designs": "Designs",
+    "selected": "Selected",
+    "howItWorks": "How It Works",
+    "howItWorksDescription": "Select a scooter model from the menu above, then click on any design card to see it applied to the 3D model in real-time. The 3D scene uses material variants or texture swapping to display different vinyl wrap designs.",
+    "note": "Note:",
+    "noteDescription": "Place your .glb model files in",
+    "andTextureImages": "and texture images in"
+  },
+  "menu": {
+    "inter": "Inter",
+    "contact": "Contact",
+    "donate": "Donate"
+  },
+  "inter": {
+    "title": "Inter",
+    "subtitle": "Admin panel login",
+    "username": "Username",
+    "password": "Password",
+    "usernamePlaceholder": "Enter username",
+    "passwordPlaceholder": "Enter password",
+    "login": "Login",
+    "logging": "Logging in...",
+    "cancel": "Cancel",
+    "error": "Invalid username or password"
+  },
+  "contact": {
+    "title": "Contact",
+    "subtitle": "Information for investors, pre-orders, partnership proposals",
+    "name": "Name",
+    "email": "Email",
+    "type": "Request Type",
+    "typeInvestor": "Investment",
+    "typePreorder": "Pre-order",
+    "typePartnership": "Partnership",
+    "message": "Message",
+    "messagePlaceholder": "Tell us about your request...",
+    "send": "Send",
+    "sending": "Sending...",
+    "cancel": "Cancel",
+    "success": "Message sent!",
+    "successDescription": "We will contact you soon"
+  },
+  "donate": {
+    "title": "Donate",
+    "subtitle": "Generous supporters can invest in the project",
+    "name": "Name",
+    "email": "Email",
+    "amount": "Investment Amount (USD)",
+    "message": "Message (optional)",
+    "messagePlaceholder": "Your wishes or questions...",
+    "invest": "Invest",
+    "investing": "Sending...",
+    "cancel": "Cancel",
+    "success": "Thank you for your support!",
+    "successDescription": "We will contact you to clarify details"
+  },
+  "page": {
+    "chooseDesign": "Choose your design or create your own",
+    "swipeToExplore": "Swipe to explore →",
+    "loading3D": "Loading 3D Viewer..."
+  },
+  "usp": {
+    "title": "Why Choose TXD?",
+    "subtitle": "Premium quality meets cutting-edge design",
+    "premiumMaterials": {
+      "title": "Premium Materials",
+      "description": "3M™ certified vinyl with 5-year durability guarantee"
+    },
+    "fastInstallation": {
+      "title": "Fast Installation",
+      "description": "Professional installation in 2-3 hours at your location"
+    },
+    "customDesign": {
+      "title": "Custom Design",
+      "description": "Unique designs or create your own - unlimited options"
+    },
+    "protectionIncluded": {
+      "title": "Protection Included",
+      "description": "Protects original paint from scratches and UV damage"
+    },
+    "certified": "3M™ Certified",
+    "warranty": "5-Year Warranty",
+    "clients": "500+ Happy Clients",
+    "consultation": "Free Consultation"
+  },
+  "process": {
+    "title": "How It Works",
+    "subtitle": "From selection to installation - we make it simple",
+    "step1": {
+      "title": "Choose Your Design",
+      "description": "Browse our catalog or upload your custom design. Preview it in 3D on your scooter model.",
+      "duration": "5 min"
+    },
+    "step2": {
+      "title": "Book Installation",
+      "description": "Select your preferred date and location. We come to you - home, office, or anywhere convenient.",
+      "duration": "2 min"
+    },
+    "step3": {
+      "title": "Professional Wrapping",
+      "description": "Our certified specialists apply premium 3M vinyl with precision. Quality guaranteed.",
+      "duration": "2-3 hours"
+    },
+    "step4": {
+      "title": "Ride in Style",
+      "description": "Your scooter is ready! Enjoy ultimate protection and head-turning design for years.",
+      "duration": "Forever"
+    },
+    "startJourney": "Start Your Journey"
+  },
+  "gallery": {
+    "title": "Our Work",
+    "subtitle": "Real wraps, real transformations",
+    "allModels": "All Models",
+    "wantMore": "Want to see more?",
+    "viewPortfolio": "View Full Portfolio"
+  },
+  "testimonials": {
+    "title": "What Our Riders Say",
+    "subtitle": "Join 500+ satisfied customers riding in style",
+    "rating": "4.9",
+    "reviews": "/ 500+ reviews",
+    "trusted": "Trusted by riders across Vietnam",
+    "bestRated": "🏆 Best Rated 2024",
+    "premiumPartner": "✨ Premium Partner",
+    "securePayment": "🔒 Secure Payment",
+    "support": "📱 24/7 Support"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about vinyl wraps",
+    "stillQuestions": "Still have questions?",
+    "contactSupport": "Contact Support"
+  },
+  "cta": {
+    "limitedOffer": "Limited Time Offer - Book This Week & Save 20%",
+    "readyToTransform": "Ready to Transform",
+    "yourRide": "Your Ride?",
+    "subtitle": "Join 500+ satisfied riders. Free 3D preview, professional installation, 5-year warranty. Your perfect wrap is just a click away.",
+    "getPreview": "Get Your Free 3D Preview",
+    "scheduleCall": "Schedule a Call",
+    "freeConsultation": "Free Consultation",
+    "noCommitment": "No Commitment",
+    "responseTime": "2-Hour Response Time",
+    "happyRiders": "Happy Riders",
+    "averageRating": "Average Rating",
+    "warranty": "Warranty"
+  },
+  "contactSection": {
+    "title": "Let's Get Started",
+    "subtitle": "Choose your preferred way to reach us",
+    "contactMethods": "Contact Methods",
+    "followUs": "Follow Us",
+    "businessHours": "Business Hours",
+    "mondaySaturday": "Monday - Saturday: 8:00 AM - 8:00 PM",
+    "sunday": "Sunday: 9:00 AM - 6:00 PM",
+    "sendMessage": "Send a Message",
+    "yourName": "Your Name",
+    "phoneNumber": "Phone Number",
+    "scooterModel": "Scooter Model",
+    "selectModel": "Select your model",
+    "messageOptional": "Message (Optional)",
+    "messagePlaceholder": "Tell us about your design preferences...",
+    "send": "Send Message",
+    "privacyNote": "By submitting, you agree to our privacy policy. We'll respond within 2 hours.",
+    "chatNow": "Chat Now",
+    "callNow": "Call Now",
+    "sendEmail": "Send Email",
+    "getDirections": "Get Directions"
+  }
+}
+

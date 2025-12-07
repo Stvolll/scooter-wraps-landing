@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://decalwrap.vn/sitemap.xml
+

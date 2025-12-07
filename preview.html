@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DecalWrap - Dán Decal Xe Máy | Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', system-ui, sans-serif;
+            background: linear-gradient(180deg, #f5f7fa 0%, #ffffff 100%);
+        }
+        
+        /* iOS 26 Inspired Design */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .model-button {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .model-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .model-button.active::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .design-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        
+        .design-card:hover {
+            transform: translateY(-4px) scale(1.02);
+        }
+        
+        .design-card.active {
+            border: 2px solid #ef4444;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px) rotate(-1deg); }
+            75% { transform: translateX(4px) rotate(1deg); }
+        }
+        
+        .new-badge {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        button, a {
+            min-height: 44px;
+            min-width: 44px;
+        }
+        
+        /* Model Viewer Container */
+        .model-viewer-container {
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        model-viewer {
+            --poster-color: transparent;
+        }
+        
+        /* Loading State */
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+        
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 glass-effect shadow-lg">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-red-700 rounded-xl flex items-center justify-center shadow-lg">
+                        <span class="text-white font-bold text-xl">DW</span>
+                    </div>
+                    <span class="font-bold text-lg text-gray-900 hidden sm:block">DecalWrap</span>
+                </div>
+                <nav class="hidden lg:flex items-center space-x-6">
+                    <a id="nav-models" href="#models" class="text-gray-700 hover:text-red-600 font-medium transition-colors">Mẫu xe</a>
+                    <a id="nav-designs" href="#designs" class="text-gray-700 hover:text-red-600 font-medium transition-colors">Thiết kế</a>
+                    <a id="nav-install" href="#how-to-install" class="text-gray-700 hover:text-red-600 font-medium transition-colors">Hướng dẫn</a>
+                    <a id="nav-production" href="#production" class="text-gray-700 hover:text-red-600 font-medium transition-colors">Sản xuất</a>
+                    <a id="nav-reviews" href="#reviews" class="text-gray-700 hover:text-red-600 font-medium transition-colors">Đánh giá</a>
+                    <a id="nav-contact" href="#contact" class="text-gray-700 hover:text-red-600 font-medium transition-colors">Liên hệ</a>
+                </nav>
+                <div class="flex items-center space-x-3">
+                    <div class="hidden md:flex items-center border border-gray-300 rounded-xl overflow-hidden glass-effect" role="group" aria-label="Language switcher">
+                        <button id="lang-vi" class="px-3 py-2 text-sm font-medium bg-red-600 text-white transition-colors">VI</button>
+                        <button id="lang-en" class="px-3 py-2 text-sm font-medium bg-white/50 text-gray-700 hover:bg-white/80 transition-colors">EN</button>
+                    </div>
+                    <button id="cta-button" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-semibold min-h-[44px] shadow-lg transition-all hover:shadow-xl">
+                        Thiết Kế Của Riêng Bạn
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero 3D Showcase -->
+    <section id="models" class="hero-section bg-gradient-to-b from-gray-50 to-white pt-20">
+        <div class="container mx-auto px-4 py-12">
+            <div class="text-center mb-8">
+                <h1 id="hero-title" class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    Decal Xe Máy Cực Chất & Độc Bản
+                </h1>
+                <p id="hero-subtitle" class="text-xl text-gray-600">
+                    Thiết kế độc quyền – Chống trầy xước tuyệt đối – Bảo hành 2 năm
+                </p>
+            </div>
+
+            <!-- Model Selector (Above 3D Model) -->
+            <div id="model-selector" class="flex flex-wrap justify-center gap-3 mb-8">
+                <!-- Buttons will be generated dynamically -->
+            </div>
+
+            <!-- 3D Model Viewer -->
+            <div class="relative max-w-4xl mx-auto aspect-square bg-gray-100 rounded-3xl overflow-hidden shadow-2xl model-viewer-container">
+                <video autoplay loop muted playsinline class="absolute top-0 left-0 w-full h-full object-cover z-0 opacity-30">
+                    <source src="https://assets.mixkit.co/videos/preview/mixkit-night-city-traffic-from-above-4180-large.mp4" type="video/mp4">
+                    Ваш браузер не поддерживает тег видео.
+                </video>
+                
+                <div id="loading-overlay" class="loading-overlay hidden">
+                    <div class="spinner"></div>
+                </div>
+                
+                <model-viewer
+                    id="scooter-viewer"
+                    src=""
+                    alt="Scooter 3D model"
+                    camera-controls
+                    auto-rotate
+                    rotation-per-second="30deg"
+                    shadow-intensity="1"
+                    background-color="transparent"
+                    exposure="1.1"
+                    ar
+                    ar-modes="webxr scene-viewer quick-look"
+                    style="width:100%; height:100%;"
+                    camera-orbit="15deg 75deg 100%"
+                    disable-tap
+                    disable-zoom
+                    min-camera-orbit="auto 75deg auto"
+                    max-camera-orbit="auto 75deg auto"
+                    class="z-10"
+                ></model-viewer>
+                
+                <button id="reset-camera" class="absolute top-4 right-4 p-3 glass-effect hover:bg-white/90 rounded-xl shadow-lg z-20 transition-all">
+                    🔄
+                </button>
+                <button id="fullscreen-btn" class="absolute top-4 left-4 p-3 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-lg z-20 transition-all">
+                    ⛶
+                </button>
+            </div>
+
+            <!-- Design Switcher (Below 3D Model) -->
+            <div id="design-switcher" class="mt-8">
+                <h3 id="design-switcher-title" class="text-center text-lg font-semibold text-gray-700 mb-4">
+                    Chọn thiết kế cho <span id="selected-model-name">Honda Lead</span>
+                </h3>
+                <div id="design-switcher-grid" class="flex flex-wrap justify-center gap-4">
+                    <!-- Design cards will be generated dynamically -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Design Catalog -->
+    <section id="designs" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 id="design-title" class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    Bộ sưu tập TXD
+                </h2>
+            </div>
+
+            <!-- Filters -->
+            <div class="mb-8 flex flex-wrap items-center gap-4">
+                <select id="model-filter" class="px-4 py-2 border border-gray-300 rounded-xl bg-white min-h-[44px] glass-effect">
+                    <option value="all">Tất cả mẫu xe</option>
+                    <option value="honda-lead">Honda Lead</option>
+                    <option value="honda-vision">Honda Vision</option>
+                    <option value="honda-air-blade">Honda Air Blade</option>
+                    <option value="yamaha-nvx">Yamaha NVX</option>
+                    <option value="vinfast">VinFast</option>
+                    <option value="vespa">Vespa</option>
+                </select>
+                <select id="style-filter" class="px-4 py-2 border border-gray-300 rounded-xl bg-white min-h-[44px] glass-effect">
+                    <option value="all">Tất cả phong cách</option>
+                    <option value="sport">Thể thao</option>
+                    <option value="racing">Đua xe</option>
+                    <option value="classic">Cổ điển</option>
+                    <option value="local">Địa Phương</option>
+                </select>
+                <button id="new-filter" class="px-4 py-2 rounded-xl font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 min-h-[44px] transition-all">
+                    Mới
+                </button>
+            </div>
+
+            <!-- Design Grid -->
+            <div id="design-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div id="design-empty" class="hidden text-center py-12 text-gray-500">
+                Không tìm thấy thiết kế nào phù hợp với bộ lọc của bạn.
+            </div>
+        </div>
+    </section>
+
+    <!-- How to Install -->
+    <section id="how-to-install" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 id="install-title" class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                     Hướng dẫn lắp đặt
+                 </h2>
+                 <p id="install-subtitle" class="text-xl text-gray-600 max-w-2xl mx-auto">
+                     6 bước đơn giản để dán decal TXD tại nhà hoặc tại xưởng.
+                 </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="w-12 h-12 bg-red-600 text-white rounded-full flex items-center justify-center font-bold text-xl">1</div>
+                        <h3 class="text-xl font-semibold text-gray-900" data-step-title="1">Chuẩn bị bề mặt</h3>
+                    </div>
+                    <p class="text-gray-600" data-step-desc="1">Làm sạch và khử dầu mỡ bề mặt xe máy.</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="w-12 h-12 bg-red-600 text-white rounded-full flex items-center justify-center font-bold text-xl">2</div>
+                        <h3 class="text-xl font-semibold text-gray-900" data-step-title="2">Đo & Cắt</h3>
+                    </div>
+                    <p class="text-gray-600" data-step-desc="2">Đo chính xác kích thước và cắt decal theo form xe.</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="w-12 h-12 bg-red-600 text-white rounded-full flex items-center justify-center font-bold text-xl">3</div>
+                        <h3 class="text-xl font-semibold text-gray-900" data-step-title="3">Phun dung dịch</h3>
+                    </div>
+                    <p class="text-gray-600" data-step-desc="3">Dùng nước xà phòng loãng để dễ canh chỉnh vị trí.</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="w-12 h-12 bg-red-600 text-white rounded-full flex items-center justify-center font-bold text-xl">4</div>
+                        <h3 class="text-xl font-semibold text-gray-900" data-step-title="4">Dán decal</h3>
+                    </div>
+                    <p class="text-gray-600" data-step-desc="4">Áp decal nhẹ nhàng, dùng tay miết phẳng bọt khí.</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="w-12 h-12 bg-red-600 text-white rounded-full flex items-center justify-center font-bold text-xl">5</div>
+                        <h3 class="text-xl font-semibold text-gray-900" data-step-title="5">Gia nhiệt</h3>
+                    </div>
+                    <p class="text-gray-600" data-step-desc="5">Dùng máy sấy để ép decal bám chắc vào bề mặt.</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="w-12 h-12 bg-red-600 text-white rounded-full flex items-center justify-center font-bold text-xl">6</div>
+                        <h3 class="text-xl font-semibold text-gray-900" data-step-title="6">Hoàn thiện</h3>
+                    </div>
+                    <p class="text-gray-600" data-step-desc="6">Cắt mép, lau sạch và kiểm tra tổng thể.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Production & QC -->
+    <section id="production" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 id="production-title" class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    Sản xuất & Kiểm soát chất lượng
+                </h2>
+                <p id="production-subtitle" class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    In và gia công tại Nha Trang với tiêu chuẩn quốc tế
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">📍 Địa chỉ xưởng</h3>
+                    <p class="text-gray-600 mb-4">123 Đường Trần Phú, Phường Vĩnh Nguyên, Nha Trang, Khánh Hòa</p>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4 mt-6">🕐 Giờ làm việc</h3>
+                    <p class="text-gray-600">Thứ 2 - Chủ nhật: 8:00 - 20:00 (UTC+7)</p>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Chứng nhận & Bảo hành</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <span>🏆</span>
+                            <span>Chứng nhận chất lượng ISO 9001</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span>🛡️</span>
+                            <span>Bảo hành 2 năm chống phai màu</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span>✅</span>
+                            <span>Kiểm tra chất lượng 100% sản phẩm</span>
+                        </div>
+                        <div id="production-corporate-support" class="flex items-center space-x-3">
+                            <span>💼</span>
+                            <span>Hỗ trợ thiết kế decal logo và QR Code (Dịch vụ B2B)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews -->
+    <section id="reviews" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 id="reviews-title" class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    Đánh giá từ khách hàng TXD
+                </h2>
+                <p id="reviews-subtitle" class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Hơn 1000+ xe đã được dán với sự hài lòng tuyệt đối
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-grid"></div>
+
+            <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                <div>
+                    <div class="text-3xl font-bold text-red-600 mb-2">1000+</div>
+                    <div class="text-gray-600" data-trust="0">Khách hàng</div>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold text-red-600 mb-2">4.9/5</div>
+                    <div class="text-gray-600" data-trust="1">Đánh giá trung bình</div>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold text-red-600 mb-2">2 năm</div>
+                    <div class="text-gray-600" data-trust="2">Bảo hành</div>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold text-red-600 mb-2">100%</div>
+                    <div class="text-gray-600" data-trust="3">Hài lòng</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 id="contact-title" class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    Liên hệ TXD
+                </h2>
+                <p id="contact-subtitle" class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Chúng tôi sẵn sàng hỗ trợ bạn chọn thiết kế phù hợp nhất
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <a href="tel:+84123456789" class="bg-red-50 rounded-xl p-6 text-center hover:bg-red-100 transition-colors">
+                    <div class="text-red-600 text-4xl mb-4">📞</div>
+                    <h3 class="font-semibold text-gray-900 mb-2" data-contact="phone-label">Điện thoại</h3>
+                    <p class="text-red-600 font-medium">+84 123 456 789</p>
+                </a>
+                <a href="mailto:info@decalwrap.vn" class="bg-red-50 rounded-xl p-6 text-center hover:bg-red-100 transition-colors">
+                    <div class="text-red-600 text-4xl mb-4">✉️</div>
+                    <h3 class="font-semibold text-gray-900 mb-2" data-contact="email-label">Email</h3>
+                    <p class="text-red-600 font-medium">info@decalwrap.vn</p>
+                </a>
+                <a href="https://zalo.me" class="bg-red-50 rounded-xl p-6 text-center hover:bg-red-100 transition-colors">
+                    <div class="text-red-600 text-4xl mb-4">💬</div>
+                    <h3 class="font-semibold text-gray-900 mb-2" data-contact="zalo-label">Zalo</h3>
+                    <p class="text-red-600 font-medium" data-contact="zalo-cta">Chat ngay</p>
+                </a>
+                <a href="https://maps.google.com" class="bg-red-50 rounded-xl p-6 text-center hover:bg-red-100 transition-colors">
+                    <div class="text-red-600 text-4xl mb-4">📍</div>
+                    <h3 class="font-semibold text-gray-900 mb-2" data-contact="address-label">Địa chỉ</h3>
+                    <p class="text-red-600 font-medium text-sm" data-contact="address-value">123 Trần Phú, Nha Trang</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="font-bold text-xl mb-4">DecalWrap</h3>
+                    <p class="text-gray-400 mb-4">Chuyên dán decal, bọc phim xe máy cao cấp tại Nha Trang</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Liên kết nhanh</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#models" class="hover:text-white transition-colors">Mẫu xe</a></li>
+                        <li><a href="#designs" class="hover:text-white transition-colors">Thiết kế</a></li>
+                        <li><a href="#production" class="hover:text-white transition-colors">Sản xuất</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">
+                        <span id="social-title">Theo dõi TXD trên mạng xã hội</span>
+                    </h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="p-2 bg-gray-800 rounded-lg hover:bg-red-600 transition-colors">📘</a>
+                        <a href="#" class="p-2 bg-gray-800 rounded-lg hover:bg-red-600 transition-colors">📷</a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
+                <p>© 2024 DecalWrap. Tất cả quyền được bảo lưu.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- MODEL CONFIGURATION ---
+        const models = {
+            'honda-lead': {
+                name: { vi: 'Honda Lead', en: 'Honda Lead' },
+                modelUrl: 'https://raw.githubusercontent.com/Stvolll/scooter-3d-model/main/lead110_final.glb',
+                defaultTexture: '/textures/honda-lead/3DModel.jpg'
+            },
+            'honda-vision': {
+                name: { vi: 'Honda Vision', en: 'Honda Vision' },
+                modelUrl: '/models/honda-lead.glb', // Placeholder - replace with actual model
+                defaultTexture: '/textures/honda-lead/3DModel.jpg'
+            },
+            'honda-air-blade': {
+                name: { vi: 'Honda Air Blade', en: 'Honda Air Blade' },
+                modelUrl: '/models/honda-lead.glb', // Placeholder
+                defaultTexture: '/textures/honda-lead/3DModel.jpg'
+            },
+            'yamaha-nvx': {
+                name: { vi: 'Yamaha NVX', en: 'Yamaha NVX' },
+                modelUrl: '/models/yamaha-nvx.glb',
+                defaultTexture: '/textures/yamaha-nvx/3DModel.jpg'
+            },
+            'vinfast': {
+                name: { vi: 'VinFast', en: 'VinFast' },
+                modelUrl: '/models/honda-lead.glb', // Placeholder
+                defaultTexture: '/textures/honda-lead/3DModel.jpg'
+            },
+            'vespa': {
+                name: { vi: 'Vespa', en: 'Vespa' },
+                modelUrl: '/models/honda-lead.glb', // Placeholder
+                defaultTexture: '/textures/honda-lead/3DModel.jpg'
+            }
+        };
+
+        // --- DESIGNS DATA ---
+        const designs = [
+            { 
+                id: 1, 
+                model: 'honda-lead', 
+                style: 'classic', 
+                price: 500000, 
+                title_en: 'Carbon Fiber Black', 
+                title_vi: 'Sợi Carbon Đen', 
+                isNew: true, 
+                imageUrl: 'https://images.unsplash.com/photo-1627967916962-e64e9a3b2b4f?q=80&w=600',
+                textureUrl: '/wraps/textures/honda-lead/carbon-black.jpg',
+                bgColor: 'bg-gray-800'
+            },
+            { 
+                id: 2, 
+                model: 'honda-vision', 
+                style: 'racing', 
+                price: 600000, 
+                title_en: 'Racing Stripes Red', 
+                title_vi: 'Sọc Đua Đỏ', 
+                isNew: false, 
+                imageUrl: 'https://images.unsplash.com/photo-1628170138253-1e5b47a988d5?q=80&w=600',
+                textureUrl: '/wraps/textures/honda-vision/racing-red.jpg',
+                bgColor: 'bg-red-800'
+            },
+            { 
+                id: 3, 
+                model: 'yamaha-nvx', 
+                style: 'sport', 
+                price: 550000, 
+                title_en: 'Matte Blue Aggressive', 
+                title_vi: 'Xanh Mờ Hầm Hố', 
+                isNew: true, 
+                imageUrl: 'https://images.unsplash.com/photo-1622075591907-f376a2b251a3?q=80&w=600',
+                textureUrl: '/wraps/textures/yamaha-nvx/matte-blue.jpg',
+                bgColor: 'bg-blue-800'
+            },
+            { 
+                id: 4, 
+                model: 'honda-lead', 
+                style: 'local', 
+                price: 580000, 
+                title_en: 'Nha Trang Beach Sunset', 
+                title_vi: 'Hoàng Hôn Biển Nha Trang', 
+                isNew: false, 
+                imageUrl: 'https://images.unsplash.com/photo-1549488344-fdd867a57a8a?q=80&w=600',
+                textureUrl: '/wraps/textures/honda-lead/beach-sunset.jpg',
+                bgColor: 'bg-yellow-500'
+            },
+            { 
+                id: 5, 
+                model: 'honda-lead', 
+                style: 'sport', 
+                price: 620000, 
+                title_en: 'Neon Green Sport', 
+                title_vi: 'Xanh Neon Thể Thao', 
+                isNew: true, 
+                imageUrl: 'https://images.unsplash.com/photo-1530041539828-114de6693900?q=80&w=600',
+                textureUrl: '/wraps/textures/honda-lead/neon-green.jpg',
+                bgColor: 'bg-green-500'
+            },
+            { 
+                id: 6, 
+                model: 'yamaha-nvx', 
+                style: 'racing', 
+                price: 650000, 
+                title_en: 'Racing Yellow', 
+                title_vi: 'Vàng Đua Xe', 
+                isNew: false, 
+                imageUrl: 'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?q=80&w=600',
+                textureUrl: '/wraps/textures/yamaha-nvx/racing-yellow.jpg',
+                bgColor: 'bg-yellow-400'
+            }
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let currentModel = 'honda-lead';
+        let currentDesign = null;
+        let currentFilters = { model: 'all', style: 'all', isNew: false };
+        let currentLang = 'vi';
+
+        // --- DOM ELEMENTS ---
+        const modelViewer = document.getElementById('scooter-viewer');
+        const modelSelector = document.getElementById('model-selector');
+        const designSwitcher = document.getElementById('design-switcher');
+        const designSwitcherGrid = document.getElementById('design-switcher-grid');
+        const selectedModelName = document.getElementById('selected-model-name');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const designGrid = document.getElementById('design-grid');
+        const designEmpty = document.getElementById('design-empty');
+        const modelFilter = document.getElementById('model-filter');
+        const styleFilter = document.getElementById('style-filter');
+        const newFilterBtn = document.getElementById('new-filter');
+
+        // --- TRANSLATIONS ---
+        const translations = {
+            vi: {
+                nav: { models: 'Mẫu xe', designs: 'Thiết kế', install: 'Hướng dẫn', production: 'Sản xuất', reviews: 'Đánh giá', contact: 'Liên hệ' },
+                cta: 'Thiết Kế Của Riêng Bạn',
+                hero: { title: 'Decal Xe Máy Cực Chất & Độc Bản', subtitle: 'Thiết kế độc quyền – Chống trầy xước tuyệt đối – Bảo hành 2 năm' },
+                designTitle: 'Bộ sưu tập TXD',
+                designSwitcherTitle: 'Chọn thiết kế cho',
+                filters: {
+                    model: [
+                        { value: 'all', label: 'Tất cả mẫu xe' },
+                        { value: 'honda-lead', label: 'Honda Lead' },
+                        { value: 'honda-vision', label: 'Honda Vision' },
+                        { value: 'honda-air-blade', label: 'Honda Air Blade' },
+                        { value: 'yamaha-nvx', label: 'Yamaha NVX' },
+                        { value: 'vinfast', label: 'VinFast' },
+                        { value: 'vespa', label: 'Vespa' }
+                    ],
+                    style: [
+                        { value: 'all', label: 'Tất cả phong cách' },
+                        { value: 'sport', label: 'Thể thao' },
+                        { value: 'racing', label: 'Đua xe' },
+                        { value: 'classic', label: 'Cổ điển' },
+                        { value: 'local', label: 'Địa Phương' }
+                    ],
+                    newLabel: 'Mới'
+                },
+                newBadge: 'MỚI',
+                buyLabel: 'Đặt làm',
+                steps: [
+                    { title: 'Chuẩn bị bề mặt', desc: 'Làm sạch và khử dầu mỡ bề mặt xe máy.' },
+                    { title: 'Đo & Cắt', desc: 'Đo chính xác kích thước và cắt decal theo form xe.' },
+                    { title: 'Phun dung dịch', desc: 'Dùng nước xà phòng loãng để dễ canh chỉnh vị trí.' },
+                    { title: 'Dán decal', desc: 'Áp decal nhẹ nhàng, dùng tay miết phẳng bọt khí.' },
+                    { title: 'Gia nhiệt', desc: 'Dùng máy sấy để ép decal bám chắc vào bề mặt.' },
+                    { title: 'Hoàn thiện', desc: 'Cắt mép, lau sạch và kiểm tra tổng thể.' }
+                ],
+                installTitle: 'Hướng dẫn lắp đặt',
+                installSubtitle: '6 bước đơn giản để dán decal TXD tại nhà hoặc tại xưởng.',
+                productionTitle: 'Sản xuất & Kiểm soát chất lượng',
+                productionSubtitle: 'In và gia công tại Nha Trang với tiêu chuẩn quốc tế',
+                corporateSupport: 'Hỗ trợ thiết kế decal logo và QR Code (Dịch vụ B2B)',
+                reviewsTitle: 'Đánh giá từ khách hàng TXD',
+                reviewsSubtitle: 'Hơn 1000+ xe đã được dán với sự hài lòng tuyệt đối',
+                trust: ['Khách hàng', 'Đánh giá trung bình', 'Bảo hành', 'Hài lòng'],
+                contactTitle: 'Liên hệ TXD',
+                contactSubtitle: 'Chúng tôi sẵn sàng hỗ trợ bạn chọn thiết kế phù hợp nhất',
+                contact: { phoneLabel: 'Điện thoại', emailLabel: 'Email', zaloLabel: 'Zalo', zaloCta: 'Chat ngay', addressLabel: 'Địa chỉ', addressValue: '123 Trần Phú, Nha Trang' },
+                socialTitle: 'Theo dõi TXD trên mạng xã hội'
+            },
+            en: {
+                nav: { models: 'Models', designs: 'Designs', install: 'How to Install', production: 'Production', reviews: 'Reviews', contact: 'Contact' },
+                cta: 'Design Your Own Wrap',
+                hero: { title: 'The Ultimate Unique Scooter Wrap by TXD', subtitle: 'Exclusive designs – Absolute scratch protection – 2-year warranty' },
+                designTitle: 'TXD Design Collection',
+                designSwitcherTitle: 'Choose design for',
+                filters: {
+                    model: [
+                        { value: 'all', label: 'All Models' },
+                        { value: 'honda-lead', label: 'Honda Lead' },
+                        { value: 'honda-vision', label: 'Honda Vision' },
+                        { value: 'honda-air-blade', label: 'Honda Air Blade' },
+                        { value: 'yamaha-nvx', label: 'Yamaha NVX' },
+                        { value: 'vinfast', label: 'VinFast' },
+                        { value: 'vespa', label: 'Vespa' }
+                    ],
+                    style: [
+                        { value: 'all', label: 'All Styles' },
+                        { value: 'sport', label: 'Sport' },
+                        { value: 'racing', label: 'Racing' },
+                        { value: 'classic', label: 'Classic' },
+                        { value: 'local', label: 'Local Theme' }
+                    ],
+                    newLabel: 'New'
+                },
+                newBadge: 'NEW',
+                buyLabel: 'Order Now',
+                steps: [
+                    { title: 'Clean the surface', desc: 'Remove dust and grease for a smooth base.' },
+                    { title: 'Measure & trim', desc: 'Cut vinyl accurately to match your scooter's form.' },
+                    { title: 'Apply solution', desc: 'Spray mild soap water for easy adjustment.' },
+                    { title: 'Apply wrap', desc: 'Gently position and smooth out air bubbles.' },
+                    { title: 'Heat & press', desc: 'Use a heat gun to ensure full adhesion.' },
+                    { title: 'Finish & inspect', desc: 'Trim edges, wipe clean, and inspect the result.' }
+                ],
+                installTitle: 'Installation Guide',
+                installSubtitle: 'Six simple steps to wrap your scooter — or let TXD do it for you.',
+                productionTitle: 'Production & Quality Control',
+                productionSubtitle: 'Manufactured in Nha Trang with top-grade materials and precision printing',
+                corporateSupport: 'Design support for logo and QR Code decals (B2B Service)',
+                reviewsTitle: 'Customer Reviews',
+                reviewsSubtitle: 'Over 1,000 scooters wrapped with TXD across Vietnam',
+                trust: ['Customers', 'Average Rating', 'Warranty', 'Satisfaction'],
+                contactTitle: 'Contact TXD',
+                contactSubtitle: 'Need help choosing a wrap? Our team is ready to assist.',
+                contact: { phoneLabel: 'Phone', emailLabel: 'Email', zaloLabel: 'Zalo', zaloCta: 'Chat now', addressLabel: 'Address', addressValue: '123 Tran Phu, Nha Trang, Vietnam' },
+                socialTitle: 'Follow TXD on social media'
+            }
+        };
+
+        // --- MODEL SWITCHING ---
+        function loadModel(modelKey) {
+            if (!models[modelKey]) return;
+            
+            currentModel = modelKey;
+            loadingOverlay.classList.remove('hidden');
+            
+            const model = models[modelKey];
+            modelViewer.src = model.modelUrl;
+            
+            modelViewer.addEventListener('load', () => {
+                loadingOverlay.classList.add('hidden');
+                updateModelButtons();
+                updateDesignSwitcher();
+            }, { once: true });
+            
+            // Fallback timeout
+            setTimeout(() => {
+                loadingOverlay.classList.add('hidden');
+            }, 5000);
+        }
+
+        function updateModelButtons() {
+            const dict = translations[currentLang];
+            modelSelector.innerHTML = '';
+            
+            Object.keys(models).forEach(modelKey => {
+                const model = models[modelKey];
+                const button = document.createElement('button');
+                button.className = `model-button px-4 py-2 rounded-xl font-medium min-h-[44px] transition-all ${
+                    currentModel === modelKey 
+                        ? 'bg-red-600 text-white shadow-lg' 
+                        : 'bg-white/80 text-gray-700 hover:bg-white glass-effect'
+                }`;
+                button.textContent = model.name[currentLang];
+                button.addEventListener('click', () => {
+                    if (currentModel !== modelKey) {
+                        loadModel(modelKey);
+                    }
+                });
+                modelSelector.appendChild(button);
+            });
+        }
+
+        // --- DESIGN SWITCHER ---
+        function updateDesignSwitcher() {
+            const dict = translations[currentLang];
+            const modelDesigns = designs.filter(d => d.model === currentModel);
+            
+            selectedModelName.textContent = models[currentModel].name[currentLang];
+            designSwitcherGrid.innerHTML = '';
+            
+            if (modelDesigns.length === 0) {
+                designSwitcherGrid.innerHTML = `<p class="text-gray-500 col-span-full text-center">${currentLang === 'vi' ? 'Chưa có thiết kế cho mẫu này' : 'No designs available for this model'}</p>`;
+                return;
+            }
+
+            modelDesigns.forEach(design => {
+                const title = currentLang === 'vi' ? design.title_vi : design.title_en;
+                const card = document.createElement('div');
+                card.className = `design-card bg-white rounded-xl p-4 shadow-lg overflow-hidden w-32 ${currentDesign?.id === design.id ? 'active' : ''}`;
+                card.innerHTML = `
+                    <div class="relative aspect-square ${design.bgColor} rounded-lg mb-2 overflow-hidden">
+                        <img src="${design.imageUrl}" alt="${title}" class="w-full h-full object-cover opacity-80" loading="lazy">
+                        ${design.isNew ? `<div class="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded-full text-xs font-semibold new-badge">${dict.newBadge}</div>` : ''}
+                    </div>
+                    <p class="text-xs font-semibold text-gray-900 text-center line-clamp-2">${title}</p>
+                `;
+                card.addEventListener('click', () => applyDesign(design));
+                designSwitcherGrid.appendChild(card);
+            });
+        }
+
+        function applyDesign(design) {
+            currentDesign = design;
+            updateDesignSwitcher();
+            
+            // Apply texture to 3D model
+            if (modelViewer && design.textureUrl) {
+                // Note: This requires the model-viewer to support texture swapping
+                // For now, we'll just highlight the selected design
+                // In production, you'd use model-viewer's material API
+                console.log('Applying design:', design.title_vi, 'Texture:', design.textureUrl);
+            }
+        }
+
+        // --- FILTERS & RENDERING ---
+        function renderDesigns() {
+            const dict = translations[currentLang];
+            designGrid.innerHTML = '';
+            
+            const filtered = designs.filter(design => {
+                const modelMatch = currentFilters.model === 'all' || design.model === currentFilters.model;
+                const styleMatch = currentFilters.style === 'all' || design.style === currentFilters.style;
+                const newMatch = !currentFilters.isNew || design.isNew === true;
+                return modelMatch && styleMatch && newMatch;
+            });
+            
+            if (filtered.length === 0) {
+                designEmpty.classList.remove('hidden');
+                designEmpty.textContent = currentLang === 'vi' 
+                    ? 'Không tìm thấy thiết kế nào phù hợp.' 
+                    : 'No matching designs found.';
+                return;
+            }
+            
+            designEmpty.classList.add('hidden');
+            
+            filtered.forEach(design => {
+                const title = currentLang === 'vi' ? design.title_vi : design.title_en;
+                const priceFormatted = new Intl.NumberFormat(currentLang === 'vi' ? 'vi-VN' : 'en-US', {
+                    style: 'currency',
+                    currency: 'VND',
+                    maximumFractionDigits: 0
+                }).format(design.price);
+                
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow fade-in';
+                card.innerHTML = `
+                    <div class="relative aspect-square ${design.bgColor}">
+                        ${design.isNew ? `<div class="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold new-badge">${dict.newBadge}</div>` : ''}
+                        <img src="${design.imageUrl}" alt="${title}" class="w-full h-full object-cover opacity-80" loading="lazy">
+                        </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg text-gray-900 mb-2">${title}</h3>
+                        <p class="text-red-600 font-bold text-xl mb-4">${priceFormatted}</p>
+                        <button class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-semibold min-h-[44px] transition-colors" data-design-id="${design.id}">
+                            ${dict.buyLabel}
+                        </button>
+                        </div>
+                `;
+                
+                card.querySelector('button').addEventListener('click', () => {
+                    // Switch to the model and apply design
+                    if (design.model !== currentModel) {
+                        loadModel(design.model);
+                        setTimeout(() => applyDesign(design), 1000);
+                    } else {
+                        applyDesign(design);
+                    }
+                    document.getElementById('models').scrollIntoView({ behavior: 'smooth' });
+                });
+                
+                designGrid.appendChild(card);
+            });
+        }
+
+        // --- LANGUAGE SWITCHING ---
+        function applyLanguage(lang) {
+            const dict = translations[lang];
+            document.documentElement.lang = lang === 'vi' ? 'vi' : 'en';
+            localStorage.setItem('previewLang', lang);
+            currentLang = lang;
+
+            // Update all text elements
+            document.getElementById('nav-models').textContent = dict.nav.models;
+            document.getElementById('nav-designs').textContent = dict.nav.designs;
+            document.getElementById('nav-install').textContent = dict.nav.install;
+            document.getElementById('nav-production').textContent = dict.nav.production;
+            document.getElementById('nav-reviews').textContent = dict.nav.reviews;
+            document.getElementById('nav-contact').textContent = dict.nav.contact;
+            document.getElementById('cta-button').textContent = dict.cta;
+            document.getElementById('hero-title').textContent = dict.hero.title;
+            document.getElementById('hero-subtitle').textContent = dict.hero.subtitle;
+            document.getElementById('design-title').textContent = dict.designTitle;
+            document.getElementById('design-switcher-title').textContent = dict.designSwitcherTitle;
+
+            // Update filters
+            const setOptions = (select, options) => {
+                const currentValue = select.value;
+                select.innerHTML = '';
+                options.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option.value;
+                    opt.textContent = option.label;
+                    if (option.value === currentValue) opt.selected = true;
+                    select.appendChild(opt);
+                });
+            };
+            setOptions(modelFilter, dict.filters.model);
+            setOptions(styleFilter, dict.filters.style);
+            document.getElementById('new-filter').textContent = dict.filters.newLabel;
+
+            // Update other sections
+            document.getElementById('install-title').textContent = dict.installTitle;
+            document.getElementById('install-subtitle').textContent = dict.installSubtitle;
+            dict.steps.forEach((step, index) => {
+                const titleEl = document.querySelector(`[data-step-title="${index + 1}"]`);
+                const descEl = document.querySelector(`[data-step-desc="${index + 1}"]`);
+                if (titleEl) titleEl.textContent = step.title;
+                if (descEl) descEl.textContent = step.desc;
+            });
+
+            document.getElementById('production-title').textContent = dict.productionTitle;
+            document.getElementById('production-subtitle').textContent = dict.productionSubtitle;
+            document.getElementById('production-corporate-support').querySelector('span:last-child').textContent = dict.corporateSupport;
+            document.getElementById('reviews-title').textContent = dict.reviewsTitle;
+            document.getElementById('reviews-subtitle').textContent = dict.reviewsSubtitle;
+            document.querySelectorAll('[data-trust]').forEach(el => {
+                const idx = parseInt(el.getAttribute('data-trust'), 10);
+                if (!Number.isNaN(idx)) el.textContent = dict.trust[idx];
+            });
+
+            document.getElementById('contact-title').textContent = dict.contactTitle;
+            document.getElementById('contact-subtitle').textContent = dict.contactSubtitle;
+            document.querySelector('[data-contact="phone-label"]').textContent = dict.contact.phoneLabel;
+            document.querySelector('[data-contact="email-label"]').textContent = dict.contact.emailLabel;
+            document.querySelector('[data-contact="zalo-label"]').textContent = dict.contact.zaloLabel;
+            document.querySelector('[data-contact="zalo-cta"]').textContent = dict.contact.zaloCta;
+            document.querySelector('[data-contact="address-label"]').textContent = dict.contact.addressLabel;
+            document.querySelector('[data-contact="address-value"]').textContent = dict.contact.addressValue;
+            document.getElementById('social-title').textContent = dict.socialTitle;
+
+            // Update language buttons
+            document.getElementById('lang-vi').classList.toggle('bg-red-600', lang === 'vi');
+            document.getElementById('lang-vi').classList.toggle('text-white', lang === 'vi');
+            document.getElementById('lang-vi').classList.toggle('bg-white/50', lang !== 'vi');
+            document.getElementById('lang-en').classList.toggle('bg-red-600', lang === 'en');
+            document.getElementById('lang-en').classList.toggle('text-white', lang === 'en');
+            document.getElementById('lang-en').classList.toggle('bg-white/50', lang !== 'en');
+            
+            updateModelButtons();
+            updateDesignSwitcher();
+            renderDesigns();
+        }
+
+        // --- EVENT LISTENERS ---
+        document.getElementById('lang-vi').addEventListener('click', () => applyLanguage('vi'));
+        document.getElementById('lang-en').addEventListener('click', () => applyLanguage('en'));
+        
+        modelFilter.addEventListener('change', (e) => {
+            currentFilters.model = e.target.value;
+            renderDesigns();
+        });
+
+        styleFilter.addEventListener('change', (e) => {
+            currentFilters.style = e.target.value;
+            renderDesigns();
+        });
+
+        newFilterBtn.addEventListener('click', () => {
+            currentFilters.isNew = !currentFilters.isNew;
+            newFilterBtn.classList.toggle('bg-red-600', currentFilters.isNew);
+            newFilterBtn.classList.toggle('text-white', currentFilters.isNew);
+            newFilterBtn.classList.toggle('bg-gray-100', !currentFilters.isNew);
+            newFilterBtn.classList.toggle('text-gray-700', !currentFilters.isNew);
+            renderDesigns();
+        });
+
+        document.getElementById('reset-camera').addEventListener('click', () => {
+            modelViewer.cameraOrbit = '15deg 75deg 100%';
+        });
+        
+        document.getElementById('fullscreen-btn').addEventListener('click', () => {
+            modelViewer.requestFullscreen();
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 20) {
+                header.classList.add('shadow-lg');
+            } else {
+                header.classList.remove('shadow-lg');
+            }
+        });
+        
+        // --- INITIALIZATION ---
+        const initialLang = localStorage.getItem('previewLang') === 'en' ? 'en' : 'vi';
+        applyLanguage(initialLang);
+        loadModel('honda-lead');
+        renderDesigns();
+    </script>
+</body>
+</html>
