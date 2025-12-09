@@ -18,7 +18,7 @@ interface DesignCardProps {
     editionTotal: number
     coverImage?: string | null
     status: DesignStatus
-    statusHistory: Array<{ status: DesignStatus; at: Date; note?: string | null }>
+    statusHistory?: Array<{ status: DesignStatus; at: Date; note?: string | null }>
   }
 }
 
@@ -54,13 +54,15 @@ export default function DesignCard({ design }: DesignCardProps) {
         <div className="text-sm text-white/60 mb-3">{design.scooterModel}</div>
 
         {/* Timeline */}
-        <div className="mb-4">
-          <DesignTimeline
-            currentStatus={design.status}
-            statusHistory={design.statusHistory}
-            orientation="horizontal"
-          />
-        </div>
+        {design.statusHistory && design.statusHistory.length > 0 && (
+          <div className="mb-4">
+            <DesignTimeline
+              currentStatus={design.status}
+              statusHistory={design.statusHistory}
+              orientation="horizontal"
+            />
+          </div>
+        )}
 
         {/* Status badge */}
         <div className="mb-4">

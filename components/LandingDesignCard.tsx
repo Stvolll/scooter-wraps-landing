@@ -36,8 +36,7 @@ export default function LandingDesignCard({
         backdropFilter: 'blur(20px) saturate(180%)',
         WebkitBackdropFilter: 'blur(20px) saturate(180%)',
         border: '1px solid rgba(255, 255, 255, 0.1)',
-        boxShadow:
-          '0 8px 32px -4px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
+        boxShadow: '0 8px 32px -4px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
       }}
     >
       <div className="relative aspect-square cursor-pointer" onClick={onImageClick}>
@@ -76,9 +75,7 @@ export default function LandingDesignCard({
         <h3 className="text-lg font-semibold text-white mb-1">{design.name}</h3>
         <div className="text-sm text-white/60 mb-3">{modelName}</div>
         <div className="flex items-center justify-between">
-          <div className="text-xl font-bold text-[#00FFA9]">
-            {design.price || '$180'}
-          </div>
+          <div className="text-xl font-bold text-[#00FFA9]">{design.price || '$180'}</div>
           <Link
             href={`/designs/${modelId}/${design.id}`}
             onClick={onDetailsClick}
@@ -95,4 +92,3 @@ export default function LandingDesignCard({
     </article>
   )
 }
-

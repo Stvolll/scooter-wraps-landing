@@ -55,10 +55,8 @@ export default function Home() {
     setIsMounted(true)
   }, [])
 
-  // Get current scooter config with fallback - only after mount
-  const currentScooter = isMounted
-    ? (scooters as Record<string, any>)[selectedModel] || getDefaultScooter()
-    : getDefaultScooter()
+  // Get current scooter config with fallback - always use same logic to avoid hydration mismatch
+  const currentScooter = (scooters as Record<string, any>)[selectedModel] || getDefaultScooter()
 
   // Ensure selectedModel is valid after mount
   useEffect(() => {
@@ -83,8 +81,10 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedModel, isMounted])
 
-  // Handle scroll for parallax effect
+  // Handle scroll for parallax effect (client-side only)
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
     const handleScroll = () => {
       const scrollY = window.scrollY
       const windowHeight = window.innerHeight
@@ -94,17 +94,26 @@ export default function Home() {
       setIsPastTrigger(scrollY > triggerPoint)
     }
 
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll() // Initial call
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      handleScroll() // Initial call
+      window.addEventListener('scroll', handleScroll, { passive: true })
+    })
 
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('scroll', handleScroll)
+      }
+    }
   }, [])
 
   // Handle model switching
   const handleModelChange = (modelId: string) => {
     setSelectedModel(modelId)
     // Reset scroll position to top (but don't reload page)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
 
   // Handle design selection - change 3D model without scrolling
@@ -116,7 +125,9 @@ export default function Home() {
   // Handle details view - navigate to detailed page
   const handleViewDetails = (design: any) => {
     // Navigate to design details page
-    window.location.href = `/designs/${currentScooter.id}/${design.id}`
+    if (typeof window !== 'undefined') {
+      window.location.href = `/designs/${currentScooter.id}/${design.id}`
+    }
   }
 
   // Get current panorama based on selected design
@@ -139,16 +150,18 @@ export default function Home() {
         style={{
           height: '70vh', // 70% высоты экрана - cards visible below
         }}
-        suppressHydrationWarning
       >
-        <div className="absolute inset-0 w-full h-full" suppressHydrationWarning>
-          <ScooterViewer
-            modelPath={currentScooter.model}
-            selectedDesign={selectedDesign}
-            environmentImage={'/hdr/studio.hdr' as any}
-            panoramaUrl={getCurrentPanorama()}
-            className="w-full h-full"
-          />
+        <div className="absolute inset-0 w-full h-full">
+          {isMounted && (
+            <ScooterViewer
+              modelPath={currentScooter.model}
+              selectedDesign={selectedDesign}
+              environmentImage={'/hdr/studio.hdr' as any}
+              panoramaUrl={getCurrentPanorama()}
+              className="w-full h-full"
+            />
+          )}
+          {!isMounted && <ThreeDViewerPlaceholder />}
         </div>
 
         {/* Model Selection Menu Overlay - iOS 26 Glassmorphism Style */}
@@ -306,7 +319,6 @@ export default function Home() {
                 WebkitOverflowScrolling: 'touch',
                 scrollBehavior: 'smooth',
               }}
-              suppressHydrationWarning
             >
               {(currentScooter.designs as any[]).map((design: any, index: number) => {
                 const isSelected = (selectedDesign as any)?.id === design.id
