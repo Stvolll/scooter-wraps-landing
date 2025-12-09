@@ -34,6 +34,13 @@ export default async function DesignsPage() {
         <div className="mb-8 pt-24 px-4 md:px-8 lg:px-16">
           <h1 className="text-4xl md:text-5xl font-semibold text-white mb-2">Designs</h1>
           <p className="text-white/60">Manage your design collection</p>
+          <div className="mt-4 p-4 rounded-2xl bg-white/5 border border-white/10">
+            <p className="text-sm text-white/70">
+              <strong>💡 Подсказка:</strong> Создайте новый дизайн, загрузите файлы (обложка, 3D
+              модель, текстура), и управляйте этапами производства через систему стадий.
+            </p>
+          </div>
+        </div>
         </div>
 
         <div
@@ -72,7 +79,8 @@ export default async function DesignsPage() {
               <p className="text-red-400 mb-2">Database Error</p>
               <p className="text-white/60 text-sm mb-4">{dbError}</p>
               <p className="text-white/40 text-xs">
-                Please check your DATABASE_URL in .env.local and ensure Prisma is properly configured.
+                Please check your DATABASE_URL in .env.local and ensure Prisma is properly
+                configured.
               </p>
             </div>
           ) : designs.length === 0 ? (

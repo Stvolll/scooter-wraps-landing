@@ -36,11 +36,13 @@ export default function UploadGuide() {
               <strong>Size:</strong> Max 500KB. Use WebP for best compression.
             </li>
             <li>
-              <strong>Naming:</strong> <code className="text-[#00FFA9]">[design-slug]-cover.webp</code> (e.g.,{' '}
+              <strong>Naming:</strong>{' '}
+              <code className="text-[#00FFA9]">[design-slug]-cover.webp</code> (e.g.,{' '}
               <code className="text-[#00FFA9]">neon-blade-cover.webp</code>).
             </li>
             <li>
-              <strong>Upload Location:</strong> S3 bucket → <code className="text-[#00FFA9]">/images/designs/</code>
+              <strong>Upload Location:</strong> S3 bucket →{' '}
+              <code className="text-[#00FFA9]">/images/designs/</code>
             </li>
           </ul>
         </div>
@@ -58,18 +60,22 @@ export default function UploadGuide() {
               <strong>Size:</strong> Max 50MB. Keep it as low as possible for fast loading.
             </li>
             <li>
-              <strong>Optimization:</strong> Use <code className="text-[#00D4FF]">gltf-pipeline</code> or{' '}
+              <strong>Optimization:</strong> Use{' '}
+              <code className="text-[#00D4FF]">gltf-pipeline</code> or{' '}
               <code className="text-[#00D4FF]">gltfpack</code> for Draco compression.
             </li>
             <li>
-              <strong>Textures:</strong> Embed textures directly into the GLB or ensure paths are relative to the GLB.
+              <strong>Textures:</strong> Embed textures directly into the GLB or ensure paths are
+              relative to the GLB.
             </li>
             <li>
-              <strong>Naming:</strong> <code className="text-[#00D4FF]">[scooter-model-slug]-[design-slug].glb</code> (e.g.,{' '}
+              <strong>Naming:</strong>{' '}
+              <code className="text-[#00D4FF]">[scooter-model-slug]-[design-slug].glb</code> (e.g.,{' '}
               <code className="text-[#00D4FF]">honda-vision-neon-blade.glb</code>).
             </li>
             <li>
-              <strong>Upload Location:</strong> S3 bucket → <code className="text-[#00D4FF]">/models/</code>
+              <strong>Upload Location:</strong> S3 bucket →{' '}
+              <code className="text-[#00D4FF]">/models/</code>
             </li>
           </ul>
         </div>
@@ -84,17 +90,21 @@ export default function UploadGuide() {
               <strong>Format:</strong> JPG, PNG, KTX2 (Basis Universal) for best performance.
             </li>
             <li>
-              <strong>Resolution:</strong> Optimal 2048x2048px. Power of 2 dimensions are best (1024, 2048, 4096).
+              <strong>Resolution:</strong> Optimal 2048x2048px. Power of 2 dimensions are best
+              (1024, 2048, 4096).
             </li>
             <li>
-              <strong>UV Mapping:</strong> Ensure the 3D model has proper UV unwrapping for the texture to apply correctly.
+              <strong>UV Mapping:</strong> Ensure the 3D model has proper UV unwrapping for the
+              texture to apply correctly.
             </li>
             <li>
-              <strong>Naming:</strong> <code className="text-[#B77EFF]">[scooter-model-slug]-[design-slug]-texture.png</code> (e.g.,{' '}
-              <code className="text-[#B77EFF]">honda-vision-neon-blade-texture.png</code>).
+              <strong>Naming:</strong>{' '}
+              <code className="text-[#B77EFF]">[scooter-model-slug]-[design-slug]-texture.png</code>{' '}
+              (e.g., <code className="text-[#B77EFF]">honda-vision-neon-blade-texture.png</code>).
             </li>
             <li>
-              <strong>Upload Location:</strong> S3 bucket → <code className="text-[#B77EFF]">/textures/</code>
+              <strong>Upload Location:</strong> S3 bucket →{' '}
+              <code className="text-[#B77EFF]">/textures/</code>
             </li>
           </ul>
         </div>
@@ -115,11 +125,13 @@ export default function UploadGuide() {
               <strong>Quantity:</strong> 3-5 images per design is recommended.
             </li>
             <li>
-              <strong>Naming:</strong> <code className="text-[#FFB800]">[design-slug]-gallery-[number].webp</code> (e.g.,{' '}
+              <strong>Naming:</strong>{' '}
+              <code className="text-[#FFB800]">[design-slug]-gallery-[number].webp</code> (e.g.,{' '}
               <code className="text-[#FFB800]">neon-blade-gallery-01.webp</code>).
             </li>
             <li>
-              <strong>Upload Location:</strong> S3 bucket → <code className="text-[#FFB800]">/images/designs/</code>
+              <strong>Upload Location:</strong> S3 bucket →{' '}
+              <code className="text-[#FFB800]">/images/designs/</code>
             </li>
           </ul>
         </div>
@@ -129,7 +141,10 @@ export default function UploadGuide() {
         <p className="text-white/90 font-medium mb-2">💡 Optimization Tips:</p>
         <ul className="list-disc list-inside space-y-1 text-white/70 text-sm">
           <li>Use WebP for images (smaller size with same quality)</li>
-          <li>Compress GLB files with <code className="text-[#00FFA9]">gltf-pipeline</code> before upload</li>
+          <li>
+            Compress GLB files with <code className="text-[#00FFA9]">gltf-pipeline</code> before
+            upload
+          </li>
           <li>Textures should be square (power of 2: 512, 1024, 2048, 4096)</li>
           <li>Avoid overly large files - they slow down site loading</li>
           <li>For best performance, use KTX2/Basis Universal format for textures</li>
@@ -137,7 +152,8 @@ export default function UploadGuide() {
       </div>
 
       <p className="mt-6 text-white/60 text-sm italic">
-        All files will be uploaded to the configured S3 bucket. Ensure your file names are unique and descriptive.
+        All files will be uploaded to the configured S3 bucket. Ensure your file names are unique
+        and descriptive.
       </p>
     </div>
   )

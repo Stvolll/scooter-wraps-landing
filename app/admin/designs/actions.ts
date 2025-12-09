@@ -48,7 +48,8 @@ export async function createDesign(data: {
   } catch (error: any) {
     console.error('Error creating design:', error)
     throw new Error(
-      error.message || 'Failed to create design. Please check your database connection and ensure DATABASE_URL is set in .env.local'
+      error.message ||
+        'Failed to create design. Please check your database connection and ensure DATABASE_URL is set in .env.local'
     )
   }
 }
