@@ -1,18 +1,20 @@
 # Project Checkpoint
 
-## Checkpoint Information
+## Latest Checkpoint
 
-**Date & Time:** 2025-12-09 17:42:11 +07 (Asia/Ho_Chi_Minh)  
-**Branch:** `checkpoint/2025-12-09-stable`  
-**Commit Message:** "Checkpoint: stable snapshot - restored working state"  
+**Date & Time:** 2025-01-10 22:25:00 +07 (Asia/Ho_Chi_Minh)  
+**Branch:** `checkpoint/2025-01-10-stable`  
+**Commit Hash:** `a33659d`  
+**Commit Message:** "Checkpoint: stable snapshot of current project state"  
 **Git Status:** All changes committed  
-**Previous Checkpoint:** 2025-12-09 17:30:52 +07
+**Build Status:** ✅ SUCCESS
 
-## Build Status
+### Build Verification
 
 ✅ **Build Status:** SUCCESS  
 ✅ **Build Time:** ~30 seconds  
-✅ **No Build Errors**
+✅ **No Build Errors**  
+✅ **No Critical Warnings**
 
 ### Build Output Summary
 
@@ -20,7 +22,46 @@
 - Static Routes: 3
 - Dynamic Routes: 18
 - First Load JS: 87.4 kB (shared by all)
+- Middleware: 48.6 kB
 - Largest Route: `/admin/designs/[id]` (16.8 kB)
+
+### Recent Fixes & Improvements
+
+1. ✅ **CSP Security Headers**
+   - Fixed Content Security Policy for Google Analytics
+   - Added `blob:` and `data:` support for model-viewer
+   - Updated `connect-src` to include analytics domains
+
+2. ✅ **3D Scene Access**
+   - Improved scene retrieval priority: `modelViewer.scene` → `renderer.scene` → `model.scene`
+   - Added `renderer.getScene()` fallback
+   - Enhanced error handling and diagnostics
+
+3. ✅ **Texture Application**
+   - Fixed scene traversal for texture application
+   - Improved material update logic
+   - Added comprehensive logging for debugging
+
+4. ✅ **Security Middleware**
+   - Added rate limiting for API routes
+   - Implemented security headers (CSP, HSTS, X-Frame-Options, etc.)
+   - Added input validation and sanitization
+
+5. ✅ **Bybit Integration**
+   - Added webhook endpoint for payment processing
+   - Implemented HMAC-SHA256 signature verification
+   - Added security utilities for API requests
+
+## Previous Checkpoints
+
+### Checkpoint: 2025-12-09-stable
+
+**Date & Time:** 2025-12-09 17:42:11 +07  
+**Branch:** `checkpoint/2025-12-09-stable`  
+**Status:** ✅ Stable  
+**Notes:** Restored working state after design lifecycle system migration
+
+---
 
 ## Dependencies
 
@@ -54,6 +95,8 @@ scooter-wraps-landing/
 │   ├── admin/             # Admin panel pages
 │   ├── designs/           # Design detail pages
 │   ├── api/               # API routes
+│   │   ├── bybit/         # Bybit payment webhooks
+│   │   └── ...
 │   └── page.tsx           # Main landing page
 ├── components/            # React components
 │   ├── sections/          # Landing page sections
@@ -63,8 +106,12 @@ scooter-wraps-landing/
 ├── contexts/              # React contexts
 ├── lib/                   # Utility libraries
 │   ├── prisma.ts          # Prisma client
-│   └── s3.ts              # AWS S3 utilities
+│   ├── s3.ts              # AWS S3 utilities
+│   ├── security.ts        # Security utilities
+│   ├── validation.ts      # Input validation
+│   └── bybit-security.ts  # Bybit API security
 ├── locales/               # i18n translations
+├── middleware.ts          # Next.js middleware (security, rate limiting)
 ├── public/                # Static assets
 │   ├── models/            # 3D GLB models
 │   ├── textures/          # Texture images
@@ -87,21 +134,26 @@ scooter-wraps-landing/
 6. ✅ **Responsive Design** - Mobile and desktop optimized
 7. ✅ **SEO Optimization** - Dynamic sitemap, metadata generation
 8. ✅ **Image Optimization** - Next.js Image component with responsive images
+9. ✅ **Security Middleware** - Rate limiting, CSP, security headers
+10. ✅ **Payment Integration** - Bybit webhook support
 
 ### Known Issues
+
+#### 3D Texture Application
+
+⚠️ **Status:** Partially Resolved  
+**Location:** `components/ScooterViewer.jsx`  
+**Description:** Scene access improved but may still have issues with certain GLB models.  
+**Impact:** Textures may not apply correctly on first load, retry logic implemented.  
+**Note:** Enhanced diagnostics and multiple fallback methods added.
 
 #### Hydration Errors
 
 ⚠️ **Status:** Active Issue  
 **Location:** `/designs/[model]/[slug]/page.tsx`  
-**Description:** Hydration mismatch error - server HTML doesn't match client HTML. The error mentions "Expected server HTML to contain a matching <header> in <div>".  
+**Description:** Hydration mismatch error - server HTML doesn't match client HTML.  
 **Impact:** Page still renders but with hydration warnings in console.  
 **Note:** This is a known issue that needs to be resolved in future iterations.
-
-#### Deprecated Warnings
-
-⚠️ **Next.js Config:** `images.domains` is deprecated, should use `images.remotePatterns` (already partially implemented)  
-⚠️ **Metadata:** `viewport` in metadata export should be moved to separate `viewport` export (already fixed in layout.tsx)
 
 ### Potential Risks
 
@@ -136,6 +188,10 @@ AWS_CLOUDFRONT_DOMAIN=... (optional)
 
 # Site Configuration
 NEXT_PUBLIC_SITE_URL=https://txd.bike
+
+# Bybit (optional, for payments)
+BYBIT_API_KEY=...
+BYBIT_API_SECRET=...
 ```
 
 ## Scripts Available
@@ -153,26 +209,27 @@ NEXT_PUBLIC_SITE_URL=https://txd.bike
 
 ## Git Information
 
-**Current Branch:** `checkpoint/2025-12-09-stable`  
+**Current Branch:** `checkpoint/2025-01-10-stable`  
 **Base Branch:** `txd/design-lifecycle-rebuild`  
-**Last Commit:** "Checkpoint: stable snapshot before upcoming changes"
+**Last Commit:** "Checkpoint: stable snapshot of current project state"
 
 ## Notes
 
-- This checkpoint was created before resolving hydration errors
+- This checkpoint was created after fixing CSP issues and improving 3D scene access
 - All uncommitted changes have been staged and committed
 - Build passes successfully with no errors
 - Project is in a stable state for feature development
-- **Updated:** Restored working state after checkpoint creation
-- **Status:** All pages functional, hydration warnings present but non-critical
+- Security middleware implemented and tested
+- 3D texture application improved with better error handling
 
 ## Update History
 
+- **2025-01-10 22:25:00** - New checkpoint: CSP fixes, 3D scene improvements, security middleware
 - **2025-12-09 17:46:00** - Checkpoint updated: restored working state
 - **2025-12-09 17:30:52** - Initial checkpoint created
 
 ---
 
 **Created:** 2025-12-09  
-**Last Updated:** 2025-12-09 17:46:00  
+**Last Updated:** 2025-01-10 22:25:00  
 **Purpose:** Stable snapshot for rollback capability before implementing new features
