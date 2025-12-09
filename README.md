@@ -78,6 +78,48 @@ Access admin at `/admin`:
 - **Create Design**: `/admin/designs/new`
 - **Edit Design**: `/admin/designs/[id]`
 
+## Design Lifecycle System (Migration Notes)
+
+This project uses the Design Lifecycle System and has removed SKU-based flows.
+
+### After pulling this branch:
+
+1. **Copy environment file:**
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Generate Prisma client and run migration:**
+   ```bash
+   npx prisma generate
+   npx prisma migrate dev --name design-lifecycle-init
+   ```
+
+4. **(Optional) Run image optimization:**
+   ```bash
+   npm run image:build
+   ```
+
+5. **Start development server:**
+   ```bash
+   npm run dev
+   ```
+
+### Signed Uploads
+
+We use signed S3 PUT URLs for direct client-side uploads. See `app/api/uploads/signed-url/route.ts` for implementation details.
+
+### Manual Steps
+
+- Install `gltfpack` / `toktx` locally or in CI if you want GLB/texture compression
+- Configure S3 / R2 credentials in deployment environment
+- Set up database backup before running migrations in production
+
 ## Design Lifecycle
 
 Each design progresses through 8 stages:

@@ -22,6 +22,7 @@ __MACOSX/
 
 # uploads
 /public/uploads/
+/public/_optimized/
 
 # debug
 npm-debug.log*
