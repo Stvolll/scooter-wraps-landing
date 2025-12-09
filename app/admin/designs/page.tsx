@@ -41,7 +41,6 @@ export default async function DesignsPage() {
             </p>
           </div>
         </div>
-        </div>
 
         <div
           className="mb-6 p-6 mx-4 md:mx-8 lg:mx-16"

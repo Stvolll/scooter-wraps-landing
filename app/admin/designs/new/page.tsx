@@ -131,7 +131,9 @@ export default function NewDesignPage() {
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2) inset',
                 }}
               />
-              <p className="text-xs text-white/50 mt-1">Модель скутера, для которого создан дизайн</p>
+              <p className="text-xs text-white/50 mt-1">
+                Модель скутера, для которого создан дизайн
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-white/80 mb-1">
@@ -147,7 +149,9 @@ export default function NewDesignPage() {
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2) inset',
                 }}
               />
-              <p className="text-xs text-white/50 mt-1">Цена в вьетнамских донгах (0 = бесплатно)</p>
+              <p className="text-xs text-white/50 mt-1">
+                Цена в вьетнамских донгах (0 = бесплатно)
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-white/80 mb-1">
@@ -190,8 +194,8 @@ export default function NewDesignPage() {
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-white mb-2">📁 Загрузка файлов</h3>
                 <p className="text-sm text-white/60 mb-4">
-                  Загрузите необходимые файлы для дизайна. Все файлы автоматически загружаются в
-                  S3 хранилище.
+                  Загрузите необходимые файлы для дизайна. Все файлы автоматически загружаются в S3
+                  хранилище.
                 </p>
               </div>
 
