@@ -1,10 +1,12 @@
 export default function StructuredData() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://txd.bike'
+  
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'Store',
     name: 'TXD — Premium Vinyl Wraps for Scooters',
     description: 'Premium vinyl wrap cover-sets for multiple scooter models',
-    url: 'https://txd.bike',
+    url: baseUrl,
     telephone: '+84123456789',
     address: {
       '@type': 'PostalAddress',
@@ -27,7 +29,7 @@ export default function StructuredData() {
       },
     ],
     priceRange: '$$',
-    image: 'https://txd.bike/og-image.jpg',
+    image: `${baseUrl}/og-image.jpg`,
     sameAs: ['https://facebook.com/txdbike', 'https://instagram.com/txdbike'],
     aggregateRating: {
       '@type': 'AggregateRating',

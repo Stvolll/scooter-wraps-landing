@@ -4,3 +4,4 @@ Disallow: /admin/
 Disallow: /api/
 
 Sitemap: https://txd.bike/sitemap.xml
+Sitemap: https://decalwrap.co/sitemap.xml

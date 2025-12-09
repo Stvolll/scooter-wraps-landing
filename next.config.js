@@ -10,6 +10,8 @@ const nextConfig = {
     domains: [
       process.env.IMAGE_CDN_DOMAIN || 'your-cdn.example.com',
       'images.unsplash.com',
+      'txd.bike',
+      'decalwrap.co',
     ].filter(Boolean),
     remotePatterns: [
       {
@@ -20,6 +22,16 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '**.cloudfront.net',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'txd.bike',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'decalwrap.co',
         pathname: '/**',
       },
       ...(process.env.IMAGE_CDN_DOMAIN
