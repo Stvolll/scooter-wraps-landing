@@ -20,7 +20,14 @@ export async function POST(request: NextRequest) {
     const body: BookingRequest = await request.json()
 
     // Validate required fields
-    if (!body.name || !body.phone || !body.scooterModel || !body.date || !body.time || !body.workshopId) {
+    if (
+      !body.name ||
+      !body.phone ||
+      !body.scooterModel ||
+      !body.date ||
+      !body.time ||
+      !body.workshopId
+    ) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
@@ -30,10 +37,7 @@ export async function POST(request: NextRequest) {
     // Validate date
     const bookingDate = parseISO(body.date)
     if (!isValid(bookingDate)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid date format' },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, error: 'Invalid date format' }, { status: 400 })
     }
 
     // Check if date is in the past
@@ -46,14 +50,20 @@ export async function POST(request: NextRequest) {
 
     // Validate time slot
     const validTimeSlots = [
-      '08:00', '09:00', '10:00', '11:00',
-      '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00',
+      '08:00',
+      '09:00',
+      '10:00',
+      '11:00',
+      '13:00',
+      '14:00',
+      '15:00',
+      '16:00',
+      '17:00',
+      '18:00',
+      '19:00',
     ]
     if (!validTimeSlots.includes(body.time)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid time slot' },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, error: 'Invalid time slot' }, { status: 400 })
     }
 
     // In production, you would:
@@ -107,10 +117,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Booking error:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to create booking' },
-      { status: 500 }
-    )
+    return NextResponse.json({ success: false, error: 'Failed to create booking' }, { status: 500 })
   }
 }
-

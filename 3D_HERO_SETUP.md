@@ -5,6 +5,7 @@ This document explains the new full-screen 3D hero scene implementation using `<
 ## Overview
 
 The homepage features a full-screen 3D hero scene that:
+
 - Occupies the first 100vh (full viewport height)
 - Uses `<model-viewer>` web component for 3D rendering
 - Includes a soft-lit environment with HDRI lighting
@@ -54,6 +55,7 @@ The `@google/model-viewer` package is already added to `package.json`.
 ### 2. Add 3D Models
 
 Place your GLB model files in `/public/models/`:
+
 - `honda-vision.glb`
 - `honda-lead.glb` (already exists)
 - `honda-sh.glb`
@@ -63,6 +65,7 @@ Place your GLB model files in `/public/models/`:
 ### 3. Add Texture Images (Optional)
 
 If using texture-based design switching, place texture images in `/public/textures/{model-id}/`:
+
 - `/textures/vision/neon.png`
 - `/textures/vision/holo.png`
 - etc.
@@ -72,6 +75,7 @@ See `/public/textures/README.md` for details.
 ### 4. Add HDRI Environment (Optional)
 
 For soft studio lighting, add an HDRI file:
+
 - `/public/hdr/studio.hdr`
 
 See `/public/hdr/README.md` for sources and recommendations.
@@ -86,10 +90,10 @@ See `/public/hdr/README.md` for sources and recommendations.
 
 ```javascript
 designs: [
-  { 
-    id: '01', 
-    name: 'Neon Blade', 
-    variant: 'neon-blade'  // Use variant name
+  {
+    id: '01',
+    name: 'Neon Blade',
+    variant: 'neon-blade', // Use variant name
   },
 ]
 ```
@@ -107,10 +111,10 @@ designs: [
 
 ```javascript
 designs: [
-  { 
-    id: '01', 
-    name: 'Neon Blade', 
-    model: '/models/honda-lead-neon.glb'  // Different model file
+  {
+    id: '01',
+    name: 'Neon Blade',
+    model: '/models/honda-lead-neon.glb', // Different model file
   },
 ]
 ```
@@ -124,6 +128,7 @@ Texture swapping is more complex and may not work reliably with all model-viewer
 ## Configuration
 
 Edit `/config/scooters.js` to:
+
 - Add new scooter models
 - Add new designs for each model
 - Configure texture paths or variant names
@@ -134,6 +139,7 @@ Edit `/config/scooters.js` to:
 ### Parallax Scroll Effect
 
 The 3D scene scrolls out with a parallax effect:
+
 - Scene is fixed at 100vh
 - Transforms upward as user scrolls
 - Fades out when scroll passes trigger point (80% of viewport)
@@ -202,6 +208,3 @@ The 3D scene scrolls out with a parallax effect:
 - [model-viewer Documentation](https://modelviewer.dev/)
 - [glTF Specification](https://www.khronos.org/gltf/)
 - [Blender glTF Export Guide](https://docs.blender.org/manual/en/latest/addons/import_export/scene_gltf2.html)
-
-
-

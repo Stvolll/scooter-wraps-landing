@@ -5,34 +5,40 @@
 ### 1. **Дизайн причесан (Design Polish)**
 
 #### Улучшенный Glassmorphism
+
 - **Blur увеличен**: `blur(20px)` → `blur(24px) saturate(180%)`
 - **Прозрачность**: более тонкая настройка `rgba(255, 255, 255, 0.06)`
 - **Границы**: более заметные `1px` → `1.5px` с увеличенной прозрачностью
 - **Тени**: многослойные тени для глубины
   ```css
-  boxShadow: '0 12px 40px -8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08) inset'
+  boxshadow: '0 12px 40px -8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08) inset';
   ```
 
 #### Улучшенные Анимации
+
 - **Easing**: `cubic-bezier(0.4, 0, 0.2, 1)` для плавности
 - **Duration**: увеличена до `0.4s` - `0.5s` для премиальности
-- **Hover эффекты**: 
+- **Hover эффекты**:
   - `scale: 1.03` + `translateY: -4px` для карточек
   - Плавные переходы `transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1)`
 
 #### Улучшенные Карточки Дизайнов
+
 **Было**:
+
 - `scale: 1.02` при hover
 - Простая тень
 - Базовый blur
 
 **Стало**:
+
 - `scale: 1.03` + `translateY: -4px` при hover
 - Многослойные тени с inset эффектом
 - Усиленный blur + saturation
 - Более яркое свечение для выбранной карточки
 
 #### Консистентность
+
 - Все секции используют одинаковый стиль glassmorphism
 - Единые значения spacing и border-radius
 - Согласованные hover эффекты
@@ -42,15 +48,18 @@
 ### 2. **Глубина ссылок (Deep Linking)**
 
 #### Создана детальная страница дизайна
+
 **Route**: `/designs/[model]/[slug]`
 
-**Пример**: 
+**Пример**:
+
 - `/designs/lead/01` - Honda Lead, Design 01
 - `/designs/nvx/01` - Yamaha NVX, Design 01
 
 #### Структура страницы:
 
 **Header**:
+
 - Кнопка "Back to Gallery" с иконкой
 - Кнопка "Share"
 - Фиксированный хедер с blur эффектом
@@ -58,6 +67,7 @@
 **Main Content** (2 колонки):
 
 **Левая колонка - Галерея**:
+
 - Главное изображение (aspect-square)
 - Навигационные стрелки
 - Thumbnail grid (4 колонки)
@@ -65,6 +75,7 @@
 - Fallback для отсутствующих изображений
 
 **Правая колонка - Информация**:
+
 - Breadcrumb навигация
 - Название дизайна (h1, 4xl-5xl)
 - Модель скутера
@@ -78,10 +89,12 @@
 - Trust badges (Warranty, Free Install, Rating)
 
 **Дополнительные секции**:
+
 - **Specifications** - технические характеристики
 - **Related Designs** - похожие дизайны (grid 2-4 колонки)
 
 #### Функциональность:
+
 - ✅ Image carousel с навигацией
 - ✅ Responsive layout (mobile → desktop)
 - ✅ Framer Motion анимации
@@ -95,6 +108,7 @@
 ### 3. **Исправленные ссылки**
 
 #### DesignCard Component:
+
 ```typescript
 // Клик на изображение → обновляет 3D модель
 onImageClick={() => handleDesignSelect(design)}
@@ -105,6 +119,7 @@ onDetailsClick={() => handleViewDetails(design)}
 ```
 
 #### Навигация:
+
 - **Home** → `/`
 - **Design Detail** → `/designs/[model]/[slug]`
 - **Back to Gallery** → `router.back()` или `/`
@@ -115,6 +130,7 @@ onDetailsClick={() => handleViewDetails(design)}
 ### 4. **Плавные переходы**
 
 #### Page Transitions:
+
 ```css
 @keyframes fadeIn {
   from {
@@ -129,12 +145,14 @@ onDetailsClick={() => handleViewDetails(design)}
 ```
 
 #### Component Animations:
+
 - **Initial**: `opacity: 0, y: 30`
 - **Animate**: `opacity: 1, y: 0`
 - **Duration**: `0.4s - 0.6s`
 - **Stagger**: `delay: index * 0.05` для последовательного появления
 
 #### Hover States:
+
 - **Cards**: `scale: 1.03, translateY: -4px`
 - **Buttons**: `scale: 1.05`
 - **Duration**: `0.3s - 0.5s`
@@ -145,17 +163,20 @@ onDetailsClick={() => handleViewDetails(design)}
 ## Визуальные улучшения
 
 ### Цветовая схема:
+
 - **Primary**: `#00FFA9` (Neon Green)
 - **Secondary**: `#00D4FF` (Cyan)
 - **Background**: `rgba(0, 0, 0, 0.95)` → `rgba(10, 10, 10, 1)`
 - **Glass**: `rgba(255, 255, 255, 0.06)` с `blur(24px)`
 
 ### Typography:
+
 - **Headings**: Bold, 4xl-7xl
 - **Body**: Regular, white/70 opacity
 - **Price**: 5xl, bold, accent color
 
 ### Spacing:
+
 - **Section padding**: `py-20 md:py-32`
 - **Container**: `px-4 md:px-8 lg:px-16`
 - **Card padding**: `p-6`
@@ -166,18 +187,21 @@ onDetailsClick={() => handleViewDetails(design)}
 ## Технические детали
 
 ### Performance:
+
 - Lazy loading изображений
 - Optimized animations (GPU-accelerated)
 - Conditional rendering (`isMounted` checks)
 - Error boundaries
 
 ### Accessibility:
+
 - Semantic HTML
 - ARIA labels
 - Keyboard navigation
 - Focus states
 
 ### Mobile Optimization:
+
 - Touch-friendly targets (min 44x44px)
 - Responsive grid (1 → 2 → 4 columns)
 - Horizontal scroll для карточек
@@ -240,5 +264,3 @@ components/
 ✅ **Мобильная версия**: адаптивный дизайн для всех устройств
 
 **Сайт готов к продакшену!** 🚀
-
-

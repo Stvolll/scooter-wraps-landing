@@ -6,7 +6,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import ConditionalLayout from '@/components/ConditionalLayout'
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
   display: 'swap',
@@ -14,8 +14,10 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'TXD — Premium Vinyl Wraps for Scooters',
-  description: 'Premium vinyl wrap cover-sets for multiple scooter models. Explore ready-made styles or create your own custom design.',
-  keywords: 'vinyl wraps, scooter wraps, custom scooter design, premium vinyl, Honda Lead, Yamaha Nouvo, scooter customization',
+  description:
+    'Premium vinyl wrap cover-sets for multiple scooter models. Explore ready-made styles or create your own custom design.',
+  keywords:
+    'vinyl wraps, scooter wraps, custom scooter design, premium vinyl, Honda Lead, Yamaha Nouvo, scooter customization',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
   icons: {
     icon: '/favicon.svg',
@@ -24,7 +26,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'TXD — Premium Vinyl Wraps for Scooters',
-    description: 'Premium vinyl wrap cover-sets for multiple scooter models. Explore ready-made styles or create your own custom design.',
+    description:
+      'Premium vinyl wrap cover-sets for multiple scooter models. Explore ready-made styles or create your own custom design.',
     type: 'website',
     locale: 'en_US',
     alternateLocale: 'vi_VN',
@@ -42,11 +45,7 @@ export const viewport = {
   userScalable: false,
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.variable}>
       <head>

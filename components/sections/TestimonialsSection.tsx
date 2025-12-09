@@ -20,7 +20,7 @@ const testimonials = [
     model: 'Honda Lead',
     image: '/images/testimonials/customer-1.jpg',
     verified: true,
-    date: '2 weeks ago'
+    date: '2 weeks ago',
   },
   {
     id: 2,
@@ -32,7 +32,7 @@ const testimonials = [
     model: 'Yamaha NVX',
     image: '/images/testimonials/customer-2.jpg',
     verified: true,
-    date: '1 month ago'
+    date: '1 month ago',
   },
   {
     id: 3,
@@ -44,8 +44,8 @@ const testimonials = [
     model: 'Honda SH',
     image: '/images/testimonials/customer-3.jpg',
     verified: true,
-    date: '3 weeks ago'
-  }
+    date: '3 weeks ago',
+  },
 ]
 
 export default function TestimonialsSection() {
@@ -85,7 +85,7 @@ export default function TestimonialsSection() {
           {/* Overall rating */}
           <div className="flex items-center justify-center gap-4 mt-8">
             <div className="flex gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
+              {[1, 2, 3, 4, 5].map(star => (
                 <svg
                   key={star}
                   className="w-6 h-6 text-[#FFB800]"
@@ -119,7 +119,8 @@ export default function TestimonialsSection() {
                   backdropFilter: 'blur(24px) saturate(180%)',
                   WebkitBackdropFilter: 'blur(24px) saturate(180%)',
                   border: '1px solid rgba(255, 255, 255, 0.12)',
-                  boxShadow: '0 12px 40px -8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08) inset',
+                  boxShadow:
+                    '0 12px 40px -8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08) inset',
                 }}
               >
                 {/* Header */}
@@ -133,8 +134,16 @@ export default function TestimonialsSection() {
                     <div className="flex items-center gap-2">
                       <h4 className="font-semibold text-white">{testimonial.name}</h4>
                       {testimonial.verified && (
-                        <svg className="w-4 h-4 text-[#00D4FF]" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        <svg
+                          className="w-4 h-4 text-[#00D4FF]"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       )}
                     </div>
@@ -144,7 +153,7 @@ export default function TestimonialsSection() {
 
                 {/* Rating */}
                 <div className="flex gap-1 mb-3">
-                  {[1, 2, 3, 4, 5].map((star) => (
+                  {[1, 2, 3, 4, 5].map(star => (
                     <svg
                       key={star}
                       className={`w-4 h-4 ${star <= testimonial.rating ? 'text-[#FFB800]' : 'text-white/20'}`}
@@ -192,4 +201,3 @@ export default function TestimonialsSection() {
     </section>
   )
 }
-

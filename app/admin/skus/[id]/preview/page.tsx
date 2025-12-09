@@ -18,7 +18,7 @@ export default function SKUPreviewPage({ params }: { params: { id: string } }) {
     try {
       const res = await fetch(`/api/skus/${params.id}`)
       const data = await res.json()
-      
+
       if (data.success) {
         setSku(data.data)
       } else {
@@ -58,10 +58,7 @@ export default function SKUPreviewPage({ params }: { params: { id: string } }) {
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <button
-            onClick={() => router.back()}
-            className="text-blue-600 hover:underline mb-4"
-          >
+          <button onClick={() => router.back()} className="text-blue-600 hover:underline mb-4">
             ← Back
           </button>
           <h1 className="text-2xl font-bold text-gray-900">SKU Preview</h1>
@@ -72,5 +69,3 @@ export default function SKUPreviewPage({ params }: { params: { id: string } }) {
     </div>
   )
 }
-
-

@@ -2,7 +2,7 @@
 
 /**
  * LanguageSwitcher Component
- * 
+ *
  * Simple language switcher button (EN / VN).
  * Updates the language context when clicked.
  */
@@ -26,4 +26,3 @@ export default function LanguageSwitcher() {
     </button>
   )
 }
-

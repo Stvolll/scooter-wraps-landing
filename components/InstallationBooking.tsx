@@ -15,17 +15,34 @@ type Workshop = { id: string; name: string; address: string }
 const WORKSHOP_PARTNERS: Record<'vi' | 'en', Workshop[]> = {
   vi: [
     { id: '1', name: 'Xưởng chính - Trần Phú', address: '123 Đường Trần Phú, Nha Trang' },
-    { id: '2', name: 'Xưởng phụ - Nguyễn Thị Minh Khai', address: '456 Đường Nguyễn Thị Minh Khai, Nha Trang' },
+    {
+      id: '2',
+      name: 'Xưởng phụ - Nguyễn Thị Minh Khai',
+      address: '456 Đường Nguyễn Thị Minh Khai, Nha Trang',
+    },
   ],
   en: [
     { id: '1', name: 'Main workshop - Tran Phu', address: '123 Tran Phu Street, Nha Trang' },
-    { id: '2', name: 'Partner workshop - Nguyen Thi Minh Khai', address: '456 Nguyen Thi Minh Khai Street, Nha Trang' },
+    {
+      id: '2',
+      name: 'Partner workshop - Nguyen Thi Minh Khai',
+      address: '456 Nguyen Thi Minh Khai Street, Nha Trang',
+    },
   ],
 }
 
 const TIME_SLOTS = [
-  '08:00', '09:00', '10:00', '11:00',
-  '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00',
+  '08:00',
+  '09:00',
+  '10:00',
+  '11:00',
+  '13:00',
+  '14:00',
+  '15:00',
+  '16:00',
+  '17:00',
+  '18:00',
+  '19:00',
 ]
 
 export default function InstallationBooking({ onClose }: InstallationBookingProps) {
@@ -33,9 +50,7 @@ export default function InstallationBooking({ onClose }: InstallationBookingProp
   const workshopPartners = WORKSHOP_PARTNERS[lang]
   const [selectedDate, setSelectedDate] = useState<Date>(addDays(new Date(), 1))
   const [selectedTime, setSelectedTime] = useState<string>('')
-  const [selectedWorkshop, setSelectedWorkshop] = useState<string>(
-    workshopPartners[0]?.id ?? ''
-  )
+  const [selectedWorkshop, setSelectedWorkshop] = useState<string>(workshopPartners[0]?.id ?? '')
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -49,15 +64,15 @@ export default function InstallationBooking({ onClose }: InstallationBookingProp
   const availableDates = Array.from({ length: 30 }, (_, i) => addDays(new Date(), i + 1))
 
   const heading = lang === 'vi' ? 'Đặt lịch lắp đặt' : 'Book installation'
-  const selectWorkshopLabel =
-    lang === 'vi' ? 'Chọn xưởng lắp đặt' : 'Choose a workshop'
+  const selectWorkshopLabel = lang === 'vi' ? 'Chọn xưởng lắp đặt' : 'Choose a workshop'
   const selectDateLabel = lang === 'vi' ? 'Chọn ngày' : 'Select date'
   const selectTimeLabel = lang === 'vi' ? 'Chọn giờ' : 'Select time'
   const customerInfoLabel = lang === 'vi' ? 'Thông tin khách hàng' : 'Customer information'
   const namePlaceholder = lang === 'vi' ? 'Họ và tên *' : 'Full name *'
   const phonePlaceholder = lang === 'vi' ? 'Số điện thoại *' : 'Phone number *'
   const emailPlaceholder = lang === 'vi' ? 'Email' : 'Email'
-  const modelPlaceholder = lang === 'vi' ? 'Mẫu xe (VD: Honda Lead) *' : 'Scooter model (e.g. Honda Lead) *'
+  const modelPlaceholder =
+    lang === 'vi' ? 'Mẫu xe (VD: Honda Lead) *' : 'Scooter model (e.g. Honda Lead) *'
   const notesPlaceholder = lang === 'vi' ? 'Ghi chú thêm (tùy chọn)' : 'Additional notes (optional)'
   const confirmButton = lang === 'vi' ? 'Xác nhận đặt lịch' : 'Confirm booking'
   const submittingText = lang === 'vi' ? 'Đang xử lý...' : 'Processing...'
@@ -70,12 +85,14 @@ export default function InstallationBooking({ onClose }: InstallationBookingProp
     lang === 'vi'
       ? 'Có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ trực tiếp.'
       : 'Something went wrong. Please try again or contact us directly.'
-  const weekDays = lang === 'vi'
-    ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
-    : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-  const months = lang === 'vi'
-    ? ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12']
-    : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const weekDays =
+    lang === 'vi'
+      ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
+      : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const months =
+    lang === 'vi'
+      ? ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12']
+      : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   const formatDay = (date: Date) => weekDays[date.getDay()]
   const formatMonth = (date: Date) => months[date.getMonth()]
@@ -116,11 +133,11 @@ export default function InstallationBooking({ onClose }: InstallationBookingProp
     }
   }
 
-  const handleInputChange = (
-    field: 'name' | 'phone' | 'email' | 'scooterModel'
-  ) => (event: ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [field]: event.target.value })
-  }
+  const handleInputChange =
+    (field: 'name' | 'phone' | 'email' | 'scooterModel') =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setFormData({ ...formData, [field]: event.target.value })
+    }
 
   const handleNotesChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     setFormData({ ...formData, notes: event.target.value })
@@ -188,7 +205,7 @@ export default function InstallationBooking({ onClose }: InstallationBookingProp
                 {selectDateLabel}
               </label>
               <div className="grid grid-cols-5 md:grid-cols-7 gap-2">
-                {availableDates.slice(0, 14).map((date) => (
+                {availableDates.slice(0, 14).map(date => (
                   <button
                     key={date.toISOString()}
                     type="button"
@@ -218,7 +235,7 @@ export default function InstallationBooking({ onClose }: InstallationBookingProp
                 {selectTimeLabel}
               </label>
               <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
-                {TIME_SLOTS.map((time) => (
+                {TIME_SLOTS.map(time => (
                   <button
                     key={time}
                     type="button"
@@ -292,4 +309,3 @@ export default function InstallationBooking({ onClose }: InstallationBookingProp
     </AnimatePresence>
   )
 }
-

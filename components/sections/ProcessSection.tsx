@@ -23,29 +23,29 @@ export default function ProcessSection() {
       title: t('process.step1.title'),
       description: t('process.step1.description'),
       icon: '🎨',
-      duration: t('process.step1.duration')
+      duration: t('process.step1.duration'),
     },
     {
       number: '02',
       title: t('process.step2.title'),
       description: t('process.step2.description'),
       icon: '📅',
-      duration: t('process.step2.duration')
+      duration: t('process.step2.duration'),
     },
     {
       number: '03',
       title: t('process.step3.title'),
       description: t('process.step3.description'),
       icon: '🔧',
-      duration: t('process.step3.duration')
+      duration: t('process.step3.duration'),
     },
     {
       number: '04',
       title: t('process.step4.title'),
       description: t('process.step4.description'),
       icon: '🏍️',
-      duration: t('process.step4.duration')
-    }
+      duration: t('process.step4.duration'),
+    },
   ]
 
   return (
@@ -96,23 +96,17 @@ export default function ProcessSection() {
                 >
                   {/* Step number badge */}
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#00FFA9]/20 to-[#00D4FF]/20 border border-[#00FFA9]/30 mb-4">
-                    <span className="text-2xl font-bold text-[#00FFA9]">
-                      {step.number}
-                    </span>
+                    <span className="text-2xl font-bold text-[#00FFA9]">{step.number}</span>
                   </div>
 
                   {/* Icon */}
                   <div className="text-4xl mb-3">{step.icon}</div>
 
                   {/* Title */}
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    {step.title}
-                  </h3>
+                  <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
 
                   {/* Description */}
-                  <p className="text-sm text-white/60 leading-relaxed mb-4">
-                    {step.description}
-                  </p>
+                  <p className="text-sm text-white/60 leading-relaxed mb-4">{step.description}</p>
 
                   {/* Duration badge */}
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
@@ -124,8 +118,18 @@ export default function ProcessSection() {
                 {/* Connecting arrow (mobile/tablet) */}
                 {index < steps.length - 1 && (
                   <div className="lg:hidden flex justify-center my-4">
-                    <svg className="w-6 h-6 text-[#00FFA9]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    <svg
+                      className="w-6 h-6 text-[#00FFA9]/40"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                      />
                     </svg>
                   </div>
                 )}
@@ -156,4 +160,3 @@ export default function ProcessSection() {
     </section>
   )
 }
-

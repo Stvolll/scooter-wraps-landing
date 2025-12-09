@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, ChangeEvent } from 'react'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useTranslations } from '@/hooks/useTranslations'
 import { ShoppingCart, Filter, X } from 'lucide-react'
@@ -18,12 +19,60 @@ interface Design {
 
 // Mock data - in production, this would come from API
 const MOCK_DESIGNS: Design[] = [
-  { id: '1', modelId: 'honda-lead', name: 'Carbon Fiber Black', image: '/designs/carbon-black.jpg', price: 500000, isNew: false, style: 'sport' },
-  { id: '2', modelId: 'honda-lead', name: 'Racing Stripes Red', image: '/designs/racing-red.jpg', price: 600000, isNew: true, style: 'racing' },
-  { id: '3', modelId: 'honda-vision', name: 'Matte Blue', image: '/designs/matte-blue.jpg', price: 550000, isNew: false, style: 'elegant' },
-  { id: '4', modelId: 'yamaha-nvx', name: 'Camouflage Green', image: '/designs/camo-green.jpg', price: 650000, isNew: true, style: 'military' },
-  { id: '5', modelId: 'vinfast', name: 'Electric Blue', image: '/designs/electric-blue.jpg', price: 700000, isNew: false, style: 'futuristic' },
-  { id: '6', modelId: 'vespa', name: 'Vintage Cream', image: '/designs/vintage-cream.jpg', price: 800000, isNew: false, style: 'vintage' },
+  {
+    id: '1',
+    modelId: 'honda-lead',
+    name: 'Carbon Fiber Black',
+    image: '/designs/carbon-black.jpg',
+    price: 500000,
+    isNew: false,
+    style: 'sport',
+  },
+  {
+    id: '2',
+    modelId: 'honda-lead',
+    name: 'Racing Stripes Red',
+    image: '/designs/racing-red.jpg',
+    price: 600000,
+    isNew: true,
+    style: 'racing',
+  },
+  {
+    id: '3',
+    modelId: 'honda-vision',
+    name: 'Matte Blue',
+    image: '/designs/matte-blue.jpg',
+    price: 550000,
+    isNew: false,
+    style: 'elegant',
+  },
+  {
+    id: '4',
+    modelId: 'yamaha-nvx',
+    name: 'Camouflage Green',
+    image: '/designs/camo-green.jpg',
+    price: 650000,
+    isNew: true,
+    style: 'military',
+  },
+  {
+    id: '5',
+    modelId: 'vinfast',
+    name: 'Electric Blue',
+    image: '/designs/electric-blue.jpg',
+    price: 700000,
+    isNew: false,
+    style: 'futuristic',
+  },
+  {
+    id: '6',
+    modelId: 'vespa',
+    name: 'Vintage Cream',
+    image: '/designs/vintage-cream.jpg',
+    price: 800000,
+    isNew: false,
+    style: 'vintage',
+  },
 ]
 
 export default function DesignCatalog() {
@@ -38,45 +87,47 @@ export default function DesignCatalog() {
   const locale = lang === 'vi' ? 'vi-VN' : 'en-US'
 
   const filterLabel = lang === 'vi' ? 'Lọc:' : 'Filter:'
-  const modelOptions = lang === 'vi'
-    ? [
-        { value: 'all', label: 'Tất cả mẫu xe' },
-        { value: 'honda-lead', label: 'Honda Lead' },
-        { value: 'honda-vision', label: 'Honda Vision' },
-        { value: 'honda-airblade', label: 'Honda Air Blade' },
-        { value: 'yamaha-nvx', label: 'Yamaha NVX' },
-        { value: 'vinfast', label: 'VinFast' },
-        { value: 'vespa', label: 'Vespa' },
-      ]
-    : [
-        { value: 'all', label: 'All models' },
-        { value: 'honda-lead', label: 'Honda Lead' },
-        { value: 'honda-vision', label: 'Honda Vision' },
-        { value: 'honda-airblade', label: 'Honda Air Blade' },
-        { value: 'yamaha-nvx', label: 'Yamaha NVX' },
-        { value: 'vinfast', label: 'VinFast' },
-        { value: 'vespa', label: 'Vespa' },
-      ]
+  const modelOptions =
+    lang === 'vi'
+      ? [
+          { value: 'all', label: 'Tất cả mẫu xe' },
+          { value: 'honda-lead', label: 'Honda Lead' },
+          { value: 'honda-vision', label: 'Honda Vision' },
+          { value: 'honda-airblade', label: 'Honda Air Blade' },
+          { value: 'yamaha-nvx', label: 'Yamaha NVX' },
+          { value: 'vinfast', label: 'VinFast' },
+          { value: 'vespa', label: 'Vespa' },
+        ]
+      : [
+          { value: 'all', label: 'All models' },
+          { value: 'honda-lead', label: 'Honda Lead' },
+          { value: 'honda-vision', label: 'Honda Vision' },
+          { value: 'honda-airblade', label: 'Honda Air Blade' },
+          { value: 'yamaha-nvx', label: 'Yamaha NVX' },
+          { value: 'vinfast', label: 'VinFast' },
+          { value: 'vespa', label: 'Vespa' },
+        ]
 
-  const styleOptions = lang === 'vi'
-    ? [
-        { value: 'all', label: 'Tất cả phong cách' },
-        { value: 'sport', label: 'Thể thao' },
-        { value: 'racing', label: 'Đua xe' },
-        { value: 'elegant', label: 'Thanh lịch' },
-        { value: 'military', label: 'Quân đội' },
-        { value: 'futuristic', label: 'Tương lai' },
-        { value: 'vintage', label: 'Cổ điển' },
-      ]
-    : [
-        { value: 'all', label: 'All styles' },
-        { value: 'sport', label: 'Sport' },
-        { value: 'racing', label: 'Racing' },
-        { value: 'elegant', label: 'Elegant' },
-        { value: 'military', label: 'Military' },
-        { value: 'futuristic', label: 'Futuristic' },
-        { value: 'vintage', label: 'Vintage' },
-      ]
+  const styleOptions =
+    lang === 'vi'
+      ? [
+          { value: 'all', label: 'Tất cả phong cách' },
+          { value: 'sport', label: 'Thể thao' },
+          { value: 'racing', label: 'Đua xe' },
+          { value: 'elegant', label: 'Thanh lịch' },
+          { value: 'military', label: 'Quân đội' },
+          { value: 'futuristic', label: 'Tương lai' },
+          { value: 'vintage', label: 'Cổ điển' },
+        ]
+      : [
+          { value: 'all', label: 'All styles' },
+          { value: 'sport', label: 'Sport' },
+          { value: 'racing', label: 'Racing' },
+          { value: 'elegant', label: 'Elegant' },
+          { value: 'military', label: 'Military' },
+          { value: 'futuristic', label: 'Futuristic' },
+          { value: 'vintage', label: 'Vintage' },
+        ]
 
   const clearFiltersLabel = lang === 'vi' ? 'Xóa bộ lọc' : 'Clear filters'
   const newBadgeLabel = lang === 'vi' ? 'MỚI' : 'NEW'
@@ -151,7 +202,7 @@ export default function DesignCatalog() {
               onChange={handleModelChange}
               className="px-4 py-2 border border-gray-300 rounded-lg bg-white min-h-[44px]"
             >
-              {modelOptions.map((option) => (
+              {modelOptions.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -164,7 +215,7 @@ export default function DesignCatalog() {
               onChange={handleStyleChange}
               className="px-4 py-2 border border-gray-300 rounded-lg bg-white min-h-[44px]"
             >
-              {styleOptions.map((option) => (
+              {styleOptions.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -212,11 +263,12 @@ export default function DesignCatalog() {
               className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
             >
               <div className="relative aspect-square bg-gray-100">
-                <img
+                <Image
                   src={design.image}
                   alt={design.name}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                 />
                 {design.isNew && (
                   <div className="absolute top-4 left-4 bg-primary-600 text-white px-3 py-1 rounded-full text-sm font-semibold new-badge">
@@ -234,9 +286,7 @@ export default function DesignCatalog() {
                 </div>
               </div>
               <div className="p-4">
-                <h3 className="font-semibold text-lg text-gray-900 mb-2">
-                  {design.name}
-                </h3>
+                <h3 className="font-semibold text-lg text-gray-900 mb-2">{design.name}</h3>
                 <p className="text-primary-600 font-bold text-xl mb-4">
                   {formatPrice(design.price)}
                 </p>
@@ -252,9 +302,7 @@ export default function DesignCatalog() {
         </div>
 
         {filteredDesigns.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
-            {noResultsText}
-          </div>
+          <div className="text-center py-12 text-gray-500">{noResultsText}</div>
         )}
       </div>
 
@@ -270,4 +318,3 @@ export default function DesignCatalog() {
     </section>
   )
 }
-

@@ -73,11 +73,13 @@ scooter-wraps-landing/
 Returns list of all available scooter models.
 
 **Request:**
+
 ```
 GET /api/models
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -113,17 +115,20 @@ GET /api/models
 Returns filtered list of designs.
 
 **Request:**
+
 ```
 GET /api/designs?model=honda-lead&style=sport&new=true&search=carbon
 ```
 
 **Query Parameters:**
+
 - `model` (optional): Filter by model ID (e.g., "honda-lead", "all")
 - `style` (optional): Filter by style (e.g., "sport", "racing", "all")
 - `new` (optional): Show only new designs ("true" or "false")
 - `search` (optional): Search term for name, description, or tags
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -160,12 +165,14 @@ GET /api/designs?model=honda-lead&style=sport&new=true&search=carbon
 Processes checkout and creates order.
 
 **Request:**
+
 ```
 POST /api/checkout
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "designId": "1",
@@ -180,6 +187,7 @@ Content-Type: application/json
 ```
 
 **Payment Methods:**
+
 - `cod`: Cash on Delivery
 - `momo`: MoMo Wallet
 - `zalopay`: ZaloPay
@@ -187,10 +195,12 @@ Content-Type: application/json
 - `card`: Credit/Debit Card
 
 **Delivery Options:**
+
 - `shipping`: Shipping only
 - `shipping-install`: Shipping + Installation service
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -201,6 +211,7 @@ Content-Type: application/json
 ```
 
 **Response (for e-wallets):**
+
 ```json
 {
   "success": true,
@@ -217,12 +228,14 @@ Content-Type: application/json
 Creates installation booking appointment.
 
 **Request:**
+
 ```
 POST /api/book-installation
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "name": "Nguyễn Văn A",
@@ -238,14 +251,17 @@ Content-Type: application/json
 ```
 
 **Time Slots:**
+
 - `08:00`, `09:00`, `10:00`, `11:00`
 - `13:00`, `14:00`, `15:00`, `16:00`, `17:00`, `18:00`, `19:00`
 
 **Workshop IDs:**
+
 - `1`: Xưởng chính - Trần Phú
 - `2`: Xưởng phụ - Nguyễn Thị Minh Khai
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -261,6 +277,7 @@ Content-Type: application/json
 ```
 
 **Error Response:**
+
 ```json
 {
   "success": false,
@@ -273,6 +290,7 @@ Content-Type: application/json
 ## Data Models
 
 ### Model
+
 ```typescript
 interface Model {
   id: string
@@ -286,6 +304,7 @@ interface Model {
 ```
 
 ### Design
+
 ```typescript
 interface Design {
   id: string
@@ -303,6 +322,7 @@ interface Design {
 ```
 
 ### Order
+
 ```typescript
 interface Order {
   id: string
@@ -320,6 +340,7 @@ interface Order {
 ```
 
 ### Booking
+
 ```typescript
 interface Booking {
   id: string
@@ -349,6 +370,7 @@ All API endpoints return consistent error responses:
 ```
 
 **HTTP Status Codes:**
+
 - `200`: Success
 - `400`: Bad Request (missing/invalid parameters)
 - `409`: Conflict (e.g., time slot already booked)
@@ -366,6 +388,7 @@ All API endpoints return consistent error responses:
 ### Database
 
 In production, replace mock data with:
+
 - PostgreSQL/MongoDB for orders and bookings
 - Redis for caching
 - File storage (S3, Cloudinary) for images and 3D models
@@ -373,6 +396,6 @@ In production, replace mock data with:
 ### Email/SMS
 
 Integrate with:
+
 - Email: SendGrid, Mailgun, or AWS SES
 - SMS: Twilio, AWS SNS, or Vietnamese SMS providers
-

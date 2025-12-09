@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, ChangeEvent, FormEvent, MouseEvent } from 'react'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, CreditCard, Banknote, Smartphone } from 'lucide-react'
 import { useTranslations } from '@/hooks/useTranslations'
@@ -36,11 +37,9 @@ export default function CheckoutModal({ design, onClose }: CheckoutModalProps) {
   const namePlaceholder = lang === 'vi' ? 'Họ và tên *' : 'Full name *'
   const phonePlaceholder = lang === 'vi' ? 'Số điện thoại *' : 'Phone number *'
   const emailPlaceholder = 'Email'
-  const addressPlaceholder =
-    lang === 'vi' ? 'Địa chỉ giao hàng *' : 'Shipping address *'
+  const addressPlaceholder = lang === 'vi' ? 'Địa chỉ giao hàng *' : 'Shipping address *'
   const deliveryTitle = lang === 'vi' ? 'Tùy chọn giao hàng' : 'Delivery options'
-  const deliveryShippingTitle =
-    lang === 'vi' ? 'Chỉ giao hàng' : 'Shipping only'
+  const deliveryShippingTitle = lang === 'vi' ? 'Chỉ giao hàng' : 'Shipping only'
   const deliveryShippingDesc =
     lang === 'vi' ? 'Nhận hàng tại địa chỉ của bạn' : 'Receive the kit at your address'
   const deliveryInstallTitle =
@@ -107,11 +106,11 @@ export default function CheckoutModal({ design, onClose }: CheckoutModalProps) {
     }
   }
 
-  const handleFieldChange = (
-    field: 'name' | 'phone' | 'email' | 'address'
-  ) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [field]: event.target.value })
-  }
+  const handleFieldChange =
+    (field: 'name' | 'phone' | 'email' | 'address') =>
+    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setFormData({ ...formData, [field]: event.target.value })
+    }
 
   return (
     <AnimatePresence>
@@ -143,11 +142,15 @@ export default function CheckoutModal({ design, onClose }: CheckoutModalProps) {
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* Design Summary */}
             <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-              <img
-                src={design.image}
-                alt={design.name}
-                className="w-20 h-20 object-cover rounded-lg"
-              />
+              <div className="relative w-20 h-20">
+                <Image
+                  src={design.image}
+                  alt={design.name}
+                  fill
+                  className="object-cover rounded-lg"
+                  sizes="80px"
+                />
+              </div>
               <div>
                 <h3 className="font-semibold text-lg">{design.name}</h3>
                 <p className="text-primary-600 font-bold">{formatPrice(design.price)}</p>
@@ -228,7 +231,7 @@ export default function CheckoutModal({ design, onClose }: CheckoutModalProps) {
             {/* Payment Method */}
             <div className="space-y-3">
               <h3 className="font-semibold text-lg">{paymentTitle}</h3>
-              
+
               <label className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-primary-500 transition-colors">
                 <input
                   type="radio"
@@ -327,4 +330,3 @@ export default function CheckoutModal({ design, onClose }: CheckoutModalProps) {
     </AnimatePresence>
   )
 }
-

@@ -1,6 +1,6 @@
 /**
  * Type declarations for @google/model-viewer web component
- * 
+ *
  * This allows TypeScript to recognize <model-viewer> as a valid JSX element.
  */
 
@@ -45,8 +45,16 @@ interface ModelViewerElement extends HTMLElement {
   model?: any
   scene?: any
   renderer?: any
-  addEventListener(type: 'load', listener: (event: Event) => void, options?: boolean | AddEventListenerOptions): void
-  removeEventListener(type: 'load', listener: (event: Event) => void, options?: boolean | EventListenerOptions): void
+  addEventListener(
+    type: 'load',
+    listener: (event: Event) => void,
+    options?: boolean | AddEventListenerOptions
+  ): void
+  removeEventListener(
+    type: 'load',
+    listener: (event: Event) => void,
+    options?: boolean | EventListenerOptions
+  ): void
   dispatchEvent(event: Event): boolean
 }
 
@@ -57,6 +65,3 @@ declare global {
 }
 
 export {}
-
-
-

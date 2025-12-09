@@ -14,7 +14,8 @@ export default function MaintenancePage() {
           {t('maintenance.title') || 'Site Under Maintenance'}
         </h1>
         <p className="text-lg text-white/70 mb-8">
-          {t('maintenance.message') || 'We\'re currently performing scheduled maintenance. Please check back soon.'}
+          {t('maintenance.message') ||
+            "We're currently performing scheduled maintenance. Please check back soon."}
         </p>
         <Link
           href="/"
@@ -26,4 +27,3 @@ export default function MaintenancePage() {
     </div>
   )
 }
-

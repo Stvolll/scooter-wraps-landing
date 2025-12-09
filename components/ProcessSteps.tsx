@@ -2,7 +2,7 @@
 
 /**
  * ProcessSteps Component
- * 
+ *
  * Displays the production pipeline in a left-to-right step-by-step layout.
  * Shows 5 steps: Creative Upload → Prepayment → Printing → Delivery → Installation
  */
@@ -32,9 +32,7 @@ export default function ProcessSteps() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-            {t('process.title')}
-          </h2>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">{t('process.title')}</h2>
         </motion.div>
 
         {/* Steps Grid */}
@@ -68,12 +66,8 @@ export default function ProcessSteps() {
                   </div>
 
                   {/* Step Content */}
-                  <h3 className="text-xl font-bold mb-2">
-                    {t(`process.${step.key}.title`)}
-                  </h3>
-                  <p className="text-neutral-600 text-sm">
-                    {t(`process.${step.key}.description`)}
-                  </p>
+                  <h3 className="text-xl font-bold mb-2">{t(`process.${step.key}.title`)}</h3>
+                  <p className="text-neutral-600 text-sm">{t(`process.${step.key}.description`)}</p>
                 </div>
               </motion.div>
             )
@@ -83,4 +77,3 @@ export default function ProcessSteps() {
     </section>
   )
 }
-

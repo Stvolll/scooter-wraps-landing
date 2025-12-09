@@ -48,7 +48,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
           className="relative w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto p-8 rounded-3xl bg-white/5 border border-white/10"
         >
           <div className="mb-6">
@@ -71,7 +71,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
                   required
                   className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:border-[#00FFA9] focus:bg-white/10 transition-all"
                   placeholder={t('contact.name')}
@@ -85,7 +85,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 <input
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={e => setFormData({ ...formData, email: e.target.value })}
                   required
                   className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:border-[#00FFA9] focus:bg-white/10 transition-all"
                   placeholder="your@email.com"
@@ -98,12 +98,18 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 </label>
                 <select
                   value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                  onChange={e => setFormData({ ...formData, type: e.target.value as any })}
                   className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white focus:border-[#00FFA9] focus:bg-white/10 transition-all"
                 >
-                  <option value="investor" className="bg-black">{t('contact.typeInvestor')}</option>
-                  <option value="preorder" className="bg-black">{t('contact.typePreorder')}</option>
-                  <option value="partnership" className="bg-black">{t('contact.typePartnership')}</option>
+                  <option value="investor" className="bg-black">
+                    {t('contact.typeInvestor')}
+                  </option>
+                  <option value="preorder" className="bg-black">
+                    {t('contact.typePreorder')}
+                  </option>
+                  <option value="partnership" className="bg-black">
+                    {t('contact.typePartnership')}
+                  </option>
                 </select>
               </div>
 
@@ -113,7 +119,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 </label>
                 <textarea
                   value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  onChange={e => setFormData({ ...formData, message: e.target.value })}
                   required
                   rows={6}
                   className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:border-[#00FFA9] focus:bg-white/10 transition-all resize-none"

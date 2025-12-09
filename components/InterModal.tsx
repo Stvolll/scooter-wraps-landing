@@ -46,7 +46,7 @@ export default function InterModal({ isOpen, onClose }: InterModalProps) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
           className="relative w-full max-w-md mx-4 p-8 rounded-3xl bg-white/5 border border-white/10"
         >
           <div className="mb-6">
@@ -62,7 +62,7 @@ export default function InterModal({ isOpen, onClose }: InterModalProps) {
               <input
                 type="text"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={e => setUsername(e.target.value)}
                 required
                 className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:border-[#00FFA9] focus:bg-white/10 transition-all"
                 placeholder={t('inter.usernamePlaceholder')}
@@ -76,7 +76,7 @@ export default function InterModal({ isOpen, onClose }: InterModalProps) {
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
                 required
                 className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:border-[#00FFA9] focus:bg-white/10 transition-all"
                 placeholder={t('inter.passwordPlaceholder')}

@@ -24,4 +24,3 @@ export default function ConditionalLayout({ children }: ConditionalLayoutProps) 
   // Скрытие происходит через CSS класс на body
   return <>{children}</>
 }
-

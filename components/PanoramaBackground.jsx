@@ -2,23 +2,23 @@
 
 /**
  * PanoramaBackground Component
- * 
+ *
  * Renders a 360° equirectangular panorama background using Three.js
  * The panorama rotates in sync with the scooter model rotation
- * 
+ *
  * Usage:
- *   <PanoramaBackground 
- *     panoramaUrl="/images/panorama-360.jpg" 
+ *   <PanoramaBackground
+ *     panoramaUrl="/images/panorama-360.jpg"
  *     rotation={rotationAngle}
  *   />
  */
 
 import { useEffect, useRef, useState } from 'react'
 
-export default function PanoramaBackground({ 
+export default function PanoramaBackground({
   panoramaUrl = '/images/studio-panorama.png',
   rotation = 0,
-  className = ''
+  className = '',
 }) {
   const canvasRef = useRef(null)
   const sceneRef = useRef(null)
@@ -27,7 +27,7 @@ export default function PanoramaBackground({
   const sphereRef = useRef(null)
   const animationFrameRef = useRef(null)
   const [isLoaded, setIsLoaded] = useState(false)
-  
+
   console.log('🎨 PanoramaBackground render, panoramaUrl:', panoramaUrl, 'rotation:', rotation)
 
   useEffect(() => {
@@ -35,11 +35,11 @@ export default function PanoramaBackground({
       console.log('⚠️ PanoramaBackground: window undefined, skipping')
       return
     }
-    
+
     console.log('🚀 PanoramaBackground: Starting Three.js initialization')
 
     // Dynamically import Three.js only on client
-    import('three').then((THREE) => {
+    import('three').then(THREE => {
       console.log('✅ Three.js loaded successfully')
       const canvas = canvasRef.current
       if (!canvas) return
@@ -59,10 +59,10 @@ export default function PanoramaBackground({
       cameraRef.current = camera
 
       // Renderer setup
-      const renderer = new THREE.WebGLRenderer({ 
-        canvas, 
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
         alpha: true,
-        antialias: true 
+        antialias: true,
       })
       renderer.setSize(canvas.clientWidth, canvas.clientHeight)
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -71,12 +71,12 @@ export default function PanoramaBackground({
       // Load panorama texture
       const textureLoader = new THREE.TextureLoader()
       console.log('🔄 Loading panorama from:', panoramaUrl)
-      
+
       textureLoader.load(
         panoramaUrl,
-        (texture) => {
+        texture => {
           console.log('✅ Panorama texture loaded successfully')
-          
+
           // Create sphere geometry (inverted normals to see inside)
           const geometry = new THREE.SphereGeometry(500, 60, 40)
           geometry.scale(-1, 1, 1) // Invert to see inside
@@ -95,15 +95,18 @@ export default function PanoramaBackground({
           setIsLoaded(true)
 
           console.log('🎨 Panorama sphere added to scene, rendering...')
-          
+
           // Initial render
           renderer.render(scene, camera)
           console.log('✅ Panorama initial render complete')
         },
-        (progress) => {
-          console.log('📦 Loading panorama:', Math.round((progress.loaded / progress.total) * 100) + '%')
+        progress => {
+          console.log(
+            '📦 Loading panorama:',
+            Math.round((progress.loaded / progress.total) * 100) + '%'
+          )
         },
-        (error) => {
+        error => {
           console.error('❌ Failed to load panorama:', error)
           console.error('Path:', panoramaUrl)
         }
@@ -114,7 +117,7 @@ export default function PanoramaBackground({
         if (!canvas) return
         const width = canvas.clientWidth
         const height = canvas.clientHeight
-        
+
         camera.aspect = width / height
         camera.updateProjectionMatrix()
         renderer.setSize(width, height)
@@ -142,7 +145,8 @@ export default function PanoramaBackground({
 
   // Update rotation when prop changes
   useEffect(() => {
-    if (!sphereRef.current || !rendererRef.current || !cameraRef.current || !sceneRef.current) return
+    if (!sphereRef.current || !rendererRef.current || !cameraRef.current || !sceneRef.current)
+      return
 
     // Rotate the panorama sphere
     sphereRef.current.rotation.y = rotation
@@ -167,4 +171,3 @@ export default function PanoramaBackground({
     />
   )
 }
-

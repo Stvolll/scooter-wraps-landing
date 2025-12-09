@@ -15,17 +15,17 @@ if (!initialized) {
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    
+
     const filters: SKUFilterParams = {
       category_id: searchParams.get('category_id') || undefined,
-      status: searchParams.get('status') as any || undefined,
+      status: (searchParams.get('status') as any) || undefined,
       min_price: searchParams.get('min_price') ? Number(searchParams.get('min_price')) : undefined,
       max_price: searchParams.get('max_price') ? Number(searchParams.get('max_price')) : undefined,
       search: searchParams.get('search') || undefined,
     }
-    
+
     const skus = skuStore.findAll(filters)
-    
+
     return NextResponse.json({
       success: true,
       data: skus,
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
+
     // Validate required fields
     if (!body.code || !body.title || !body.description || body.price === undefined) {
       return NextResponse.json(
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-    
+
     const data: CreateSKUDto = {
       code: body.code,
       title: body.title,
@@ -63,13 +63,16 @@ export async function POST(request: NextRequest) {
       slug: body.slug,
       status: body.status || 'draft',
     }
-    
+
     const sku = skuStore.create(data)
-    
-    return NextResponse.json({
-      success: true,
-      data: sku,
-    }, { status: 201 })
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: sku,
+      },
+      { status: 201 }
+    )
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to create SKU' },
@@ -77,4 +80,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

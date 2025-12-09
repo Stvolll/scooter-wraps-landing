@@ -3,6 +3,7 @@
 ## ✅ Completed Features
 
 ### 1. Full-Screen 3D Hero Scene
+
 - ✅ 100vh full-screen 3D scene using `<model-viewer>` web component
 - ✅ Soft-lit environment with HDRI support
 - ✅ Ground plane with subtle reflection
@@ -10,12 +11,14 @@
 - ✅ Static environment that loads instantly
 
 ### 2. Parallax Scroll Effect
+
 - ✅ Scene scrolls out with parallax effect
 - ✅ Fixed at 100vh until scroll trigger (80% viewport)
 - ✅ Smooth transition to white content block
 - ✅ No page reload, no scroll reset
 
 ### 3. Model Switching
+
 - ✅ Top menu with 5 scooter models:
   - Honda Vision
   - Honda Lead
@@ -27,6 +30,7 @@
 - ✅ Scroll position preserved
 
 ### 4. Design Switching
+
 - ✅ Product cards below the scene
 - ✅ Click to apply design to 3D model
 - ✅ Supports material variants (recommended)
@@ -34,6 +38,7 @@
 - ✅ Visual feedback (ring highlight) on selection
 
 ### 5. Tech Stack
+
 - ✅ Next.js (latest)
 - ✅ React
 - ✅ TailwindCSS
@@ -63,6 +68,7 @@ scooter-wraps-landing/
 ## Key Components
 
 ### `app/page.tsx`
+
 - Main homepage component
 - Manages model and design state
 - Handles scroll parallax effect
@@ -70,6 +76,7 @@ scooter-wraps-landing/
 - Renders product grid
 
 ### `components/ScooterViewer.jsx`
+
 - Wraps `<model-viewer>` web component
 - Handles model loading
 - Supports material variant switching
@@ -77,6 +84,7 @@ scooter-wraps-landing/
 - Configures environment and lighting
 
 ### `config/scooters.js`
+
 - Centralized configuration for all models
 - Defines designs for each model
 - Provides helper functions for model access
@@ -84,31 +92,31 @@ scooter-wraps-landing/
 ## Design Switching Methods
 
 ### Method 1: Material Variants (Recommended)
+
 ```javascript
-designs: [
-  { id: '01', name: 'Neon Blade', variant: 'neon-blade' }
-]
+designs: [{ id: '01', name: 'Neon Blade', variant: 'neon-blade' }]
 ```
+
 - Export GLB with material variants
 - Use `variant-name` attribute in model-viewer
 - Most performant and reliable
 
 ### Method 2: Separate Model Files
+
 ```javascript
-designs: [
-  { id: '01', name: 'Neon Blade', model: '/models/lead-neon.glb' }
-]
+designs: [{ id: '01', name: 'Neon Blade', model: '/models/lead-neon.glb' }]
 ```
+
 - Create separate GLB per design
 - Update modelPath when design changes
 - Simple but requires more storage
 
 ### Method 3: Texture Swapping
+
 ```javascript
-designs: [
-  { id: '01', name: 'Neon Blade', texture: '/textures/lead/neon.png' }
-]
+designs: [{ id: '01', name: 'Neon Blade', texture: '/textures/lead/neon.png' }]
 ```
+
 - More complex implementation
 - May not work reliably with all versions
 - Requires accessing Three.js scene
@@ -157,16 +165,15 @@ designs: [
 ## Troubleshooting
 
 If models don't load:
+
 1. Check file paths in `config/scooters.js`
 2. Verify GLB files exist in `/public/models/`
 3. Check browser console for errors
 4. Ensure model-viewer script loads (check Network tab)
 
 If designs don't switch:
+
 1. Verify material variants exist in GLB (if using Method 1)
 2. Check texture file paths (if using Method 3)
 3. Check browser console for errors
 4. Try Method 2 (separate files) as fallback
-
-
-

@@ -1,0 +1,194 @@
+{
+  "honda lead/honda-lead-3": {
+    "original": "/images/designs/honda lead/honda-lead-3.jpg",
+    "format": "webp",
+    "versions": {
+      "mobile": {
+        "width": 640,
+        "height": 640,
+        "path": "/images/designs/optimized/honda lead/honda-lead-3.mobile.webp",
+        "size": 23008
+      },
+      "tablet": {
+        "width": 1024,
+        "height": 1024,
+        "path": "/images/designs/optimized/honda lead/honda-lead-3.tablet.webp",
+        "size": 43426
+      },
+      "desktop": {
+        "width": 1920,
+        "height": 1920,
+        "path": "/images/designs/optimized/honda lead/honda-lead-3.desktop.webp",
+        "size": 111412
+      },
+      "2x": {
+        "width": 3840,
+        "height": 3840,
+        "path": "/images/designs/optimized/honda lead/honda-lead-3.2x.webp",
+        "size": 126392
+      }
+    },
+    "srcset": "/images/designs/optimized/honda lead/honda-lead-3.mobile.webp 640w, /images/designs/optimized/honda lead/honda-lead-3.tablet.webp 1024w, /images/designs/optimized/honda lead/honda-lead-3.desktop.webp 1920w, /images/designs/optimized/honda lead/honda-lead-3.2x.webp 3840w",
+    "sizes": "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+  },
+  "honda lead/honda-lead-2": {
+    "original": "/images/designs/honda lead/honda-lead-2.jpg",
+    "format": "webp",
+    "versions": {
+      "mobile": {
+        "width": 640,
+        "height": 640,
+        "path": "/images/designs/optimized/honda lead/honda-lead-2.mobile.webp",
+        "size": 59438
+      },
+      "tablet": {
+        "width": 1024,
+        "height": 1024,
+        "path": "/images/designs/optimized/honda lead/honda-lead-2.tablet.webp",
+        "size": 103920
+      },
+      "desktop": {
+        "width": 1920,
+        "height": 1920,
+        "path": "/images/designs/optimized/honda lead/honda-lead-2.desktop.webp",
+        "size": 232374
+      },
+      "2x": {
+        "width": 3840,
+        "height": 3840,
+        "path": "/images/designs/optimized/honda lead/honda-lead-2.2x.webp",
+        "size": 256702
+      }
+    },
+    "srcset": "/images/designs/optimized/honda lead/honda-lead-2.mobile.webp 640w, /images/designs/optimized/honda lead/honda-lead-2.tablet.webp 1024w, /images/designs/optimized/honda lead/honda-lead-2.desktop.webp 1920w, /images/designs/optimized/honda lead/honda-lead-2.2x.webp 3840w",
+    "sizes": "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+  },
+  "honda lead/honda-lead-1": {
+    "original": "/images/designs/honda lead/honda-lead-1.jpg",
+    "format": "webp",
+    "versions": {
+      "mobile": {
+        "width": 640,
+        "height": 640,
+        "path": "/images/designs/optimized/honda lead/honda-lead-1.mobile.webp",
+        "size": 50276
+      },
+      "tablet": {
+        "width": 1024,
+        "height": 1024,
+        "path": "/images/designs/optimized/honda lead/honda-lead-1.tablet.webp",
+        "size": 101132
+      },
+      "desktop": {
+        "width": 1920,
+        "height": 1920,
+        "path": "/images/designs/optimized/honda lead/honda-lead-1.desktop.webp",
+        "size": 276066
+      },
+      "2x": {
+        "width": 3840,
+        "height": 3840,
+        "path": "/images/designs/optimized/honda lead/honda-lead-1.2x.webp",
+        "size": 333758
+      }
+    },
+    "srcset": "/images/designs/optimized/honda lead/honda-lead-1.mobile.webp 640w, /images/designs/optimized/honda lead/honda-lead-1.tablet.webp 1024w, /images/designs/optimized/honda lead/honda-lead-1.desktop.webp 1920w, /images/designs/optimized/honda lead/honda-lead-1.2x.webp 3840w",
+    "sizes": "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+  },
+  "honda lead/honda-lead-0": {
+    "original": "/images/designs/honda lead/honda-lead-0.jpg",
+    "format": "webp",
+    "versions": {
+      "mobile": {
+        "width": 640,
+        "height": 640,
+        "path": "/images/designs/optimized/honda lead/honda-lead-0.mobile.webp",
+        "size": 53514
+      },
+      "tablet": {
+        "width": 1024,
+        "height": 1024,
+        "path": "/images/designs/optimized/honda lead/honda-lead-0.tablet.webp",
+        "size": 108608
+      },
+      "desktop": {
+        "width": 1920,
+        "height": 1920,
+        "path": "/images/designs/optimized/honda lead/honda-lead-0.desktop.webp",
+        "size": 263024
+      },
+      "2x": {
+        "width": 3840,
+        "height": 3840,
+        "path": "/images/designs/optimized/honda lead/honda-lead-0.2x.webp",
+        "size": 292662
+      }
+    },
+    "srcset": "/images/designs/optimized/honda lead/honda-lead-0.mobile.webp 640w, /images/designs/optimized/honda lead/honda-lead-0.tablet.webp 1024w, /images/designs/optimized/honda lead/honda-lead-0.desktop.webp 1920w, /images/designs/optimized/honda lead/honda-lead-0.2x.webp 3840w",
+    "sizes": "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+  },
+  "honda lead/honda-lead-5": {
+    "original": "/images/designs/honda lead/honda-lead-5.jpg",
+    "format": "webp",
+    "versions": {
+      "mobile": {
+        "width": 640,
+        "height": 640,
+        "path": "/images/designs/optimized/honda lead/honda-lead-5.mobile.webp",
+        "size": 34672
+      },
+      "tablet": {
+        "width": 1024,
+        "height": 1024,
+        "path": "/images/designs/optimized/honda lead/honda-lead-5.tablet.webp",
+        "size": 77146
+      },
+      "desktop": {
+        "width": 1920,
+        "height": 1920,
+        "path": "/images/designs/optimized/honda lead/honda-lead-5.desktop.webp",
+        "size": 210144
+      },
+      "2x": {
+        "width": 3840,
+        "height": 3840,
+        "path": "/images/designs/optimized/honda lead/honda-lead-5.2x.webp",
+        "size": 240900
+      }
+    },
+    "srcset": "/images/designs/optimized/honda lead/honda-lead-5.mobile.webp 640w, /images/designs/optimized/honda lead/honda-lead-5.tablet.webp 1024w, /images/designs/optimized/honda lead/honda-lead-5.desktop.webp 1920w, /images/designs/optimized/honda lead/honda-lead-5.2x.webp 3840w",
+    "sizes": "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+  },
+  "honda lead/honda-lead-4": {
+    "original": "/images/designs/honda lead/honda-lead-4.jpg",
+    "format": "webp",
+    "versions": {
+      "mobile": {
+        "width": 640,
+        "height": 640,
+        "path": "/images/designs/optimized/honda lead/honda-lead-4.mobile.webp",
+        "size": 79182
+      },
+      "tablet": {
+        "width": 1024,
+        "height": 1024,
+        "path": "/images/designs/optimized/honda lead/honda-lead-4.tablet.webp",
+        "size": 177448
+      },
+      "desktop": {
+        "width": 1920,
+        "height": 1920,
+        "path": "/images/designs/optimized/honda lead/honda-lead-4.desktop.webp",
+        "size": 471002
+      },
+      "2x": {
+        "width": 3840,
+        "height": 3840,
+        "path": "/images/designs/optimized/honda lead/honda-lead-4.2x.webp",
+        "size": 538902
+      }
+    },
+    "srcset": "/images/designs/optimized/honda lead/honda-lead-4.mobile.webp 640w, /images/designs/optimized/honda lead/honda-lead-4.tablet.webp 1024w, /images/designs/optimized/honda lead/honda-lead-4.desktop.webp 1920w, /images/designs/optimized/honda lead/honda-lead-4.2x.webp 3840w",
+    "sizes": "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+  }
+}

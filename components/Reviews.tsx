@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Star, Quote } from 'lucide-react'
 import { useTranslations } from '@/hooks/useTranslations'
@@ -150,9 +151,10 @@ export default function Reviews() {
     lang === 'vi'
       ? 'Hơn 1000+ khách hàng hài lòng với dịch vụ của chúng tôi'
       : 'Trusted by 1,000+ happy riders across Vietnam'
-  const trustLabels = lang === 'vi'
-    ? ['Khách hàng', 'Đánh giá trung bình', 'Bảo hành', 'Hài lòng']
-    : ['Customers', 'Average rating', 'Warranty', 'Satisfaction']
+  const trustLabels =
+    lang === 'vi'
+      ? ['Khách hàng', 'Đánh giá trung bình', 'Bảo hành', 'Hài lòng']
+      : ['Customers', 'Average rating', 'Warranty', 'Satisfaction']
   const dateLocale = lang === 'vi' ? 'vi-VN' : 'en-US'
 
   return (
@@ -164,12 +166,8 @@ export default function Reviews() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {heading}
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            {subheading}
-          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{heading}</h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">{subheading}</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -201,7 +199,9 @@ export default function Reviews() {
                   <Star
                     key={i}
                     size={16}
-                    className={i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}
+                    className={
+                      i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                    }
                   />
                 ))}
               </div>
@@ -210,12 +210,13 @@ export default function Reviews() {
               <p className="text-gray-700 mb-4 italic">{review.comment}</p>
 
               {review.image && (
-                <div className="mt-4 rounded-lg overflow-hidden">
-                  <img
+                <div className="mt-4 relative w-full h-32 rounded-lg overflow-hidden">
+                  <Image
                     src={review.image}
                     alt={`Review from ${review.name}`}
-                    className="w-full h-32 object-cover"
-                    loading="lazy"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 600px"
                   />
                 </div>
               )}
@@ -255,4 +256,3 @@ export default function Reviews() {
     </section>
   )
 }
-

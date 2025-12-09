@@ -109,24 +109,24 @@ export async function GET(request: NextRequest) {
     let filteredDesigns = [...DESIGNS]
 
     if (modelId && modelId !== 'all') {
-      filteredDesigns = filteredDesigns.filter((d) => d.modelId === modelId)
+      filteredDesigns = filteredDesigns.filter(d => d.modelId === modelId)
     }
 
     if (style && style !== 'all') {
-      filteredDesigns = filteredDesigns.filter((d) => d.style === style)
+      filteredDesigns = filteredDesigns.filter(d => d.style === style)
     }
 
     if (isNew) {
-      filteredDesigns = filteredDesigns.filter((d) => d.isNew)
+      filteredDesigns = filteredDesigns.filter(d => d.isNew)
     }
 
     if (search) {
       const searchLower = search.toLowerCase()
       filteredDesigns = filteredDesigns.filter(
-        (d) =>
+        d =>
           d.name.toLowerCase().includes(searchLower) ||
           d.nameVi.toLowerCase().includes(searchLower) ||
-          d.tags.some((tag) => tag.toLowerCase().includes(searchLower))
+          d.tags.some(tag => tag.toLowerCase().includes(searchLower))
       )
     }
 
@@ -142,10 +142,6 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch designs' },
-      { status: 500 }
-    )
+    return NextResponse.json({ success: false, error: 'Failed to fetch designs' }, { status: 500 })
   }
 }
-

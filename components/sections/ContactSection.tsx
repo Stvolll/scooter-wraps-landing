@@ -16,7 +16,7 @@ export default function ContactSection() {
     name: '',
     phone: '',
     model: '',
-    message: ''
+    message: '',
   })
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function ContactSection() {
       value: '+84 xxx xxx xxx',
       action: t('contactSection.chatNow'),
       color: '#25D366',
-      link: 'https://wa.me/84xxxxxxxxx'
+      link: 'https://wa.me/84xxxxxxxxx',
     },
     {
       icon: '📞',
@@ -44,7 +44,7 @@ export default function ContactSection() {
       value: '+84 xxx xxx xxx',
       action: t('contactSection.callNow'),
       color: '#00D4FF',
-      link: 'tel:+84xxxxxxxxx'
+      link: 'tel:+84xxxxxxxxx',
     },
     {
       icon: '✉️',
@@ -52,7 +52,7 @@ export default function ContactSection() {
       value: 'hello@txd.vn',
       action: t('contactSection.sendEmail'),
       color: '#B77EFF',
-      link: 'mailto:hello@txd.vn'
+      link: 'mailto:hello@txd.vn',
     },
     {
       icon: '📍',
@@ -60,15 +60,15 @@ export default function ContactSection() {
       value: 'Ho Chi Minh City',
       action: t('contactSection.getDirections'),
       color: '#FFB800',
-      link: '#'
-    }
+      link: '#',
+    },
   ]
 
   const socialMedia = [
     { name: 'Facebook', icon: 'facebook', link: '#', color: '#1877F2' },
     { name: 'Instagram', icon: 'instagram', link: '#', color: '#E4405F' },
     { name: 'Zalo', icon: 'zalo', link: '#', color: '#0068FF' },
-    { name: 'TikTok', icon: 'tiktok', link: '#', color: '#000000' }
+    { name: 'TikTok', icon: 'tiktok', link: '#', color: '#000000' },
   ]
 
   return (
@@ -105,7 +105,9 @@ export default function ContactSection() {
             animate={isMounted ? { opacity: 1, x: 0 } : false}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <h3 className="text-2xl font-semibold text-white mb-6">{t('contactSection.contactMethods')}</h3>
+            <h3 className="text-2xl font-semibold text-white mb-6">
+              {t('contactSection.contactMethods')}
+            </h3>
 
             {/* Quick contact cards */}
             <div className="space-y-4 mb-8">
@@ -150,9 +152,11 @@ export default function ContactSection() {
 
             {/* Social media */}
             <div>
-              <h4 className="text-lg font-semibold text-white mb-4">{t('contactSection.followUs')}</h4>
+              <h4 className="text-lg font-semibold text-white mb-4">
+                {t('contactSection.followUs')}
+              </h4>
               <div className="flex gap-3">
-                {socialMedia.map((social) => (
+                {socialMedia.map(social => (
                   <a
                     key={social.name}
                     href={social.link}
@@ -164,17 +168,28 @@ export default function ContactSection() {
                     }}
                     aria-label={social.name}
                   >
-                    <span className="text-xl">{social.icon === 'facebook' ? '📘' : social.icon === 'instagram' ? '📸' : social.icon === 'zalo' ? '💬' : '🎵'}</span>
+                    <span className="text-xl">
+                      {social.icon === 'facebook'
+                        ? '📘'
+                        : social.icon === 'instagram'
+                          ? '📸'
+                          : social.icon === 'zalo'
+                            ? '💬'
+                            : '🎵'}
+                    </span>
                   </a>
                 ))}
               </div>
             </div>
 
             {/* Business hours */}
-            <div className="mt-8 p-4 rounded-2xl" style={{
-              background: 'rgba(0, 255, 169, 0.05)',
-              border: '1px solid rgba(0, 255, 169, 0.2)',
-            }}>
+            <div
+              className="mt-8 p-4 rounded-2xl"
+              style={{
+                background: 'rgba(0, 255, 169, 0.05)',
+                border: '1px solid rgba(0, 255, 169, 0.2)',
+              }}
+            >
               <h4 className="text-white font-semibold mb-2">{t('contactSection.businessHours')}</h4>
               <div className="text-sm text-white/60 space-y-1">
                 <div>{t('contactSection.mondaySaturday')}</div>
@@ -189,16 +204,20 @@ export default function ContactSection() {
             animate={isMounted ? { opacity: 1, x: 0 } : false}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <h3 className="text-2xl font-semibold text-white mb-6">{t('contactSection.sendMessage')}</h3>
+            <h3 className="text-2xl font-semibold text-white mb-6">
+              {t('contactSection.sendMessage')}
+            </h3>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Name */}
               <div>
-                <label className="block text-sm text-white/60 mb-2">{t('contactSection.yourName')}</label>
+                <label className="block text-sm text-white/60 mb-2">
+                  {t('contactSection.yourName')}
+                </label>
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00FFA9] transition-colors"
                   placeholder="Nguyen Van A"
                   required
@@ -207,11 +226,13 @@ export default function ContactSection() {
 
               {/* Phone */}
               <div>
-                <label className="block text-sm text-white/60 mb-2">{t('contactSection.phoneNumber')}</label>
+                <label className="block text-sm text-white/60 mb-2">
+                  {t('contactSection.phoneNumber')}
+                </label>
                 <input
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={e => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00FFA9] transition-colors"
                   placeholder="+84 xxx xxx xxx"
                   required
@@ -220,10 +241,12 @@ export default function ContactSection() {
 
               {/* Scooter Model */}
               <div>
-                <label className="block text-sm text-white/60 mb-2">{t('contactSection.scooterModel')}</label>
+                <label className="block text-sm text-white/60 mb-2">
+                  {t('contactSection.scooterModel')}
+                </label>
                 <select
                   value={formData.model}
-                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                  onChange={e => setFormData({ ...formData, model: e.target.value })}
                   className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#00FFA9] transition-colors"
                   required
                 >
@@ -238,10 +261,12 @@ export default function ContactSection() {
 
               {/* Message */}
               <div>
-                <label className="block text-sm text-white/60 mb-2">{t('contactSection.messageOptional')}</label>
+                <label className="block text-sm text-white/60 mb-2">
+                  {t('contactSection.messageOptional')}
+                </label>
                 <textarea
                   value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  onChange={e => setFormData({ ...formData, message: e.target.value })}
                   className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00FFA9] transition-colors resize-none"
                   placeholder={t('contactSection.messagePlaceholder')}
                   rows={4}
@@ -261,9 +286,7 @@ export default function ContactSection() {
               </button>
 
               {/* Privacy note */}
-              <p className="text-xs text-white/40 text-center">
-                {t('contactSection.privacyNote')}
-              </p>
+              <p className="text-xs text-white/40 text-center">{t('contactSection.privacyNote')}</p>
             </form>
           </motion.div>
         </div>
@@ -271,4 +294,3 @@ export default function ContactSection() {
     </section>
   )
 }
-

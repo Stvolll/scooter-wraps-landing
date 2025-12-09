@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { SKU } from '@/types/sku'
 
 interface SKUPreviewProps {
@@ -23,8 +24,8 @@ export default function SKUPreview({ sku }: SKUPreviewProps) {
               sku.status === 'active'
                 ? 'bg-green-500'
                 : sku.status === 'draft'
-                ? 'bg-yellow-500'
-                : 'bg-gray-500'
+                  ? 'bg-yellow-500'
+                  : 'bg-gray-500'
             }`}
           >
             {sku.status}
@@ -46,21 +47,25 @@ export default function SKUPreview({ sku }: SKUPreviewProps) {
 
         {/* Thumbnail/Images */}
         {sku.media.thumbnail && (
-          <div className="w-full">
-            <img
+          <div className="w-full relative h-64">
+            <Image
               src={sku.media.thumbnail.url}
               alt={sku.title}
-              className="w-full h-64 object-cover rounded-lg"
+              fill
+              className="object-cover rounded-lg"
+              sizes="(max-width: 768px) 100vw, 768px"
             />
           </div>
         )}
 
         {sku.media.images.length > 0 && !sku.media.thumbnail && (
-          <div className="w-full">
-            <img
+          <div className="w-full relative h-64">
+            <Image
               src={sku.media.images[0].url}
               alt={sku.title}
-              className="w-full h-64 object-cover rounded-lg"
+              fill
+              className="object-cover rounded-lg"
+              sizes="(max-width: 768px) 100vw, 768px"
             />
           </div>
         )}
@@ -78,10 +83,12 @@ export default function SKUPreview({ sku }: SKUPreviewProps) {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {sku.media.images.map((img, idx) => (
                 <div key={idx} className="relative aspect-square">
-                  <img
+                  <Image
                     src={img.url}
                     alt={`${sku.title} - Image ${idx + 1}`}
-                    className="w-full h-full object-cover rounded-lg"
+                    fill
+                    className="object-cover rounded-lg"
+                    sizes="(max-width: 768px) 50vw, 33vw"
                   />
                 </div>
               ))}
@@ -96,11 +103,7 @@ export default function SKUPreview({ sku }: SKUPreviewProps) {
             <div className="space-y-4">
               {sku.media.videos.map((vid, idx) => (
                 <div key={idx} className="w-full">
-                  <video
-                    src={vid.url}
-                    controls
-                    className="w-full rounded-lg"
-                  >
+                  <video src={vid.url} controls className="w-full rounded-lg">
                     Your browser does not support the video tag.
                   </video>
                   <p className="text-sm text-gray-500 mt-2">{vid.filename}</p>
@@ -120,12 +123,7 @@ export default function SKUPreview({ sku }: SKUPreviewProps) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -154,20 +152,14 @@ export default function SKUPreview({ sku }: SKUPreviewProps) {
         <div className="grid grid-cols-2 gap-4 pt-4 border-t">
           <div>
             <p className="text-sm text-gray-500">Created</p>
-            <p className="text-gray-900">
-              {new Date(sku.created_at).toLocaleString()}
-            </p>
+            <p className="text-gray-900">{new Date(sku.created_at).toLocaleString()}</p>
           </div>
           <div>
             <p className="text-sm text-gray-500">Last Updated</p>
-            <p className="text-gray-900">
-              {new Date(sku.updated_at).toLocaleString()}
-            </p>
+            <p className="text-gray-900">{new Date(sku.updated_at).toLocaleString()}</p>
           </div>
         </div>
       </div>
     </div>
   )
 }
-
-

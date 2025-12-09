@@ -2,7 +2,7 @@
 
 /**
  * ScooterViewer3D Component with Dynamic Lighting
- * 
+ *
  * Features:
  * - Rim light for side views (0° and 180°)
  * - Studio lighting for front/three-quarter views (40°-140°)
@@ -23,7 +23,13 @@ interface ScooterViewer3DProps {
 }
 
 // Helper function to map rotation to lighting intensity
-function mapRange(value: number, inMin: number, inMax: number, outMin: number, outMax: number): number {
+function mapRange(
+  value: number,
+  inMin: number,
+  inMax: number,
+  outMin: number,
+  outMax: number
+): number {
   const clamped = Math.max(inMin, Math.min(inMax, value))
   return ((clamped - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin
 }
@@ -34,11 +40,11 @@ function lerp(start: number, end: number, t: number): number {
 }
 
 // Model component with rotation tracking
-function ScooterModel({ 
-  modelPath, 
+function ScooterModel({
+  modelPath,
   selectedDesign,
-  onRotationChange 
-}: { 
+  onRotationChange,
+}: {
   modelPath: string
   selectedDesign?: any
   onRotationChange?: (rotation: number) => void
@@ -46,7 +52,7 @@ function ScooterModel({
   const gltf = useGLTF(modelPath)
   const modelRef = useRef<THREE.Group>(null)
   const previousRotation = useRef(0)
-  
+
   // Use scene directly (drei handles caching)
   const scene = gltf.scene
 
@@ -56,13 +62,16 @@ function ScooterModel({
       const textureLoader = new THREE.TextureLoader()
       textureLoader.load(
         selectedDesign.texture,
-        (texture) => {
+        texture => {
           texture.flipY = false
-          scene.traverse((node) => {
+          scene.traverse(node => {
             if (node instanceof THREE.Mesh && node.material) {
               const materials = Array.isArray(node.material) ? node.material : [node.material]
-              materials.forEach((material) => {
-                if (material instanceof THREE.MeshStandardMaterial || material instanceof THREE.MeshPhysicalMaterial) {
+              materials.forEach(material => {
+                if (
+                  material instanceof THREE.MeshStandardMaterial ||
+                  material instanceof THREE.MeshPhysicalMaterial
+                ) {
                   material.map = texture
                   material.needsUpdate = true
                 }
@@ -71,7 +80,7 @@ function ScooterModel({
           })
         },
         undefined,
-        (error) => console.warn('Texture load error:', error)
+        error => console.warn('Texture load error:', error)
       )
     }
   }, [selectedDesign, scene])
@@ -82,7 +91,7 @@ function ScooterModel({
       const rotationY = modelRef.current.rotation.y
       // Normalize to 0-360 degrees
       const normalizedRotation = ((rotationY * 180) / Math.PI + 360) % 360
-      
+
       // Only call callback if rotation changed significantly
       if (Math.abs(normalizedRotation - previousRotation.current) > 1) {
         onRotationChange(normalizedRotation)
@@ -107,7 +116,7 @@ function DynamicLighting({ rotationY }: { rotationY: number }) {
   useFrame(() => {
     // Normalize rotation to 0-360
     const normalizedRot = rotationY % 360
-    
+
     // Calculate transition factor
     // 0°-40°: rim light (t = 0)
     // 40°-140°: transition to studio (t = 0 to 1)
@@ -115,9 +124,9 @@ function DynamicLighting({ rotationY }: { rotationY: number }) {
     // 180°-220°: rim light (t = 0)
     // 220°-320°: transition to studio (t = 0 to 1)
     // 320°-360°: transition back to rim (t = 1 to 0)
-    
+
     let t = 0
-    
+
     if (normalizedRot >= 40 && normalizedRot <= 140) {
       // Front view zone: studio lighting
       t = mapRange(normalizedRot, 40, 140, 0, 1)
@@ -135,18 +144,18 @@ function DynamicLighting({ rotationY }: { rotationY: number }) {
         t = 0 // Already at rim light
       }
     }
-    
+
     // Smooth interpolation with lerp
     const smoothT = lerp(0, t, 0.1) // Adjust speed of transition
-    
+
     // Rim light intensity: high when t is low (side views)
     const rimIntensity = lerp(2.5, 0.3, smoothT)
-    
+
     // Studio lights intensity: high when t is high (front views)
     const studioIntensity = lerp(0, 1.5, smoothT)
     const fillIntensity = lerp(0, 0.8, smoothT)
     const topIntensity = lerp(0, 0.6, smoothT)
-    
+
     // Update light intensities
     if (rimLightRef.current) {
       rimLightRef.current.intensity = rimIntensity
@@ -172,7 +181,7 @@ function DynamicLighting({ rotationY }: { rotationY: number }) {
         color="#ffffff"
         castShadow
       />
-      
+
       {/* Studio Key Light - Main front light */}
       <rectAreaLight
         ref={studioKeyRef}
@@ -182,7 +191,7 @@ function DynamicLighting({ rotationY }: { rotationY: number }) {
         intensity={0}
         color="#ffffff"
       />
-      
+
       {/* Studio Fill Light - Soft fill from opposite side */}
       <rectAreaLight
         ref={studioFillRef}
@@ -192,15 +201,10 @@ function DynamicLighting({ rotationY }: { rotationY: number }) {
         intensity={0}
         color="#ffffff"
       />
-      
+
       {/* Top Light - Gentle top illumination */}
-      <directionalLight
-        ref={topLightRef}
-        position={[0, 5, 0]}
-        intensity={0}
-        color="#ffffff"
-      />
-      
+      <directionalLight ref={topLightRef} position={[0, 5, 0]} intensity={0} color="#ffffff" />
+
       {/* Ambient light for base illumination */}
       <ambientLight intensity={0.2} color="#ffffff" />
     </>
@@ -208,12 +212,12 @@ function DynamicLighting({ rotationY }: { rotationY: number }) {
 }
 
 // Main scene component
-function Scene({ 
-  modelPath, 
+function Scene({
+  modelPath,
   selectedDesign,
   panoramaUrl,
-  onRotationChange 
-}: { 
+  onRotationChange,
+}: {
   modelPath: string
   selectedDesign?: any
   panoramaUrl?: string
@@ -240,32 +244,29 @@ function Scene({
   return (
     <>
       {/* Camera - set via useEffect in Scene component */}
-      
+
       {/* Lighting */}
       <DynamicLighting rotationY={rotationY} />
-      
+
       {/* Environment - use neutral if panorama not available */}
-      <Environment
-        preset="sunset"
-        background
-      />
-      
+      <Environment preset="sunset" background />
+
       {/* Model */}
       <Suspense fallback={null}>
-        <ScooterModel 
-          modelPath={modelPath} 
+        <ScooterModel
+          modelPath={modelPath}
           selectedDesign={selectedDesign}
           onRotationChange={handleRotationChange}
         />
       </Suspense>
-      
+
       {/* Controls - horizontal rotation and zoom */}
       <OrbitControls
         enableZoom={true}
         enablePan={false}
         minDistance={1.5} // Minimum zoom distance
-        maxDistance={5}   // Maximum zoom distance
-        zoomSpeed={0.8}   // Zoom sensitivity
+        maxDistance={5} // Maximum zoom distance
+        zoomSpeed={0.8} // Zoom sensitivity
         minPolarAngle={Math.PI / 2.4} // ~75 degrees
         maxPolarAngle={Math.PI / 2.4} // Lock vertical angle
         minAzimuthAngle={-Infinity}
@@ -281,7 +282,7 @@ export default function ScooterViewer3D({
   modelPath,
   selectedDesign,
   panoramaUrl = '/images/studio-panorama.png',
-  className = ''
+  className = '',
 }: ScooterViewer3DProps) {
   const [isMounted, setIsMounted] = useState(false)
 
@@ -291,7 +292,9 @@ export default function ScooterViewer3D({
 
   if (!isMounted) {
     return (
-      <div className={`relative w-full h-full ${className} flex items-center justify-center bg-gradient-to-b from-neutral-900 to-neutral-800`}>
+      <div
+        className={`relative w-full h-full ${className} flex items-center justify-center bg-gradient-to-b from-neutral-900 to-neutral-800`}
+      >
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/20 mx-auto mb-4"></div>
           <p className="text-white/60">Loading 3D Viewer...</p>
@@ -304,16 +307,19 @@ export default function ScooterViewer3D({
   const fullModelPath = modelPath.startsWith('/') ? modelPath : `/${modelPath}`
 
   return (
-    <div className={`relative w-full h-full ${className}`} style={{ background: 'linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%)' }}>
+    <div
+      className={`relative w-full h-full ${className}`}
+      style={{ background: 'linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%)' }}
+    >
       <Canvas
         shadows
-        gl={{ 
-          antialias: true, 
+        gl={{
+          antialias: true,
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.2
+          toneMappingExposure: 1.2,
         }}
       >
-        <Scene 
+        <Scene
           modelPath={fullModelPath}
           selectedDesign={selectedDesign}
           panoramaUrl={panoramaUrl}
@@ -326,4 +332,3 @@ export default function ScooterViewer3D({
 // Note: Preload models if needed
 // useGLTF.preload('/models/yamaha-nvx.glb')
 // useGLTF.preload('/models/honda-lead.glb')
-

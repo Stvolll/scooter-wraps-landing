@@ -120,6 +120,7 @@ If your project uses environment variables (e.g., API keys, Google Analytics ID)
 ### 4.1 Auto-Detection
 
 Vercel automatically detects Next.js projects by:
+
 - Finding `package.json` with `next` in dependencies
 - Detecting `next.config.js` or `next.config.ts`
 - Recognizing the `app/` directory structure (App Router)
@@ -127,14 +128,17 @@ Vercel automatically detects Next.js projects by:
 ### 4.2 Build Process
 
 1. **Install Dependencies:**
+
    ```bash
    npm install
    ```
 
 2. **Build the Project:**
+
    ```bash
    npm run build
    ```
+
    This creates:
    - Static pages in `.next/static/`
    - Server components and API routes
@@ -167,18 +171,21 @@ scooter-wraps-landing/
 ### 4.4 Important Files for Deployment
 
 **Required:**
+
 - `package.json` - Defines dependencies and build scripts
 - `next.config.js` - Next.js configuration
 - `app/` directory - Your application code
 - `public/` directory - Static files served at root
 
 **Optional but Recommended:**
+
 - `vercel.json` - Custom Vercel settings (we created this)
 - `.gitignore` - Excludes unnecessary files from Git
 - `tsconfig.json` - TypeScript configuration
 - `README.md` - Project documentation
 
 **Ignored by Vercel (via .gitignore):**
+
 - `node_modules/` - Installed during build
 - `.next/` - Generated during build
 - `.vercel/` - Vercel local config
@@ -196,6 +203,7 @@ scooter-wraps-landing/
 ### 5.2 Environment Variables for Production
 
 If you need different values for production:
+
 1. Go to "Settings" → "Environment Variables"
 2. Add variables with "Production" environment selected
 3. Redeploy the project
@@ -265,6 +273,7 @@ git push origin main
 ## Summary
 
 **Commands to Push to GitHub:**
+
 ```bash
 cd /Users/anatolii/scooter-wraps-landing
 git add .
@@ -273,17 +282,17 @@ git push origin main
 ```
 
 **Vercel Deployment:**
+
 1. Import GitHub repository in Vercel
 2. Auto-detects Next.js (no configuration needed)
 3. Click "Deploy"
 4. Get your live URL
 
 **Important Files:**
+
 - `package.json` - Build configuration
 - `next.config.js` - Next.js settings
 - `app/` - Application code
 - `public/` - Static assets
 
 Your project is now ready for deployment! 🚀
-
-

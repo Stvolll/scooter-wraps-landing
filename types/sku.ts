@@ -82,5 +82,3 @@ export interface SKUFilterParams {
   max_price?: number
   search?: string
 }
-
-

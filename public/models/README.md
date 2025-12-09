@@ -1,47 +1,87 @@
-# 3D Model Files
+# 3D Models Directory
 
-This directory contains GLB model files for each scooter.
+This directory contains 3D model files for scooter visualization.
 
-## Required Models
+## Current Models
 
-Place the following GLB files in this directory:
+- `yamaha-nvx.glb` - Yamaha NVX scooter model (11 MB)
 
-- `honda-vision.glb` - Honda Vision 3D model
-- `honda-lead.glb` - Honda Lead 3D model (already exists)
-- `honda-sh.glb` - Honda SH 3D model
-- `honda-pcx.glb` - Honda PCX 3D model
-- `yamaha-nvx.glb` - Yamaha NVX 3D model (already exists)
+## Optimized Models (CDN)
 
-## Model Requirements
+Optimized models with Draco compression are available on CDN:
 
-- **Format**: GLB (binary glTF) - recommended for web
-- **File Size**: Optimize for web (aim for < 5MB per model)
-- **Geometry**: Clean, optimized mesh
-- **Materials**: Use PBR materials (Metallic-Roughness workflow)
-- **Textures**: Embed textures in GLB or reference external files
+### Production CDN URLs
 
-## Material Variants (Recommended)
+Replace these URLs with your actual CDN URLs after uploading optimized assets:
 
-For design switching, export your models with material variants:
+```
+https://cdn.example.com/assets/models/yamaha-nvx.draco.glb
+```
 
-1. In Blender/your 3D software, create material variants for each design
-2. Name variants clearly (e.g., "neon-blade", "holo-lines", "carbon-fiber")
-3. Export as GLB with variants enabled
-4. The model-viewer component will switch variants automatically
+## Optimization Process
 
-## Alternative: Separate Model Files
+1. **Optimize models:**
 
-If material variants aren't available, you can:
-1. Create separate GLB files for each design (e.g., `honda-lead-neon.glb`, `honda-lead-holo.glb`)
-2. Update `config/scooters.js` to point to different model files per design
-3. The component will load the appropriate model when design changes
+   ```bash
+   npm run optimize:3d
+   ```
 
-## Optimization Tips
+   This creates optimized `.draco.glb` files in `public/models/optimized/`
 
-- Use glTF-Pipeline to optimize models: `gltf-pipeline -i input.glb -o output.glb`
-- Compress textures before embedding
-- Remove unused materials and nodes
-- Use Draco compression for geometry if needed
+2. **Upload to CDN/S3:**
 
+   ```bash
+   npm run upload:cdn
+   ```
 
+   Or test without uploading:
 
+   ```bash
+   npm run upload:cdn:dry
+   ```
+
+3. **Update model paths:**
+   - Update `config/scooters.js` to use CDN URLs
+   - Replace local paths with CDN URLs
+
+## File Structure
+
+```
+public/models/
+├── README.md (this file)
+├── yamaha-nvx.glb (original, 11 MB)
+├── yamaha-nvx.mtl (material file)
+├── yamaha-nvx.obj (source file)
+└── optimized/
+    └── yamaha-nvx.draco.glb (optimized, ~3-5 MB)
+```
+
+## CDN Configuration
+
+After uploading to CDN/S3, update the following:
+
+1. **Environment variables** (`.env.local`):
+
+   ```bash
+   CDN_BUCKET_NAME=your-bucket-name
+   CDN_PREFIX=assets
+   AWS_CLOUDFRONT_DOMAIN=d1234567890.cloudfront.net
+   ```
+
+2. **Model paths** in `config/scooters.js`:
+   ```javascript
+   model: process.env.CDN_URL + '/assets/models/yamaha-nvx.draco.glb'
+   ```
+
+## Benefits of Optimization
+
+- **Size reduction**: 50-70% smaller files
+- **Faster loading**: Reduced bandwidth usage
+- **Better performance**: Draco compression for geometry
+- **CDN delivery**: Global edge caching
+
+## Notes
+
+- Original `.glb` files remain in repository for reference
+- Optimized files should be uploaded to CDN/S3
+- Always test optimized models before deploying to production

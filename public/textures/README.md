@@ -48,10 +48,8 @@ textures/
 ## Material Variants Alternative
 
 Instead of texture swapping, you can use material variants in your GLB models:
+
 1. Export your GLB with material variants defined
 2. Each variant should have a unique name (e.g., "neon-blade", "holo-lines")
 3. Update `config/scooters.js` to use `variant` instead of `texture`
 4. The model-viewer component will automatically switch variants
-
-
-

@@ -1,17 +1,17 @@
 /**
  * Mock data for scooter models and designs
- * 
+ *
  * This file contains placeholder data for the TXD project.
- * 
+ *
  * To add a new scooter model:
  * 1. Add a new entry to the models array
  * 2. Add designs for that model in the designs array
- * 
+ *
  * To add a new design:
  * 1. Add an entry to the designs array
  * 2. Set the modelId to match the model's id
  * 3. Add a preview image to /public/images/designs/
- * 
+ *
  * In production, this data would come from a CMS or database.
  */
 
@@ -152,27 +152,26 @@ export const designs: Design[] = [
  * Get all designs for a specific model
  */
 export function getDesignsByModel(modelId: string): Design[] {
-  return designs.filter((design) => design.modelId === modelId)
+  return designs.filter(design => design.modelId === modelId)
 }
 
 /**
  * Get a design by ID
  */
 export function getDesignById(id: string): Design | undefined {
-  return designs.find((design) => design.id === id)
+  return designs.find(design => design.id === id)
 }
 
 /**
  * Get a design by slug and model
  */
 export function getDesignBySlug(modelId: string, slug: string): Design | undefined {
-  return designs.find((design) => design.modelId === modelId && design.slug === slug)
+  return designs.find(design => design.modelId === modelId && design.slug === slug)
 }
 
 /**
  * Get a model by ID
  */
 export function getModelById(id: string): ScooterModel | undefined {
-  return models.find((model) => model.id === id)
+  return models.find(model => model.id === id)
 }
-

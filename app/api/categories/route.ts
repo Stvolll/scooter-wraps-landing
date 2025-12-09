@@ -16,9 +16,9 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const tree = searchParams.get('tree') === 'true'
-    
+
     const categories = tree ? categoryStore.findTree() : categoryStore.findAll()
-    
+
     return NextResponse.json({
       success: true,
       data: categories,
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
+
     // Validate required fields
     if (!body.name) {
       return NextResponse.json(
@@ -44,19 +44,22 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-    
+
     const data: CreateCategoryDto = {
       name: body.name,
       slug: body.slug,
       parent_id: body.parent_id || null,
     }
-    
+
     const category = categoryStore.create(data)
-    
-    return NextResponse.json({
-      success: true,
-      data: category,
-    }, { status: 201 })
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: category,
+      },
+      { status: 201 }
+    )
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to create category' },
@@ -64,4 +67,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

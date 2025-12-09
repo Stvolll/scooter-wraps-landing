@@ -15,43 +15,43 @@ const galleryItems = [
     model: 'Honda Lead',
     design: 'Neon Blade',
     image: '/images/gallery/lead-neon.jpg',
-    category: 'lead'
+    category: 'lead',
   },
   {
     id: 2,
     model: 'Yamaha NVX',
     design: 'Cyberpunk',
     image: '/images/gallery/nvx-cyber.jpg',
-    category: 'nvx'
+    category: 'nvx',
   },
   {
     id: 3,
     model: 'Honda SH',
     design: 'Minimal White',
     image: '/images/gallery/sh-minimal.jpg',
-    category: 'sh'
+    category: 'sh',
   },
   {
     id: 4,
     model: 'Honda Vision',
     design: 'Carbon Fiber',
     image: '/images/gallery/vision-carbon.jpg',
-    category: 'vision'
+    category: 'vision',
   },
   {
     id: 5,
     model: 'Honda PCX',
     design: 'Matte Black',
     image: '/images/gallery/pcx-matte.jpg',
-    category: 'pcx'
+    category: 'pcx',
   },
   {
     id: 6,
     model: 'Honda Lead',
     design: 'Racing Stripes',
     image: '/images/gallery/lead-racing.jpg',
-    category: 'lead'
-  }
+    category: 'lead',
+  },
 ]
 
 export default function GallerySection() {
@@ -65,16 +65,17 @@ export default function GallerySection() {
     { id: 'vision', label: 'Honda Vision' },
     { id: 'sh', label: 'Honda SH' },
     { id: 'pcx', label: 'Honda PCX' },
-    { id: 'nvx', label: 'Yamaha NVX' }
+    { id: 'nvx', label: 'Yamaha NVX' },
   ]
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
-  const filteredItems = activeCategory === 'all'
-    ? galleryItems
-    : galleryItems.filter(item => item.category === activeCategory)
+  const filteredItems =
+    activeCategory === 'all'
+      ? galleryItems
+      : galleryItems.filter(item => item.category === activeCategory)
 
   return (
     <section className="relative pt-12 md:pt-16 pb-20 md:pb-32 overflow-hidden">
@@ -104,22 +105,20 @@ export default function GallerySection() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="flex flex-wrap justify-center gap-3 mb-12"
         >
-          {categories.map((category) => (
+          {categories.map(category => (
             <button
               key={category.id}
               onClick={() => setActiveCategory(category.id)}
               className={`px-6 py-2 rounded-full font-medium transition-all duration-300 ${
-                activeCategory === category.id
-                  ? 'text-black'
-                  : 'text-white/60 hover:text-white'
+                activeCategory === category.id ? 'text-black' : 'text-white/60 hover:text-white'
               }`}
               style={{
-                background: activeCategory === category.id
-                  ? 'linear-gradient(135deg, #00FFA9 0%, #00D4FF 100%)'
-                  : 'rgba(255, 255, 255, 0.05)',
-                border: activeCategory === category.id
-                  ? 'none'
-                  : '1px solid rgba(255, 255, 255, 0.1)',
+                background:
+                  activeCategory === category.id
+                    ? 'linear-gradient(135deg, #00FFA9 0%, #00D4FF 100%)'
+                    : 'rgba(255, 255, 255, 0.05)',
+                border:
+                  activeCategory === category.id ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
               }}
             >
               {category.label}
@@ -128,10 +127,7 @@ export default function GallerySection() {
         </motion.div>
 
         {/* Gallery grid */}
-        <motion.div
-          layout
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
+        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredItems.map((item, index) => (
             <motion.div
               key={item.id}
@@ -163,17 +159,25 @@ export default function GallerySection() {
                   whileHover={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <h3 className="text-xl font-semibold text-white mb-1">
-                    {item.design}
-                  </h3>
+                  <h3 className="text-xl font-semibold text-white mb-1">{item.design}</h3>
                   <p className="text-sm text-white/70">{item.model}</p>
                 </motion.div>
               </div>
 
               {/* Zoom icon */}
               <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"
+                  />
                 </svg>
               </div>
             </motion.div>
@@ -188,9 +192,7 @@ export default function GallerySection() {
           className="mt-16 text-center"
         >
           <p className="text-white/60 mb-4">{t('gallery.wantMore')}</p>
-          <button
-            className="px-8 py-3 rounded-2xl font-semibold text-white border-2 border-[#00FFA9] hover:bg-[#00FFA9] hover:text-black transition-all duration-300"
-          >
+          <button className="px-8 py-3 rounded-2xl font-semibold text-white border-2 border-[#00FFA9] hover:bg-[#00FFA9] hover:text-black transition-all duration-300">
             {t('gallery.viewPortfolio')}
           </button>
         </motion.div>
@@ -198,4 +200,3 @@ export default function GallerySection() {
     </section>
   )
 }
-

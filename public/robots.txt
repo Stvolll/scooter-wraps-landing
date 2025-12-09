@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /api/
 
-Sitemap: https://decalwrap.vn/sitemap.xml
-
+Sitemap: https://txd.bike/sitemap.xml

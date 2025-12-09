@@ -1,18 +1,49 @@
 /** @type {import('next').NextConfig} */
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
+
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['cdn.example.com', 'images.unsplash.com'],
+    // CDN/S3 domains for optimized assets
+    domains: [
+      process.env.IMAGE_CDN_DOMAIN || 'your-cdn.example.com',
+      'images.unsplash.com',
+    ].filter(Boolean),
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.amazonaws.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.cloudfront.net',
+        pathname: '/**',
+      },
+      ...(process.env.IMAGE_CDN_DOMAIN
+        ? [
+            {
+              protocol: 'https' as const,
+              hostname: process.env.IMAGE_CDN_DOMAIN,
+              pathname: '/**',
+            },
+          ]
+        : []),
+    ],
     formats: ['image/avif', 'image/webp'],
   },
   experimental: {
     optimizePackageImports: ['three', '@react-three/fiber', '@react-three/drei'],
+    optimizeCss: true,
   },
-  // PWA configuration
+  // Cache-Control headers configuration
   async headers() {
     return [
+      // Next.js static assets - long-term caching (immutable)
       {
-        source: '/:path*',
+        source: '/_next/static/:path*',
         headers: [
           {
             key: 'Cache-Control',
@@ -20,9 +51,110 @@ const nextConfig = {
           },
         ],
       },
-    ];
+      // Public static assets - long-term caching
+      {
+        source: '/models/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/textures/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/hdr/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/wraps/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/favicon.svg',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/robots.txt',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600',
+          },
+        ],
+      },
+      {
+        source: '/manifest.json',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600',
+          },
+        ],
+      },
+      // HTML pages - no cache, must revalidate
+      {
+        source: '/:path*.html',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, must-revalidate',
+          },
+        ],
+      },
+      {
+        source: '/',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, must-revalidate',
+          },
+        ],
+      },
+      // API routes - no cache, must revalidate
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, must-revalidate',
+          },
+        ],
+      },
+    ]
   },
-};
+}
 
-module.exports = nextConfig;
-
+module.exports = withBundleAnalyzer(nextConfig)

@@ -2,7 +2,7 @@
 
 import { useLanguage } from '@/contexts/LanguageContext'
 
-type TranslationKey = 
+type TranslationKey =
   | 'header.orderNow'
   | 'menu.models'
   | 'menu.designs'
@@ -103,4 +103,3 @@ export function useTranslations() {
 
   return { t, lang, setLang: setLanguage, toggleLang }
 }
-

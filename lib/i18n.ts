@@ -12,7 +12,7 @@ export function useTranslations(language: Language) {
   const t = (key: string): string => {
     const keys = key.split('.')
     let value: any = translations[language]
-    
+
     for (const k of keys) {
       value = value?.[k]
       if (value === undefined) {
@@ -24,9 +24,9 @@ export function useTranslations(language: Language) {
         break
       }
     }
-    
+
     return value || key
   }
-  
+
   return t
 }

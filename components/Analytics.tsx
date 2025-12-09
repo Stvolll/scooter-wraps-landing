@@ -7,20 +7,20 @@ export default function Analytics() {
   useEffect(() => {
     // Google Analytics 4
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('config', 'G-XXXXXXXXXX', {
+      ;(window as any).gtag('config', 'G-XXXXXXXXXX', {
         page_path: window.location.pathname,
       })
     }
 
     // Facebook Pixel
     if (typeof window !== 'undefined' && (window as any).fbq) {
-      (window as any).fbq('track', 'PageView')
+      ;(window as any).fbq('track', 'PageView')
     }
 
     // Track 3D model interactions
     const track3DInteraction = (event: string, data?: any) => {
       if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('event', event, data)
+        ;(window as any).gtag('event', event, data)
       }
     }
 
@@ -76,4 +76,3 @@ export default function Analytics() {
     </>
   )
 }
-

@@ -48,7 +48,7 @@ export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
           className="relative w-full max-w-md mx-4 p-8 rounded-3xl bg-white/5 border border-white/10"
         >
           <div className="mb-6">
@@ -71,7 +71,7 @@ export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
                   required
                   className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:border-[#00FFA9] focus:bg-white/10 transition-all"
                   placeholder={t('donate.name')}
@@ -85,7 +85,7 @@ export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
                 <input
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={e => setFormData({ ...formData, email: e.target.value })}
                   required
                   className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:border-[#00FFA9] focus:bg-white/10 transition-all"
                   placeholder="your@email.com"
@@ -99,7 +99,7 @@ export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
                 <input
                   type="number"
                   value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                  onChange={e => setFormData({ ...formData, amount: e.target.value })}
                   required
                   min="1"
                   step="1"
@@ -114,7 +114,7 @@ export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
                 </label>
                 <textarea
                   value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  onChange={e => setFormData({ ...formData, message: e.target.value })}
                   rows={4}
                   className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:border-[#00FFA9] focus:bg-white/10 transition-all resize-none"
                   placeholder={t('donate.messagePlaceholder')}

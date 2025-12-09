@@ -2,13 +2,13 @@
 
 /**
  * InteractiveCreateBlock Component
- * 
+ *
  * The "you bike create now" interactive block.
  * Features three main actions:
  * 1. Upload - for users who have a design preview
  * 2. Create - for users who want to generate a design
  * 3. Order - for users who want to order existing or custom design
- * 
+ *
  * This block is central to the TXD concept of user co-creation.
  */
 
@@ -98,9 +98,7 @@ export default function InteractiveCreateBlock() {
                 <h3 className="text-2xl font-bold mb-3">{t('interactiveCreate.upload')}</h3>
                 <p className="text-neutral-600 mb-4">{t('interactiveCreate.uploadDescription')}</p>
                 {uploadedFile && (
-                  <div className="mt-auto pt-4 text-sm text-accent-neon">
-                    ✓ {uploadedFile.name}
-                  </div>
+                  <div className="mt-auto pt-4 text-sm text-accent-neon">✓ {uploadedFile.name}</div>
                 )}
               </motion.div>
             </label>
@@ -152,4 +150,3 @@ export default function InteractiveCreateBlock() {
     </section>
   )
 }
-

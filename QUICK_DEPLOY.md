@@ -11,6 +11,7 @@
 ## 🚀 Quick Deploy Steps
 
 ### 1. Push to GitHub
+
 ```bash
 cd /Users/anatolii/scooter-wraps-landing
 git add .
@@ -19,6 +20,7 @@ git push origin main
 ```
 
 ### 2. Deploy on Vercel
+
 1. Go to [vercel.com](https://vercel.com)
 2. Click "Add New..." → "Project"
 3. Import your GitHub repository
@@ -28,14 +30,14 @@ git push origin main
 
 ## 📋 Important Files
 
-| File | Purpose | Required? |
-|------|---------|-----------|
-| `package.json` | Dependencies & build scripts | ✅ Yes |
-| `next.config.js` | Next.js configuration | ✅ Yes |
-| `app/` | Application code | ✅ Yes |
-| `public/` | Static assets (models, images) | ✅ Yes |
-| `vercel.json` | Vercel config | ⚠️ Optional (auto-detected) |
-| `.gitignore` | Git exclusions | ✅ Recommended |
+| File             | Purpose                        | Required?                   |
+| ---------------- | ------------------------------ | --------------------------- |
+| `package.json`   | Dependencies & build scripts   | ✅ Yes                      |
+| `next.config.js` | Next.js configuration          | ✅ Yes                      |
+| `app/`           | Application code               | ✅ Yes                      |
+| `public/`        | Static assets (models, images) | ✅ Yes                      |
+| `vercel.json`    | Vercel config                  | ⚠️ Optional (auto-detected) |
+| `.gitignore`     | Git exclusions                 | ✅ Recommended              |
 
 ## 🔍 How Vercel Deploys
 
@@ -62,5 +64,3 @@ git push origin main
 ---
 
 **Full guide:** See `DEPLOYMENT.md` for detailed instructions.
-
-

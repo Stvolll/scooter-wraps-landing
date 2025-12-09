@@ -2,9 +2,9 @@ export default function StructuredData() {
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'Store',
-    name: 'DecalWrap - Dán Decal Xe Máy',
-    description: 'Chuyên dán decal, bọc phim xe máy cao cấp tại Nha Trang',
-    url: 'https://decalwrap.vn',
+    name: 'TXD — Premium Vinyl Wraps for Scooters',
+    description: 'Premium vinyl wrap cover-sets for multiple scooter models',
+    url: 'https://txd.bike',
     telephone: '+84123456789',
     address: {
       '@type': 'PostalAddress',
@@ -27,11 +27,8 @@ export default function StructuredData() {
       },
     ],
     priceRange: '$$',
-    image: 'https://decalwrap.vn/og-image.jpg',
-    sameAs: [
-      'https://facebook.com/decalwrap',
-      'https://instagram.com/decalwrap',
-    ],
+    image: 'https://txd.bike/og-image.jpg',
+    sameAs: ['https://facebook.com/txdbike', 'https://instagram.com/txdbike'],
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: '4.9',
@@ -46,7 +43,7 @@ export default function StructuredData() {
     description: 'Premium vinyl wraps and decals for scooters',
     brand: {
       '@type': 'Brand',
-      name: 'DecalWrap',
+      name: 'TXD',
     },
     offers: {
       '@type': 'AggregateOffer',
@@ -70,4 +67,3 @@ export default function StructuredData() {
     </>
   )
 }
-

@@ -3,30 +3,35 @@
 ## Быстрый способ (5 минут):
 
 ### 1. Зайдите на Vercel:
-   - Перейдите на https://vercel.com
-   - Войдите через GitHub, GitLab или Email
+
+- Перейдите на https://vercel.com
+- Войдите через GitHub, GitLab или Email
 
 ### 2. Импортируйте проект:
-   - Нажмите "Add New" → "Project"
-   - Выберите "Import Third-Party Git Repository"
-   - Или перетащите папку проекта в браузер
+
+- Нажмите "Add New" → "Project"
+- Выберите "Import Third-Party Git Repository"
+- Или перетащите папку проекта в браузер
 
 ### 3. Настройки деплоя:
-   ```
-   Framework Preset: Next.js
-   Root Directory: ./
-   Build Command: npm run build
-   Output Directory: .next
-   Install Command: npm install
-   ```
+
+```
+Framework Preset: Next.js
+Root Directory: ./
+Build Command: npm run build
+Output Directory: .next
+Install Command: npm install
+```
 
 ### 4. Переменные окружения (необязательно):
-   Если нужны - добавьте в настройках проекта
+
+Если нужны - добавьте в настройках проекта
 
 ### 5. Деплой:
-   - Нажмите "Deploy"
-   - Подождите 2-3 минуты
-   - Получите ссылку типа: `https://your-project.vercel.app`
+
+- Нажмите "Deploy"
+- Подождите 2-3 минуты
+- Получите ссылку типа: `https://your-project.vercel.app`
 
 ---
 
@@ -64,8 +69,7 @@ vercel --prod
 ✅ Оптимизация выполнена
 
 ## Размер bundle:
+
 - Главная страница: 137 KB
 - Страница дизайна: 134 KB
 - Shared JS: 87.4 KB
-
-

@@ -3,11 +3,13 @@
 ## ✅ Что было сделано:
 
 ### 1. Обновлена конфигурация для Honda Lead
+
 - Используются реальные изображения дизайнов из `/images/designs/honda lead/` для превью
 - Используется текстура `/textures/honda-lead/3DModel.jpg` для применения на 3D модель
 - 6 дизайнов теперь используют реальные изображения
 
 ### 2. Улучшено применение текстур
+
 - Компонент теперь поддерживает:
   - **Material Variants** (рекомендуется) - через `variant` свойство
   - **Texture Swapping** - через `texture` свойство с доступом к Three.js сцене
@@ -40,13 +42,14 @@ public/
    - Экспортируйте как GLB с вариантами
 
 2. Обновите `config/scooters.js`:
+
 ```javascript
 designs: [
-  { 
-    id: '01', 
-    name: 'Design 1', 
-    variant: 'design-1',  // Имя варианта из GLB
-    preview: '/images/designs/honda lead/honda-lead-0.jpg'
+  {
+    id: '01',
+    name: 'Design 1',
+    variant: 'design-1', // Имя варианта из GLB
+    preview: '/images/designs/honda lead/honda-lead-0.jpg',
   },
 ]
 ```
@@ -60,13 +63,14 @@ designs: [
    - и т.д.
 
 3. Обновите `config/scooters.js`:
+
 ```javascript
 designs: [
-  { 
-    id: '01', 
-    name: 'Design 1', 
-    texture: '/textures/lead/design-1.png',  // UV-текстура
-    preview: '/images/designs/honda lead/honda-lead-0.jpg'  // Фото для превью
+  {
+    id: '01',
+    name: 'Design 1',
+    texture: '/textures/lead/design-1.png', // UV-текстура
+    preview: '/images/designs/honda lead/honda-lead-0.jpg', // Фото для превью
   },
 ]
 ```
@@ -89,6 +93,3 @@ designs: [
 2. Сохраните их в `/public/textures/{model-id}/`
 3. Обновите конфигурацию с правильными путями
 4. Протестируйте переключение дизайнов на 3D модели
-
-
-

@@ -16,10 +16,7 @@ export default function Contact() {
   const zaloLabel = lang === 'vi' ? 'Zalo' : 'Zalo'
   const zaloCta = lang === 'vi' ? 'Chat ngay' : 'Chat now'
   const addressLabel = lang === 'vi' ? 'Địa chỉ' : 'Address'
-  const addressValue =
-    lang === 'vi'
-      ? '123 Trần Phú, Nha Trang'
-      : '123 Tran Phu Street, Nha Trang'
+  const addressValue = lang === 'vi' ? '123 Trần Phú, Nha Trang' : '123 Tran Phu Street, Nha Trang'
   const socialTitle =
     lang === 'vi' ? 'Theo dõi chúng tôi trên mạng xã hội' : 'Follow us on social media'
 
@@ -32,12 +29,8 @@ export default function Contact() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {sectionTitle}
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            {sectionSubtitle}
-          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{sectionTitle}</h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">{sectionSubtitle}</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -104,9 +97,7 @@ export default function Contact() {
           viewport={{ once: true }}
           className="text-center"
         >
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">
-            {socialTitle}
-          </h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">{socialTitle}</h3>
           <div className="flex justify-center space-x-4">
             <a
               href="https://facebook.com"
@@ -132,4 +123,3 @@ export default function Contact() {
     </section>
   )
 }
-

@@ -2,10 +2,10 @@
 
 /**
  * Language Context for TXD project
- * 
+ *
  * This context manages the current language state (EN/VI) across the app.
  * It stores the preference in localStorage so it persists across page reloads.
- * 
+ *
  * Usage in components:
  *   import { useLanguage } from '@/contexts/LanguageContext'
  *   const { language, setLanguage, t } = useLanguage()
@@ -29,7 +29,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   // Load language from localStorage on mount (client-side only)
   useEffect(() => {
     if (typeof window === 'undefined') return
-    
+
     const saved = localStorage.getItem('txd-language') as Language | null
     if (saved === 'en' || saved === 'vi') {
       setLanguageState(saved)

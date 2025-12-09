@@ -2,7 +2,7 @@
 
 /**
  * GalleryCard Component
- * 
+ *
  * Individual design card in the gallery.
  * Displays:
  * - Design preview image
@@ -55,7 +55,7 @@ export default function GalleryCard({ design, language, onClick }: GalleryCardPr
             </div>
           </div>
         )}
-        
+
         {/* New Badge */}
         {design.isNew && (
           <div className="absolute top-4 right-4 bg-accent-neon text-accent-dark px-3 py-1 rounded-full text-sm font-bold">
@@ -66,7 +66,7 @@ export default function GalleryCard({ design, language, onClick }: GalleryCardPr
         {/* Style Tags */}
         {design.style.length > 0 && (
           <div className="absolute bottom-4 left-4 flex flex-wrap gap-2">
-            {design.style.slice(0, 2).map((tag) => (
+            {design.style.slice(0, 2).map(tag => (
               <span
                 key={tag}
                 className="bg-black/50 text-white px-2 py-1 rounded text-xs backdrop-blur-sm"
@@ -82,7 +82,7 @@ export default function GalleryCard({ design, language, onClick }: GalleryCardPr
       <div className="p-6 flex-1 flex flex-col">
         <h3 className="text-2xl font-bold mb-2">{displayName}</h3>
         <p className="text-neutral-600 mb-4 flex-1 line-clamp-2">{displayDescription}</p>
-        
+
         {/* Price and CTA */}
         <div className="flex items-center justify-between mt-auto pt-4 border-t border-neutral-200">
           <span className="text-2xl font-bold text-accent-neon">{priceText}</span>
@@ -94,4 +94,3 @@ export default function GalleryCard({ design, language, onClick }: GalleryCardPr
     </motion.div>
   )
 }
-

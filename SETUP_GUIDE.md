@@ -3,12 +3,14 @@
 ## Quick Start
 
 1. **Install dependencies:**
+
 ```bash
 cd scooter-wraps-landing
 npm install
 ```
 
 2. **Set up environment variables:**
+
 ```bash
 cp .env.example .env.local
 # Edit .env.local with your actual values
@@ -29,6 +31,7 @@ cp .env.example .env.local
    - Place texture images in `public/textures/`
 
 5. **Run development server:**
+
 ```bash
 npm run dev
 ```
@@ -43,7 +46,7 @@ Visit `http://localhost:3000`
 2. **Format**: GLB (binary glTF) preferred
 3. **Compression**: Use DRACO compression
 4. **LODs**: Implement Level of Detail (LOD) for performance
-5. **Textures**: 
+5. **Textures**:
    - Use compressed textures (JPEG/WebP)
    - Maximum 2048x2048 resolution
    - Optimize texture maps (diffuse, normal, roughness)
@@ -62,6 +65,7 @@ Visit `http://localhost:3000`
 ### Model Structure
 
 Each model should have:
+
 - Clean topology
 - UV mapping for texture application
 - Named materials for texture swapping
@@ -70,12 +74,14 @@ Each model should have:
 ## Design Assets
 
 ### Design Images
+
 - Format: JPEG or WebP
 - Size: 1200x1200px minimum
 - Aspect ratio: 1:1 (square)
 - File naming: `{design-name}.jpg`
 
 ### Texture Images
+
 - Format: JPEG or PNG
 - Size: 2048x2048px (or appropriate for model)
 - File naming: `design-{number}.jpg`
@@ -232,7 +238,7 @@ CREATE TABLE bookings (
 ## Support
 
 For issues or questions:
+
 - Email: info@decalwrap.vn
 - Check documentation in `README.md`
 - Review `PROJECT_STRUCTURE.md` for API details
-

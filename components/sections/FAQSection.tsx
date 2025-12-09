@@ -13,43 +13,51 @@ const faqs = [
   {
     id: 1,
     question: 'How long does the vinyl wrap last?',
-    answer: 'Our premium 3M™ vinyl wraps are designed to last 5-7 years with proper care. They resist UV damage, weather, and daily wear. We provide a 5-year warranty on all installations.'
+    answer:
+      'Our premium 3M™ vinyl wraps are designed to last 5-7 years with proper care. They resist UV damage, weather, and daily wear. We provide a 5-year warranty on all installations.',
   },
   {
     id: 2,
     question: 'Will the wrap damage my scooter&apos;s paint?',
-    answer: 'Absolutely not! Vinyl wraps actually protect your original paint from scratches, chips, and UV damage. When professionally removed, your paint will be in pristine condition underneath.'
+    answer:
+      'Absolutely not! Vinyl wraps actually protect your original paint from scratches, chips, and UV damage. When professionally removed, your paint will be in pristine condition underneath.',
   },
   {
     id: 3,
     question: 'Can I choose a custom design?',
-    answer: 'Yes! You can choose from our ready-made designs or create your own custom design. Upload your artwork or work with our design team to create something unique. Preview it in 3D before ordering.'
+    answer:
+      'Yes! You can choose from our ready-made designs or create your own custom design. Upload your artwork or work with our design team to create something unique. Preview it in 3D before ordering.',
   },
   {
     id: 4,
     question: 'How long does installation take?',
-    answer: 'Professional installation typically takes 2-3 hours depending on the model and design complexity. We come to your location, so you don\'t need to leave your scooter anywhere.'
+    answer:
+      "Professional installation typically takes 2-3 hours depending on the model and design complexity. We come to your location, so you don't need to leave your scooter anywhere.",
   },
   {
     id: 5,
     question: 'What&apos;s included in the price?',
-    answer: 'The price includes premium 3M vinyl material, professional installation at your location, quality guarantee, and 5-year warranty. No hidden fees!'
+    answer:
+      'The price includes premium 3M vinyl material, professional installation at your location, quality guarantee, and 5-year warranty. No hidden fees!',
   },
   {
     id: 6,
     question: 'How do I maintain the wrap?',
-    answer: 'Simple! Wash with mild soap and water. Avoid high-pressure washers directly on seams. No waxing needed. Detailed care instructions are provided after installation.'
+    answer:
+      'Simple! Wash with mild soap and water. Avoid high-pressure washers directly on seams. No waxing needed. Detailed care instructions are provided after installation.',
   },
   {
     id: 7,
     question: 'Can I remove the wrap later?',
-    answer: 'Yes, wraps can be professionally removed anytime without damaging the paint. Removal takes about 1-2 hours. We offer removal services at a discounted rate for our customers.'
+    answer:
+      'Yes, wraps can be professionally removed anytime without damaging the paint. Removal takes about 1-2 hours. We offer removal services at a discounted rate for our customers.',
   },
   {
     id: 8,
     question: 'Do you offer payment plans?',
-    answer: 'Yes! We offer flexible payment options including installment plans. Contact us to discuss the best option for you.'
-  }
+    answer:
+      'Yes! We offer flexible payment options including installment plans. Contact us to discuss the best option for you.',
+  },
 ]
 
 export default function FAQSection() {
@@ -81,9 +89,7 @@ export default function FAQSection() {
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
             {t('faq.title')}
           </h2>
-          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto">
-            {t('faq.subtitle')}
-          </p>
+          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto">{t('faq.subtitle')}</p>
         </motion.div>
 
         {/* FAQ Accordion */}
@@ -110,9 +116,7 @@ export default function FAQSection() {
                   onClick={() => toggleFAQ(faq.id)}
                   className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
                 >
-                  <span className="text-lg font-semibold text-white pr-4">
-                    {faq.question}
-                  </span>
+                  <span className="text-lg font-semibold text-white pr-4">{faq.question}</span>
                   <motion.div
                     animate={{ rotate: openId === faq.id ? 180 : 0 }}
                     transition={{ duration: 0.3 }}
@@ -144,9 +148,7 @@ export default function FAQSection() {
                       transition={{ duration: 0.3 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-6 pb-5 text-white/70 leading-relaxed">
-                        {faq.answer}
-                      </div>
+                      <div className="px-6 pb-5 text-white/70 leading-relaxed">{faq.answer}</div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -163,9 +165,7 @@ export default function FAQSection() {
           className="mt-16 text-center"
         >
           <p className="text-white/60 mb-4">{t('faq.stillQuestions')}</p>
-          <button
-            className="px-8 py-3 rounded-2xl font-semibold text-white border-2 border-[#00FFA9] hover:bg-[#00FFA9] hover:text-black transition-all duration-300"
-          >
+          <button className="px-8 py-3 rounded-2xl font-semibold text-white border-2 border-[#00FFA9] hover:bg-[#00FFA9] hover:text-black transition-all duration-300">
             {t('faq.contactSupport')}
           </button>
         </motion.div>
@@ -173,4 +173,3 @@ export default function FAQSection() {
     </section>
   )
 }
-

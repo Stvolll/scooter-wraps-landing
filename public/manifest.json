@@ -1,7 +1,7 @@
 {
-  "name": "DecalWrap - Dán Decal Xe Máy",
-  "short_name": "DecalWrap",
-  "description": "Chuyên dán decal, bọc phim xe máy cao cấp tại Nha Trang",
+  "name": "TXD — Premium Vinyl Wraps for Scooters",
+  "short_name": "TXD",
+  "description": "Premium vinyl wrap cover-sets for multiple scooter models",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -25,4 +25,3 @@
   "lang": "vi-VN",
   "dir": "ltr"
 }
-

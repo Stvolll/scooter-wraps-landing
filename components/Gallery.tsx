@@ -2,13 +2,13 @@
 
 /**
  * Gallery Component
- * 
+ *
  * Displays a gallery of design collections for different scooter models.
  * Features:
  * - Model selector (tabs or dropdown)
  * - Grid of design cards for the selected model
  * - Each card shows preview, name, description, price, and CTA
- * 
+ *
  * Clicking a design card navigates to the product detail page.
  */
 
@@ -42,12 +42,8 @@ export default function Gallery() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-            {t('gallery.title')}
-          </h2>
-          <p className="text-xl text-neutral-600 max-w-2xl mx-auto">
-            {t('gallery.subtitle')}
-          </p>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">{t('gallery.title')}</h2>
+          <p className="text-xl text-neutral-600 max-w-2xl mx-auto">{t('gallery.subtitle')}</p>
         </motion.div>
 
         {/* Model Selector */}
@@ -59,7 +55,7 @@ export default function Gallery() {
           className="mb-12"
         >
           <div className="flex flex-wrap gap-4 justify-center">
-            {models.map((model) => (
+            {models.map(model => (
               <button
                 key={model.id}
                 onClick={() => setSelectedModelId(model.id)}
@@ -109,4 +105,3 @@ export default function Gallery() {
     </section>
   )
 }
-

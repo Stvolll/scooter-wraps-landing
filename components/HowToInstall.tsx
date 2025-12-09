@@ -21,26 +21,22 @@ const STEPS: Record<'vi' | 'en', Step[]> = {
     {
       number: 2,
       title: 'Đo và cắt',
-      description:
-        'Đo kích thước chính xác và cắt decal theo hình dạng của từng bộ phận xe.',
+      description: 'Đo kích thước chính xác và cắt decal theo hình dạng của từng bộ phận xe.',
     },
     {
       number: 3,
       title: 'Áp dụng dung dịch',
-      description:
-        'Phun dung dịch nước xà phòng loãng lên bề mặt để dễ dàng điều chỉnh vị trí.',
+      description: 'Phun dung dịch nước xà phòng loãng lên bề mặt để dễ dàng điều chỉnh vị trí.',
     },
     {
       number: 4,
       title: 'Dán decal',
-      description:
-        'Dán từ từ, dùng dụng cụ ép để loại bỏ bọt khí, bắt đầu từ giữa ra ngoài.',
+      description: 'Dán từ từ, dùng dụng cụ ép để loại bỏ bọt khí, bắt đầu từ giữa ra ngoài.',
     },
     {
       number: 5,
       title: 'Cắt viền',
-      description:
-        'Cắt phần thừa cẩn thận bằng dao chuyên dụng, đảm bảo viền gọn gàng.',
+      description: 'Cắt phần thừa cẩn thận bằng dao chuyên dụng, đảm bảo viền gọn gàng.',
     },
     {
       number: 6,
@@ -59,32 +55,27 @@ const STEPS: Record<'vi' | 'en', Step[]> = {
     {
       number: 2,
       title: 'Measure & trim',
-      description:
-        'Measure accurately and trim the vinyl to match each body panel of the scooter.',
+      description: 'Measure accurately and trim the vinyl to match each body panel of the scooter.',
     },
     {
       number: 3,
       title: 'Apply solution',
-      description:
-        'Spray a light soap-water solution to help reposition the vinyl easily.',
+      description: 'Spray a light soap-water solution to help reposition the vinyl easily.',
     },
     {
       number: 4,
       title: 'Lay the vinyl',
-      description:
-        'Work slowly, using a squeegee to remove air bubbles from the center outwards.',
+      description: 'Work slowly, using a squeegee to remove air bubbles from the center outwards.',
     },
     {
       number: 5,
       title: 'Trim edges',
-      description:
-        'Carefully trim excess vinyl with a precision knife for clean edges.',
+      description: 'Carefully trim excess vinyl with a precision knife for clean edges.',
     },
     {
       number: 6,
       title: 'Finish up',
-      description:
-        'Use a heat gun to seal the vinyl, then inspect and refine the final details.',
+      description: 'Use a heat gun to seal the vinyl, then inspect and refine the final details.',
     },
   ],
 }
@@ -123,12 +114,8 @@ export default function HowToInstall() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {sectionTitle}
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            {sectionSubtitle}
-          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{sectionTitle}</h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">{sectionSubtitle}</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
@@ -145,13 +132,9 @@ export default function HowToInstall() {
                 <div className="w-12 h-12 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold text-xl">
                   {step.number}
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900">
-                  {step.title}
-                </h3>
+                <h3 className="text-xl font-semibold text-gray-900">{step.title}</h3>
               </div>
-              <p className="text-gray-600">
-                {step.description}
-              </p>
+              <p className="text-gray-600">{step.description}</p>
             </motion.div>
           ))}
         </div>
@@ -165,12 +148,8 @@ export default function HowToInstall() {
         >
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                {videoTitle}
-              </h3>
-              <p className="text-gray-600">
-                {videoSubtitle}
-              </p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{videoTitle}</h3>
+              <p className="text-gray-600">{videoSubtitle}</p>
             </div>
             <button className="flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors min-h-[44px]">
               <PlayCircle size={24} />
@@ -187,12 +166,8 @@ export default function HowToInstall() {
           className="mt-12 bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-8 text-white text-center"
         >
           <CheckCircle size={48} className="mx-auto mb-4" />
-          <h3 className="text-2xl font-bold mb-4">
-            {ctaTitle}
-          </h3>
-          <p className="text-lg mb-6 opacity-90">
-            {ctaDescription}
-          </p>
+          <h3 className="text-2xl font-bold mb-4">{ctaTitle}</h3>
+          <p className="text-lg mb-6 opacity-90">{ctaDescription}</p>
           <button
             onClick={() => {
               const element = document.getElementById('production')
@@ -207,4 +182,3 @@ export default function HowToInstall() {
     </section>
   )
 }
-

@@ -39,9 +39,7 @@ export default function Header() {
   }
 
   return (
-    <header
-      className="fixed top-0 left-0 right-0 z-50 bg-transparent"
-    >
+    <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
       <nav className="container mx-auto px-4 md:px-8 lg:px-16 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -53,29 +51,30 @@ export default function Header() {
               onMouseLeave={() => setIsLogoHovered(false)}
               className="relative flex items-center gap-3"
             >
-            <div className="relative h-[53px] w-auto flex items-center">
-              <img
-                src="/hdr/TXD_logo.svg"
-                alt="TXD Logo"
-                className="h-[53px] w-auto object-contain logo-animated"
-                style={{
-                  filter: 'brightness(0) saturate(100%) invert(45%) sepia(85%) saturate(2500%) hue-rotate(160deg) brightness(95%) contrast(105%)',
-                }}
-              />
-            </div>
-            <AnimatePresence>
-              {isLogoHovered && (
-                <motion.span
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="text-sm text-white/60 font-normal whitespace-nowrap"
-                >
-                  tem xe dep
-                </motion.span>
-              )}
-            </AnimatePresence>
+              <div className="relative h-[53px] w-auto flex items-center">
+                <img
+                  src="/hdr/TXD_logo.svg"
+                  alt="TXD Logo"
+                  className="h-[53px] w-auto object-contain logo-animated"
+                  style={{
+                    filter:
+                      'brightness(0) saturate(100%) invert(45%) sepia(85%) saturate(2500%) hue-rotate(160deg) brightness(95%) contrast(105%)',
+                  }}
+                />
+              </div>
+              <AnimatePresence>
+                {isLogoHovered && (
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="text-sm text-white/60 font-normal whitespace-nowrap"
+                  >
+                    tem xe dep
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </motion.div>
           </Link>
 
@@ -119,7 +118,7 @@ export default function Header() {
             {/* Hamburger Menu Button */}
             <div className="menu-container relative">
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation()
                   setIsMenuOpen(!isMenuOpen)
                 }}

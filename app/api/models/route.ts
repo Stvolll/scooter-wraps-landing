@@ -67,10 +67,6 @@ export async function GET() {
       count: MODELS.length,
     })
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch models' },
-      { status: 500 }
-    )
+    return NextResponse.json({ success: false, error: 'Failed to fetch models' }, { status: 500 })
   }
 }
-

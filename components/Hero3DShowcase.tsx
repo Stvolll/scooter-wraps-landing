@@ -22,26 +22,26 @@ const DESIGN_VARIATIONS: Record<string, string[]> = {
   'honda-vision': ['/textures/design-1.jpg', '/textures/design-2.jpg', '/textures/design-3.jpg'],
   'honda-airblade': ['/textures/design-1.jpg', '/textures/design-2.jpg', '/textures/design-3.jpg'],
   'yamaha-nvx': ['/textures/design-1.jpg', '/textures/design-2.jpg', '/textures/design-3.jpg'],
-  'vinfast': ['/textures/design-1.jpg', '/textures/design-2.jpg', '/textures/design-3.jpg'],
-  'vespa': ['/textures/design-1.jpg', '/textures/design-2.jpg', '/textures/design-3.jpg'],
+  vinfast: ['/textures/design-1.jpg', '/textures/design-2.jpg', '/textures/design-3.jpg'],
+  vespa: ['/textures/design-1.jpg', '/textures/design-2.jpg', '/textures/design-3.jpg'],
 }
 
-function ScooterModel({ 
-  modelId, 
-  designIndex, 
-  onDesignChange 
-}: { 
+function ScooterModel({
+  modelId,
+  designIndex,
+  onDesignChange,
+}: {
   modelId: string
   designIndex: number
   onDesignChange: (index: number) => void
 }) {
   const model = SCOOTER_MODELS.find(m => m.id === modelId)
   const designs = DESIGN_VARIATIONS[modelId] || []
-  
+
   // Hooks must be called unconditionally
   const { scene } = useGLTF(model?.glbPath || '/models/honda-lead.glb')
   const texturePath = designs[designIndex] || designs[0] || '/textures/default.jpg'
-  
+
   // Load texture - hook must be called unconditionally with a valid path
   // Always use a fallback path to ensure the hook is always called
   const finalTexturePath = texturePath || '/textures/default.jpg'
@@ -69,12 +69,12 @@ function ScooterModel({
   return <primitive object={scene} scale={1} />
 }
 
-function ModelViewer({ 
-  modelId, 
-  designIndex, 
+function ModelViewer({
+  modelId,
+  designIndex,
   onDesignChange,
-  onTap 
-}: { 
+  onTap,
+}: {
   modelId: string
   designIndex: number
   onDesignChange: (index: number) => void
@@ -92,7 +92,7 @@ function ModelViewer({
     if (isRotating) {
       rotationRef.current += e.movementX * 0.01
       // Change design every 120 degrees of rotation
-      const newDesignIndex = Math.floor(Math.abs(rotationRef.current) / (Math.PI * 2 / 3)) % 3
+      const newDesignIndex = Math.floor(Math.abs(rotationRef.current) / ((Math.PI * 2) / 3)) % 3
       if (newDesignIndex !== designIndex) {
         onDesignChange(newDesignIndex)
       }
@@ -104,7 +104,7 @@ function ModelViewer({
   }
 
   return (
-    <div 
+    <div
       className="relative w-full h-full"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -119,8 +119,8 @@ function ModelViewer({
         <Suspense fallback={null}>
           <ambientLight intensity={0.5} />
           <directionalLight position={[5, 5, 5]} intensity={1} />
-          <ScooterModel 
-            modelId={modelId} 
+          <ScooterModel
+            modelId={modelId}
             designIndex={designIndex}
             onDesignChange={onDesignChange}
           />
@@ -163,12 +163,8 @@ export default function Hero3DShowcase() {
           transition={{ duration: 0.6 }}
           className="text-center mb-8"
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            {t('hero.title')}
-          </h1>
-          <p className="text-xl text-gray-600">
-            {t('hero.subtitle')}
-          </p>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{t('hero.title')}</h1>
+          <p className="text-xl text-gray-600">{t('hero.subtitle')}</p>
         </motion.div>
 
         {/* Model Selector */}
@@ -199,7 +195,7 @@ export default function Hero3DShowcase() {
             onDesignChange={setDesignIndex}
             onTap={scrollToDesigns}
           />
-          
+
           {/* Fullscreen Button */}
           <button
             onClick={() => setIsFullscreen(true)}
@@ -248,7 +244,7 @@ export default function Hero3DShowcase() {
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
               className="relative w-full h-full max-w-6xl"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               <ModelViewer
                 modelId={SCOOTER_MODELS[selectedModel].id}
@@ -269,4 +265,3 @@ export default function Hero3DShowcase() {
     </section>
   )
 }
-

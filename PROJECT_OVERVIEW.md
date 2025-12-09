@@ -9,6 +9,7 @@ This document provides a beginner-friendly guide to understanding and working wi
 ## What is TXD?
 
 **TXD** is a premium brand that sells vinyl wrap kits (cover-sets) with custom designs for different scooter models. The website allows users to:
+
 - Browse ready-made designs for various scooter models
 - Request custom designs
 - Order vinyl wrap kits
@@ -18,26 +19,31 @@ This document provides a beginner-friendly guide to understanding and working wi
 ## Tech Stack Explained
 
 ### Next.js (Framework)
+
 - **What it is**: A React framework that makes building websites easier
 - **Why we use it**: It provides great performance, SEO features, and makes deployment simple
 - **Version**: 14.x (using the App Router)
 
 ### TypeScript
+
 - **What it is**: JavaScript with type checking
 - **Why we use it**: Helps catch errors early and makes code easier to understand
 - **Files**: All `.ts` and `.tsx` files
 
 ### Tailwind CSS
+
 - **What it is**: A utility-first CSS framework
 - **Why we use it**: Makes styling fast and consistent
 - **Configuration**: `tailwind.config.ts`
 
 ### React Three Fiber
+
 - **What it is**: A React library for 3D graphics
 - **Why we use it**: Powers the interactive 3D scooter model in the hero section
 - **Dependencies**: `@react-three/fiber`, `@react-three/drei`, `three`
 
 ### Framer Motion
+
 - **What it is**: A library for smooth animations
 - **Why we use it**: Creates the premium, smooth animations throughout the site
 
@@ -240,11 +246,13 @@ The `t()` function looks up the translation based on the current language.
 The hero section features an interactive 3D scooter model. As you rotate it, different designs cycle through like a kaleidoscope.
 
 **How it works**:
+
 1. The `ThreeDViewer` component tracks the rotation angle
 2. When rotation crosses certain thresholds (every 60 degrees by default), it changes the displayed design
 3. Designs are stored in an array and cycled through based on rotation
 
 **To customize**:
+
 - Edit `/components/ThreeDViewer.tsx`
 - Adjust the `angleStep` calculation to change how often designs switch
 - Add more designs to the array passed to the component
@@ -268,12 +276,14 @@ To change colors, edit the `colors` section in `tailwind.config.ts`.
 The project uses **Inter** font from Google Fonts. It's loaded in `app/layout.tsx`.
 
 To change fonts:
+
 1. Import a new font in `app/layout.tsx`
 2. Update the `fontFamily` in `tailwind.config.ts`
 
 ### Spacing and Layout
 
 The design uses:
+
 - Generous white space
 - Large, bold headings
 - Clean, minimal layout
@@ -376,6 +386,7 @@ const [language, setLanguageState] = useState<Language>('vi') // or 'en'
 ### Modify Animations
 
 Animations use Framer Motion. Edit the `motion` components in any file to adjust:
+
 - Duration: `transition={{ duration: 0.6 }}`
 - Delay: `transition={{ delay: 0.2 }}`
 - Type: `transition={{ type: 'spring' }}`
@@ -424,6 +435,7 @@ Run `npm install` to ensure all dependencies are installed.
 ## Support
 
 For questions or issues:
+
 - Check this documentation first
 - Review component comments in the code
 - Check Next.js documentation: [nextjs.org/docs](https://nextjs.org/docs)
@@ -433,6 +445,7 @@ For questions or issues:
 ## Project Status
 
 ✅ **Completed**:
+
 - Project structure and configuration
 - All main sections (Hero, Gallery, Contact, etc.)
 - Multi-language support (EN/VI)
@@ -441,6 +454,7 @@ For questions or issues:
 - Dynamic product pages
 
 🔄 **To Do**:
+
 - Add actual 3D model files
 - Add real design preview images
 - Connect to backend API
@@ -451,4 +465,3 @@ For questions or issues:
 ---
 
 **Happy coding!** 🚀
-

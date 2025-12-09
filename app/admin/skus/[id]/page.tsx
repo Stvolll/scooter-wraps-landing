@@ -16,7 +16,7 @@ export default function EditSKUPage({ params }: { params: { id: string } }) {
       setLoading(false)
       return
     }
-    
+
     fetchSKU()
   }, [params.id])
 
@@ -24,7 +24,7 @@ export default function EditSKUPage({ params }: { params: { id: string } }) {
     try {
       const res = await fetch(`/api/skus/${params.id}`)
       const data = await res.json()
-      
+
       if (data.success) {
         setSku(data.data)
       } else {
@@ -54,10 +54,7 @@ export default function EditSKUPage({ params }: { params: { id: string } }) {
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <button
-            onClick={() => router.back()}
-            className="text-blue-600 hover:underline mb-4"
-          >
+          <button onClick={() => router.back()} className="text-blue-600 hover:underline mb-4">
             ← Back to list
           </button>
           <h1 className="text-3xl font-bold text-gray-900">
@@ -81,4 +78,3 @@ export default function EditSKUPage({ params }: { params: { id: string } }) {
     </div>
   )
 }
-

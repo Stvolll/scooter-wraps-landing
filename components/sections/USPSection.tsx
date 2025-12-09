@@ -22,33 +22,33 @@ export default function USPSection() {
       icon: '🎨',
       title: t('usp.premiumMaterials.title'),
       description: t('usp.premiumMaterials.description'),
-      color: '#00FFA9'
+      color: '#00FFA9',
     },
     {
       icon: '⚡',
       title: t('usp.fastInstallation.title'),
       description: t('usp.fastInstallation.description'),
-      color: '#00D4FF'
+      color: '#00D4FF',
     },
     {
       icon: '💎',
       title: t('usp.customDesign.title'),
       description: t('usp.customDesign.description'),
-      color: '#B77EFF'
+      color: '#B77EFF',
     },
     {
       icon: '🛡️',
       title: t('usp.protectionIncluded.title'),
       description: t('usp.protectionIncluded.description'),
-      color: '#FFB800'
-    }
+      color: '#FFB800',
+    },
   ]
 
   return (
     <section className="relative pt-12 md:pt-16 pb-20 md:pb-32 overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-black via-neutral-900 to-black" />
-      
+
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00FFA9] rounded-full blur-[128px]" />
@@ -66,9 +66,7 @@ export default function USPSection() {
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
             {t('usp.title')}
           </h2>
-          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto">
-            {t('usp.subtitle')}
-          </p>
+          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto">{t('usp.subtitle')}</p>
         </motion.div>
 
         {/* USP Grid */}
@@ -89,11 +87,12 @@ export default function USPSection() {
                   backdropFilter: 'blur(24px) saturate(180%)',
                   WebkitBackdropFilter: 'blur(24px) saturate(180%)',
                   border: '1px solid rgba(255, 255, 255, 0.12)',
-                  boxShadow: '0 12px 40px -8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08) inset',
+                  boxShadow:
+                    '0 12px 40px -8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08) inset',
                 }}
               >
                 {/* Icon */}
-                <div 
+                <div
                   className="text-5xl mb-4 transition-transform duration-300 group-hover:scale-110"
                   style={{
                     filter: `drop-shadow(0 0 20px ${item.color}40)`,
@@ -103,14 +102,10 @@ export default function USPSection() {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  {item.title}
-                </h3>
+                <h3 className="text-xl font-semibold text-white mb-2">{item.title}</h3>
 
                 {/* Description */}
-                <p className="text-sm text-white/60 leading-relaxed">
-                  {item.description}
-                </p>
+                <p className="text-sm text-white/60 leading-relaxed">{item.description}</p>
 
                 {/* Glow effect on hover */}
                 <div
@@ -152,4 +147,3 @@ export default function USPSection() {
     </section>
   )
 }
-

@@ -2,10 +2,10 @@
 
 /**
  * DonateSection Component
- * 
+ *
  * Section for accepting donations to support project development.
  * Includes description and donation button.
- * 
+ *
  * In production, wire the button to PayPal, Stripe, or other payment processor.
  */
 
@@ -32,9 +32,7 @@ export default function DonateSection() {
           transition={{ duration: 0.6 }}
           className="text-center space-y-6"
         >
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold">
-            {t('donate.title')}
-          </h2>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold">{t('donate.title')}</h2>
           <p className="text-xl text-neutral-600 max-w-2xl mx-auto leading-relaxed">
             {t('donate.description')}
           </p>
@@ -51,4 +49,3 @@ export default function DonateSection() {
     </section>
   )
 }
-
