@@ -177,7 +177,8 @@
   "page": {
     "chooseDesign": "Choose your design or create your own",
     "swipeToExplore": "Swipe to explore →",
-    "loading3D": "Loading 3D Viewer..."
+    "loading3D": "Loading 3D Viewer...",
+    "scrollUpToChoose": "Scroll up to choose design"
   },
   "usp": {
     "title": "Why Choose TXD?",
@@ -287,6 +288,11 @@
     "callNow": "Call Now",
     "sendEmail": "Send Email",
     "getDirections": "Get Directions"
+  },
+  "maintenance": {
+    "title": "Site Under Maintenance",
+    "message": "We're currently performing scheduled maintenance. Please check back soon.",
+    "backHome": "Go Home"
   }
 }
 

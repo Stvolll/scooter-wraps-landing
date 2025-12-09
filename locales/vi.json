@@ -177,7 +177,8 @@
   "page": {
     "chooseDesign": "Chọn thiết kế của bạn hoặc tạo thiết kế riêng",
     "swipeToExplore": "Vuốt để khám phá →",
-    "loading3D": "Đang tải Trình xem 3D..."
+    "loading3D": "Đang tải Trình xem 3D...",
+    "scrollUpToChoose": "Cuộn lên để chọn thiết kế"
   },
   "usp": {
     "title": "Tại Sao Chọn TXD?",
@@ -287,6 +288,11 @@
     "callNow": "Gọi Ngay",
     "sendEmail": "Gửi Email",
     "getDirections": "Xem Chỉ Đường"
+  },
+  "maintenance": {
+    "title": "Trang Web Đang Bảo Trì",
+    "message": "Chúng tôi đang thực hiện bảo trì theo lịch trình. Vui lòng quay lại sau.",
+    "backHome": "Về Trang Chủ"
   }
 }
 

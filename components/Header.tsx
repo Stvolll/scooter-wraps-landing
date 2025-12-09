@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '@/contexts/LanguageContext'
 import LanguageSwitcher from './LanguageSwitcher'
@@ -44,14 +45,14 @@ export default function Header() {
       <nav className="container mx-auto px-4 md:px-8 lg:px-16 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            onMouseEnter={() => setIsLogoHovered(true)}
-            onMouseLeave={() => setIsLogoHovered(false)}
-            className="relative flex items-center gap-3"
-          >
+          <Link href="/" className="relative flex items-center gap-3">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onMouseEnter={() => setIsLogoHovered(true)}
+              onMouseLeave={() => setIsLogoHovered(false)}
+              className="relative flex items-center gap-3"
+            >
             <div className="relative h-[53px] w-auto flex items-center">
               <img
                 src="/hdr/TXD_logo.svg"
@@ -75,7 +76,8 @@ export default function Header() {
                 </motion.span>
               )}
             </AnimatePresence>
-          </motion.button>
+            </motion.div>
+          </Link>
 
           {/* Navigation Menu */}
           <div className="flex items-center gap-4">

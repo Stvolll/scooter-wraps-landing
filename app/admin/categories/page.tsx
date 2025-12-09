@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Category } from '@/types/sku'
 
 export default function CategoriesPage() {
@@ -96,35 +97,62 @@ export default function CategoriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <a href="/admin" className="text-blue-600 hover:underline mb-4 block">
+    <div 
+      className="min-h-screen p-8"
+      style={{
+        background: 'linear-gradient(180deg, rgba(0, 0, 0, 1) 0%, rgba(15, 15, 15, 1) 5%, rgba(15, 15, 15, 1) 100%)',
+      }}
+    >
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8 pt-24 px-4 md:px-8 lg:px-16">
+          <Link 
+            href="/admin" 
+            className="text-[#00FFA9] hover:text-[#00D4FF] transition-colors mb-4 block text-sm font-medium"
+          >
             ← Back to SKUs
-          </a>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Categories</h1>
-          <p className="text-gray-600">Manage product categories</p>
+          </Link>
+          <h1 className="text-4xl md:text-5xl font-semibold text-white mb-2">Categories</h1>
+          <p className="text-white/60">Manage product categories</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div 
+          className="mb-6 p-6 mx-4 md:mx-8 lg:mx-16"
+          style={{
+            background: 'rgba(255, 255, 255, 0.06)',
+            backdropFilter: 'blur(24px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+            borderRadius: '28px',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            boxShadow: '0 8px 32px -4px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.08) inset',
+          }}
+        >
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Category List</h2>
+            <h2 className="text-xl font-semibold text-white">Category List</h2>
             <button
               onClick={() => {
                 setShowForm(!showForm)
                 setEditing(null)
                 setFormData({ name: '', parent_id: '' })
               }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-3 rounded-2xl font-semibold text-white transition-all hover:bg-white/10"
+              style={{
+                background: showForm ? 'rgba(255, 255, 255, 0.05)' : 'linear-gradient(135deg, #00FFA9 0%, #00D4FF 100%)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: showForm ? 'none' : '0 8px 32px -4px rgba(0, 255, 169, 0.4)',
+              }}
             >
               {showForm ? 'Cancel' : '+ New Category'}
             </button>
           </div>
 
           {showForm && (
-            <form onSubmit={handleSubmit} className="mb-6 p-4 bg-gray-50 rounded-lg space-y-4">
+            <form onSubmit={handleSubmit} className="mb-6 p-4 rounded-2xl space-y-4" style={{
+              background: 'rgba(255, 255, 255, 0.04)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-white/80 mb-1">
                   Name *
                 </label>
                 <input
@@ -132,23 +160,29 @@ export default function CategoriesPage() {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm focus:ring-2 focus:ring-[#00FFA9] focus:border-[#00FFA9] transition-all text-white placeholder:text-white/30"
+                  style={{
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2) inset',
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-white/80 mb-1">
                   Parent Category
                 </label>
                 <select
                   value={formData.parent_id}
                   onChange={(e) => setFormData({ ...formData, parent_id: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm focus:ring-2 focus:ring-[#00FFA9] focus:border-[#00FFA9] transition-all text-white"
+                  style={{
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2) inset',
+                  }}
                 >
-                  <option value="">No Parent</option>
+                  <option value="" className="bg-neutral-900 text-white">No Parent</option>
                   {categories
                     .filter(c => !editing || c.id !== editing.id)
                     .map((cat) => (
-                      <option key={cat.id} value={cat.id}>
+                      <option key={cat.id} value={cat.id} className="bg-neutral-900 text-white">
                         {cat.name}
                       </option>
                     ))}
@@ -156,7 +190,11 @@ export default function CategoriesPage() {
               </div>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-6 py-3 rounded-2xl font-semibold text-black transition-all hover:scale-105"
+                style={{
+                  background: 'linear-gradient(135deg, #00FFA9 0%, #00D4FF 100%)',
+                  boxShadow: '0 8px 32px -4px rgba(0, 255, 169, 0.4)',
+                }}
               >
                 {editing ? 'Update' : 'Create'} Category
               </button>
@@ -164,35 +202,49 @@ export default function CategoriesPage() {
           )}
 
           {loading ? (
-            <p className="text-gray-500">Loading...</p>
+            <p className="text-white/60 text-center py-12">Loading...</p>
           ) : categories.length === 0 ? (
-            <p className="text-gray-500">No categories found</p>
+            <p className="text-white/60 text-center py-12">No categories found</p>
           ) : (
             <div className="space-y-2">
               {categories.map((cat) => (
                 <div
                   key={cat.id}
-                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
+                  className="flex items-center justify-between p-4 rounded-2xl transition-all hover:scale-[1.01] hover:bg-white/10"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    boxShadow: '0 8px 32px -4px rgba(0, 0, 0, 0.3)',
+                  }}
                 >
                   <div>
-                    <span className="font-medium">{cat.name}</span>
+                    <span className="font-medium text-white">{cat.name}</span>
                     {cat.parent_id && (
-                      <span className="text-sm text-gray-500 ml-2">
+                      <span className="text-sm text-white/50 ml-2">
                         (Parent: {getCategoryName(cat.parent_id)})
                       </span>
                     )}
-                    <span className="text-xs text-gray-400 ml-2">/{cat.slug}</span>
+                    <span className="text-xs text-white/40 ml-2">/{cat.slug}</span>
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(cat)}
-                      className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                      className="px-4 py-2 rounded-xl text-sm font-medium text-[#00FFA9] transition-all hover:bg-[#00FFA9]/10"
+                      style={{
+                        background: 'rgba(0, 255, 169, 0.1)',
+                        border: '1px solid rgba(0, 255, 169, 0.2)',
+                      }}
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(cat.id)}
-                      className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                      className="px-4 py-2 rounded-xl text-sm font-medium text-red-400 transition-all hover:bg-red-500/10"
+                      style={{
+                        background: 'rgba(255, 59, 48, 0.1)',
+                        border: '1px solid rgba(255, 59, 48, 0.2)',
+                      }}
                     >
                       Delete
                     </button>
