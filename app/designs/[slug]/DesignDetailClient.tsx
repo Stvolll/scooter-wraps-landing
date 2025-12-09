@@ -31,7 +31,12 @@ export default function DesignDetailClient({ design }: DesignDetailClientProps) 
   const isSoldOut = design.editionAvailable === 0 || design.status === DesignStatus.SOLD
   const isInDevelopment = design.status < DesignStatus.FOR_SALE
 
-  const images = design.galleryImages.length > 0 ? design.galleryImages : design.coverImage ? [design.coverImage] : []
+  const images =
+    design.galleryImages.length > 0
+      ? design.galleryImages
+      : design.coverImage
+        ? [design.coverImage]
+        : []
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-black">
@@ -146,4 +151,3 @@ export default function DesignDetailClient({ design }: DesignDetailClientProps) 
     </div>
   )
 }
-

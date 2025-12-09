@@ -37,7 +37,7 @@ const nextConfig = {
       ...(process.env.IMAGE_CDN_DOMAIN
         ? [
             {
-              protocol: 'https' as const,
+              protocol: 'https',
               hostname: process.env.IMAGE_CDN_DOMAIN,
               pathname: '/**',
             },
@@ -48,7 +48,7 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ['three', '@react-three/fiber', '@react-three/drei'],
-    optimizeCss: true,
+    // optimizeCss: true, // Requires 'critters' package - disabled for now
   },
   // Cache-Control headers configuration
   async headers() {

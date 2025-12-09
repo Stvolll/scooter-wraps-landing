@@ -99,9 +99,7 @@ export default function DesignTimeline({
                 />
                 {index < STATUS_ORDER.length - 1 && (
                   <div
-                    className={`w-0.5 flex-1 mt-2 ${
-                      isCompleted ? 'bg-[#00FFA9]' : 'bg-white/10'
-                    }`}
+                    className={`w-0.5 flex-1 mt-2 ${isCompleted ? 'bg-[#00FFA9]' : 'bg-white/10'}`}
                     style={{ minHeight: '40px' }}
                   />
                 )}
@@ -111,11 +109,7 @@ export default function DesignTimeline({
               <div className="flex-1 pb-4">
                 <div
                   className={`font-medium ${
-                    isActive
-                      ? 'text-[#00FFA9]'
-                      : isCompleted
-                        ? 'text-white'
-                        : 'text-white/40'
+                    isActive ? 'text-[#00FFA9]' : isCompleted ? 'text-white' : 'text-white/40'
                   }`}
                 >
                   {isActive ? labels.active : isCompleted ? labels.past : labels.active}
@@ -187,4 +181,3 @@ export default function DesignTimeline({
     </div>
   )
 }
-

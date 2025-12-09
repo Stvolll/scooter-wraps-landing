@@ -1,6 +1,11 @@
 // app/admin/designs/new/page.tsx
+'use client'
+
 import { createDesign } from '../actions'
 import Link from 'next/link'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import FileUpload from '@/components/FileUpload'
 
 export default function NewDesignPage() {
   const router = useRouter()
@@ -65,10 +70,7 @@ export default function NewDesignPage() {
               '0 8px 32px -4px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.08) inset',
           }}
         >
-          <form
-            action={handleSubmit}
-            className="space-y-4"
-          >
+          <form action={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-white/80 mb-1">Title *</label>
               <input
@@ -145,18 +147,18 @@ export default function NewDesignPage() {
               <FileUpload
                 label="Cover Image"
                 accept="image/*"
-                onUploadComplete={(url) => setCoverImage(url)}
+                onUploadComplete={url => setCoverImage(url)}
               />
               <FileUpload
                 label="3D Model (GLB)"
                 accept=".glb,model/gltf-binary"
                 maxSize={50 * 1024 * 1024}
-                onUploadComplete={(url) => setGlbModelUrl(url)}
+                onUploadComplete={url => setGlbModelUrl(url)}
               />
               <FileUpload
                 label="Texture"
                 accept="image/*"
-                onUploadComplete={(url) => setTextureUrl(url)}
+                onUploadComplete={url => setTextureUrl(url)}
               />
             </div>
 

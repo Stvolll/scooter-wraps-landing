@@ -4,10 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { DesignStatus } from '@prisma/client'
 import { updateDesignStatus } from '@/app/admin/designs/actions'
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const id = params.id
     const body = await req.json()
@@ -36,9 +33,6 @@ export async function POST(
     return NextResponse.json({ ok: true, design: updated })
   } catch (e: any) {
     console.error('Stage update error:', e)
-    return NextResponse.json(
-      { error: e.message || 'server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: e.message || 'server error' }, { status: 500 })
   }
 }

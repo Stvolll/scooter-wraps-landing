@@ -99,7 +99,9 @@ export default async function DesignsPage() {
                           <span className="text-white/40">○ Draft</span>
                         )}
                         <span className="text-white/30">•</span>
-                        <span className="capitalize">{d.status?.toLowerCase().replace('_', ' ')}</span>
+                        <span className="capitalize">
+                          {d.status?.toLowerCase().replace('_', ' ')}
+                        </span>
                       </div>
                     </div>
                     <div className="flex gap-2">

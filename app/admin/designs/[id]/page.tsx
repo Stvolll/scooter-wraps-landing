@@ -19,19 +19,22 @@ export default async function DesignEditPage({ params }: { params: { id: string 
   } catch (error: any) {
     console.error('Database error:', error.message)
   }
-  
+
   if (!design) {
     return (
       <div
         className="min-h-screen p-8 flex items-center justify-center"
         style={{
-          background: 'linear-gradient(180deg, rgba(0, 0, 0, 1) 0%, rgba(15, 15, 15, 1) 5%, rgba(15, 15, 15, 1) 100%)',
+          background:
+            'linear-gradient(180deg, rgba(0, 0, 0, 1) 0%, rgba(15, 15, 15, 1) 5%, rgba(15, 15, 15, 1) 100%)',
         }}
       >
         <div className="text-center">
           <h1 className="text-2xl font-semibold text-white mb-4">Design Not Found</h1>
           <p className="text-white/60 mb-4">
-            {design === null ? 'Database not configured. Please set DATABASE_URL in .env.local' : 'Design does not exist'}
+            {design === null
+              ? 'Database not configured. Please set DATABASE_URL in .env.local'
+              : 'Design does not exist'}
           </p>
           <Link
             href="/admin/designs"

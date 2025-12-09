@@ -50,9 +50,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // Memoize translation function to avoid recreating on every render
+  // Get translation function (hooks must be called at top level)
+  const translationFn = useTranslations(language)
+
+  // Memoize translation wrapper function
   const t = useMemo(() => {
-    const translationFn = useTranslations(language)
     return (key: string): string => {
       try {
         return translationFn(key)
@@ -61,7 +63,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         return key
       }
     }
-  }, [language])
+  }, [translationFn])
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

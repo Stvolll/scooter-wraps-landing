@@ -2,7 +2,7 @@
 
 /**
  * Generate responsive image versions
- * Reads images from public/images/designs/**/*.{jpg,png}
+ * Reads images from public/images/designs/ (jpg, png files)
  * Generates sizes [320, 640, 1024, 1600] in WebP and AVIF formats
  * Outputs to public/_optimized/ with manifest.json
  */

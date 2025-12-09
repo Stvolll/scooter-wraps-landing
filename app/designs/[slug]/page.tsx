@@ -112,4 +112,3 @@ export default async function DesignPage({ params }: PageProps) {
 
   return <DesignDetailClient design={design} />
 }
-

@@ -1,6 +1,6 @@
 export default function StructuredData() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://txd.bike'
-  
+
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'Store',

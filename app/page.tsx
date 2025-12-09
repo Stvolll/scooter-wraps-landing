@@ -16,7 +16,7 @@ import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { scooters, getDefaultScooter } from '@/config/scooters'
 import { useLanguage } from '@/contexts/LanguageContext'
-import DesignCard from '@/components/DesignCard'
+import LandingDesignCard from '@/components/LandingDesignCard'
 import ThreeDViewerPlaceholder from '@/components/ThreeDViewerPlaceholder'
 
 // Landing sections
@@ -313,7 +313,7 @@ export default function Home() {
 
                 return (
                   <div key={design.id} className="snap-start">
-                    <DesignCard
+                    <LandingDesignCard
                       design={design}
                       modelName={currentScooter.name}
                       modelId={currentScooter.id}

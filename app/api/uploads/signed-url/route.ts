@@ -8,8 +8,7 @@ const s3Client = new S3Client({
   endpoint: process.env.S3_ENDPOINT,
   credentials: {
     accessKeyId: process.env.S3_KEY || process.env.AWS_ACCESS_KEY_ID || '',
-    secretAccessKey:
-      process.env.S3_SECRET || process.env.AWS_SECRET_ACCESS_KEY || '',
+    secretAccessKey: process.env.S3_SECRET || process.env.AWS_SECRET_ACCESS_KEY || '',
   },
 })
 
@@ -22,10 +21,7 @@ export async function POST(req: NextRequest) {
     const { filename, contentType, fileSize } = await req.json()
 
     if (!filename || !contentType) {
-      return NextResponse.json(
-        { error: 'filename and contentType are required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'filename and contentType are required' }, { status: 400 })
     }
 
     // Validate file size
@@ -51,10 +47,7 @@ export async function POST(req: NextRequest) {
 
     const bucket = process.env.S3_BUCKET || process.env.AWS_S3_BUCKET_NAME
     if (!bucket) {
-      return NextResponse.json(
-        { error: 'S3 bucket not configured' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'S3 bucket not configured' }, { status: 500 })
     }
 
     // Generate unique key
@@ -86,4 +79,3 @@ export async function POST(req: NextRequest) {
     )
   }
 }
-

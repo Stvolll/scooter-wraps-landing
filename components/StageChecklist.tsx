@@ -173,9 +173,7 @@ export default function StageChecklist({
                 />
               </div>
             )}
-            {(isCompleted || isActive) && (
-              <span className="text-[#00FFA9] text-lg">✓</span>
-            )}
+            {(isCompleted || isActive) && <span className="text-[#00FFA9] text-lg">✓</span>}
           </div>
         )
       })}

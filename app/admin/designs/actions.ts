@@ -46,11 +46,7 @@ export async function createDesign(data: {
   return design
 }
 
-export async function updateDesignStatus(
-  designId: string,
-  status: DesignStatus,
-  note?: string
-) {
+export async function updateDesignStatus(designId: string, status: DesignStatus, note?: string) {
   // Get current design to check status progression
   const design = await prisma.design.findUnique({ where: { id: designId } })
   if (!design) throw new Error('Design not found')
@@ -97,11 +93,7 @@ export async function togglePublish(designId: string, publish: boolean) {
   })
 }
 
-export async function createDeal(
-  designId: string,
-  buyerName?: string,
-  buyerEmail?: string
-) {
+export async function createDeal(designId: string, buyerName?: string, buyerEmail?: string) {
   return prisma.deal.create({
     data: {
       designId,
