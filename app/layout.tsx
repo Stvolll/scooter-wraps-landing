@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     'Premium vinyl wrap cover-sets for multiple scooter models. Explore ready-made styles or create your own custom design.',
   keywords:
     'vinyl wraps, scooter wraps, custom scooter design, premium vinyl, Honda Lead, Yamaha Nouvo, scooter customization',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
+  // viewport moved to separate export (see below)
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',

@@ -39,6 +39,7 @@ cp .env.example .env.local
 ```
 
 Required variables:
+
 - `DATABASE_URL` - PostgreSQL connection string
 - `S3_BUCKET` or `AWS_S3_BUCKET_NAME` - S3 bucket name
 - `S3_KEY` or `AWS_ACCESS_KEY_ID` - S3 access key
@@ -85,22 +86,26 @@ This project uses the Design Lifecycle System and has removed SKU-based flows.
 ### After pulling this branch:
 
 1. **Copy environment file:**
+
    ```bash
    cp .env.example .env.local
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Generate Prisma client and run migration:**
+
    ```bash
    npx prisma generate
    npx prisma migrate dev --name design-lifecycle-init
    ```
 
 4. **(Optional) Run image optimization:**
+
    ```bash
    npm run image:build
    ```
@@ -211,6 +216,7 @@ npm run image:build
 ```
 
 This creates:
+
 - Multiple sizes (320w, 640w, 1024w, 1600w)
 - WebP and AVIF formats
 - Manifest file at `public/_optimized/manifest.json`

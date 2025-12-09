@@ -95,11 +95,13 @@ npx prisma migrate deploy
 ### Перед деплоем
 
 1. Оптимизируйте 3D модели:
+
    ```bash
    npm run gltf:compress
    ```
 
 2. Оптимизируйте текстуры:
+
    ```bash
    npm run texture:optimize
    ```
@@ -129,6 +131,7 @@ npx prisma studio
 ### Логи
 
 Проверяйте логи на наличие ошибок:
+
 - Database connection errors
 - S3 upload errors
 - Prisma query errors
@@ -184,4 +187,3 @@ jobs:
       - run: npm run build
       - run: npm test
 ```
-

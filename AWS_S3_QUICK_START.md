@@ -28,7 +28,12 @@
   {
     "AllowedHeaders": ["*"],
     "AllowedMethods": ["PUT", "POST", "GET", "HEAD"],
-    "AllowedOrigins": ["http://localhost:3000", "https://txd.bike", "https://decalwrap.co", "https://*.vercel.app"],
+    "AllowedOrigins": [
+      "http://localhost:3000",
+      "https://txd.bike",
+      "https://decalwrap.co",
+      "https://*.vercel.app"
+    ],
     "ExposeHeaders": ["ETag", "x-amz-server-side-encryption"],
     "MaxAgeSeconds": 3000
   }

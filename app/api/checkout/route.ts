@@ -1,21 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { validateRequest, checkoutSchema } from '@/lib/validation'
+import {
+  secureResponse,
+  securityErrorResponse,
+  getClientIdentifier,
+  rateLimit,
+} from '@/lib/security'
 
 export const dynamic = 'force-dynamic'
 
-interface CheckoutRequest {
-  designId: string
-  paymentMethod: 'cod' | 'momo' | 'zalopay' | 'bank' | 'card'
-  deliveryOption: 'shipping' | 'shipping-install'
-  name: string
-  phone: string
-  email?: string
-  address: string
-  totalPrice: number
-}
-
 export async function POST(request: NextRequest) {
   try {
-    const body: CheckoutRequest = await request.json()
+    // Rate limiting
+    const identifier = getClientIdentifier(request)
+    const rateLimitResult = await rateLimit(request, identifier, 5, 60) // 5 requests per minute
+    if (!rateLimitResult.success) {
+      return securityErrorResponse('Too many requests. Please try again later.', 429, {
+        identifier,
+      })
+    }
+
+    // Validate request
+    const validation = await validateRequest(request, checkoutSchema)
+    if (!validation.success) {
+      return securityErrorResponse(validation.error, validation.status)
+    }
+
+    const body = validation.data
 
     // Validate required fields
     if (!body.designId || !body.paymentMethod || !body.name || !body.phone || !body.address) {
@@ -66,17 +77,14 @@ export async function POST(request: NextRequest) {
     //   data: order,
     // })
 
-    return NextResponse.json({
+    return secureResponse({
       success: true,
       orderId,
       paymentUrl,
       message: 'Order created successfully',
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Checkout error:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to process checkout' },
-      { status: 500 }
-    )
+    return securityErrorResponse('Failed to process checkout', 500, { error: error.message })
   }
 }

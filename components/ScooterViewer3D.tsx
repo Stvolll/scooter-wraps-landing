@@ -60,27 +60,101 @@ function ScooterModel({
   useEffect(() => {
     if (selectedDesign?.texture && scene) {
       const textureLoader = new THREE.TextureLoader()
+      const texturePath = selectedDesign.texture.startsWith('/') 
+        ? selectedDesign.texture 
+        : `/${selectedDesign.texture}`
+      
+      console.log('🎨 [ScooterViewer3D] Loading texture:', texturePath)
+      
       textureLoader.load(
-        selectedDesign.texture,
+        texturePath,
         texture => {
+          console.log('✅ [ScooterViewer3D] Texture loaded:', texturePath)
           texture.flipY = false
+          
+          // Set proper encoding
+          if (THREE.sRGBEncoding !== undefined) {
+            texture.encoding = THREE.sRGBEncoding
+          } else if (THREE.SRGBColorSpace !== undefined) {
+            texture.colorSpace = THREE.SRGBColorSpace
+          }
+          
+          texture.needsUpdate = true
+          
+          let materialsFound = 0
+          let materialsUpdated = 0
+          
           scene.traverse(node => {
             if (node instanceof THREE.Mesh && node.material) {
               const materials = Array.isArray(node.material) ? node.material : [node.material]
+              materialsFound += materials.length
+              
               materials.forEach(material => {
-                if (
-                  material instanceof THREE.MeshStandardMaterial ||
-                  material instanceof THREE.MeshPhysicalMaterial
-                ) {
+                // Apply to ANY material type, not just MeshStandardMaterial
+                if (material && typeof material === 'object') {
+                  // Store original properties
+                  const originalMap = material.map
+                  
+                  // Apply texture
                   material.map = texture
+                  
+                  // Ensure material properties are correct
+                  if (material.metalness !== undefined && material.metalness > 0.8) {
+                    material.metalness = 0.2
+                  }
+                  if (material.roughness !== undefined && material.roughness > 0.8) {
+                    material.roughness = 0.6
+                  }
+                  
+                  // Force updates
                   material.needsUpdate = true
+                  if (material.map) {
+                    material.map.needsUpdate = true
+                  }
+                  
+                  // Update geometry UVs
+                  if (node.geometry) {
+                    node.geometry.uvsNeedUpdate = true
+                    if (node.geometry.attributes && node.geometry.attributes.uv) {
+                      node.geometry.attributes.uv.needsUpdate = true
+                    }
+                  }
+                  
+                  materialsUpdated++
+                  console.log('✅ [ScooterViewer3D] Texture applied to material:', {
+                    type: material.type,
+                    name: material.name || 'unnamed',
+                    hadMap: !!originalMap,
+                    hasMap: !!material.map,
+                  })
                 }
               })
             }
           })
+          
+          console.log(`📊 [ScooterViewer3D] Texture application: ${materialsUpdated}/${materialsFound} materials updated`)
+          
+          // Force all materials to update again
+          scene.traverse((obj) => {
+            if (obj instanceof THREE.Mesh && obj.material) {
+              const materials = Array.isArray(obj.material) ? obj.material : [obj.material]
+              materials.forEach((mat) => {
+                mat.needsUpdate = true
+                if (mat.map) {
+                  mat.map.needsUpdate = true
+                }
+              })
+              if (obj.geometry) {
+                obj.geometry.uvsNeedUpdate = true
+              }
+            }
+          })
         },
         undefined,
-        error => console.warn('Texture load error:', error)
+        error => {
+          console.error('❌ [ScooterViewer3D] Texture load error:', error)
+          console.error('   Texture path:', texturePath)
+        }
       )
     }
   }, [selectedDesign, scene])
@@ -248,8 +322,13 @@ function Scene({
       {/* Lighting */}
       <DynamicLighting rotationY={rotationY} />
 
-      {/* Environment - use neutral if panorama not available */}
-      <Environment preset="sunset" background />
+      {/* Environment - HDRI для правильного освещения PBR материалов */}
+      {/* Если panoramaUrl указан, используем его как HDRI, иначе используем preset */}
+      {panoramaUrl ? (
+        <Environment files={panoramaUrl} background />
+      ) : (
+        <Environment preset="sunset" background />
+      )}
 
       {/* Model */}
       <Suspense fallback={null}>

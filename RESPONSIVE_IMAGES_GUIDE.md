@@ -77,7 +77,6 @@ public/images/designs/
 
 ```tsx
 import Image from 'next/image'
-
 ;<Image
   src="/images/designs/honda-lead/honda-lead-0.jpg"
   alt="Honda Lead Design"

@@ -52,17 +52,23 @@ export default function DesignDetailClient({
   }
 
   const handlePrevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
+    setCurrentImageIndex(prev => (prev - 1 + images.length) % images.length)
   }
 
   const handleNextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % images.length)
+    setCurrentImageIndex(prev => (prev + 1) % images.length)
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-black" suppressHydrationWarning>
+    <div
+      className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-black"
+      suppressHydrationWarning
+    >
       {/* Back Button - Fixed position below main header */}
-      <div className="fixed top-20 left-0 right-0 z-50 pointer-events-none" suppressHydrationWarning>
+      <div
+        className="fixed top-20 left-0 right-0 z-50 pointer-events-none"
+        suppressHydrationWarning
+      >
         <div className="container mx-auto px-4 md:px-8">
           <Link
             href="/"
@@ -96,7 +102,7 @@ export default function DesignDetailClient({
                   className="object-cover transition-opacity duration-300"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                   key={currentImageIndex}
-                  onError={(e) => {
+                  onError={e => {
                     const target = e.target as HTMLImageElement
                     target.src = '/images/studio-panorama.png'
                   }}
@@ -155,7 +161,7 @@ export default function DesignDetailClient({
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 25vw, 200px"
-                      onError={(e) => {
+                      onError={e => {
                         const target = e.target as HTMLImageElement
                         target.src = '/images/studio-panorama.png'
                       }}
@@ -184,9 +190,7 @@ export default function DesignDetailClient({
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">{design.name}</h1>
               <p className="text-xl text-white/60 mb-4">For {scooter.name}</p>
               <div className="flex items-baseline gap-3">
-                <span className="text-5xl font-bold text-[#00FFA9]">
-                  {design.price || '$180'}
-                </span>
+                <span className="text-5xl font-bold text-[#00FFA9]">{design.price || '$180'}</span>
               </div>
             </div>
 

@@ -1,23 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { parseISO, isValid } from 'date-fns'
+import { validateRequest, bookingSchema } from '@/lib/validation'
+import {
+  secureResponse,
+  securityErrorResponse,
+  getClientIdentifier,
+  rateLimit,
+} from '@/lib/security'
 
 export const dynamic = 'force-dynamic'
 
-interface BookingRequest {
-  name: string
-  phone: string
-  email?: string
-  scooterModel: string
-  date: string
-  time: string
-  workshopId: string
-  timezone: string
-  notes?: string
-}
-
 export async function POST(request: NextRequest) {
   try {
-    const body: BookingRequest = await request.json()
+    // Rate limiting
+    const identifier = getClientIdentifier(request)
+    const rateLimitResult = await rateLimit(request, identifier, 5, 60) // 5 requests per minute
+    if (!rateLimitResult.success) {
+      return securityErrorResponse('Too many requests. Please try again later.', 429, {
+        identifier,
+      })
+    }
+
+    // Validate request
+    const validation = await validateRequest(request, bookingSchema)
+    if (!validation.success) {
+      return securityErrorResponse(validation.error, validation.status)
+    }
+
+    const body = validation.data
 
     // Validate required fields
     if (
@@ -104,7 +114,7 @@ export async function POST(request: NextRequest) {
     //   message: `Đặt lịch thành công! Mã đặt lịch: ${bookingId}. Ngày: ${body.date} lúc ${body.time}`
     // })
 
-    return NextResponse.json({
+    return secureResponse({
       success: true,
       bookingId,
       message: 'Booking created successfully',
@@ -115,8 +125,8 @@ export async function POST(request: NextRequest) {
         workshopId: body.workshopId,
       },
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Booking error:', error)
-    return NextResponse.json({ success: false, error: 'Failed to create booking' }, { status: 500 })
+    return securityErrorResponse('Failed to create booking', 500, { error: error.message })
   }
 }

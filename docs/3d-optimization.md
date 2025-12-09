@@ -48,6 +48,7 @@ gltfpack -i public/models/honda-lead.glb -o public/models/optimized/honda-lead.g
 ```
 
 **Результат:**
+
 - Уменьшение размера файла на 60-80%
 - Сохранение качества визуализации
 - Поддержка Draco compression
@@ -67,6 +68,7 @@ npm run texture:optimize
 ```
 
 **Результат:**
+
 - Уменьшение размера на 70-90%
 - Поддержка mipmaps
 - Адаптивная загрузка
@@ -96,6 +98,7 @@ npm run texture:optimize
 ### LOD (Level of Detail)
 
 Для больших моделей создайте несколько версий:
+
 - `model-lod0.glb` - высокое качество (desktop)
 - `model-lod1.glb` - среднее качество (tablet)
 - `model-lod2.glb` - низкое качество (mobile)
@@ -121,4 +124,3 @@ npm run texture:optimize
 - [gltfpack documentation](https://github.com/zeux/meshoptimizer/tree/master/gltf)
 - [KTX2 specification](https://www.khronos.org/ktx/)
 - [Basis Universal](https://github.com/BinomialLLC/basis_universal)
-
