@@ -62,3 +62,34 @@ model Deal {
 
   @@index([designId])
 }
+
+model User {
+  id                String          @id @default(cuid())
+  email             String          @unique
+  username          String          @unique
+  passwordHash      String          // bcrypt hashed password
+  twoFactorEnabled  Boolean         @default(false)
+  twoFactorSecret   String?         // For 2FA token generation
+  emailVerified     Boolean         @default(false)
+  isActive          Boolean         @default(true)
+  lastLoginAt       DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  twoFactorCodes    TwoFactorCode[]
+
+  @@index([email])
+  @@index([username])
+}
+
+model TwoFactorCode {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([code])
+}

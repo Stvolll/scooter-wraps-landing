@@ -721,7 +721,10 @@ export default function ScooterViewer({
           // Method 2: Try to get from renderer
           else if (currentModelViewer.renderer) {
             // Try renderer.scene first
-            if (currentModelViewer.renderer.scene && typeof currentModelViewer.renderer.scene.traverse === 'function') {
+            if (
+              currentModelViewer.renderer.scene &&
+              typeof currentModelViewer.renderer.scene.traverse === 'function'
+            ) {
               scene = currentModelViewer.renderer.scene
               console.log('✅ Got scene from renderer.scene')
             }
@@ -742,10 +745,13 @@ export default function ScooterViewer({
           // Method 3: Try to get scene from model-viewer's model property
           else if (currentModelViewer.model) {
             console.log('📦 modelViewer.model found:', typeof currentModelViewer.model)
-            
+
             // Try to access scene property (may be non-enumerable)
             try {
-              if (currentModelViewer.model.scene && typeof currentModelViewer.model.scene.traverse === 'function') {
+              if (
+                currentModelViewer.model.scene &&
+                typeof currentModelViewer.model.scene.traverse === 'function'
+              ) {
                 scene = currentModelViewer.model.scene
                 console.log('✅ Got scene from modelViewer.model.scene')
               }

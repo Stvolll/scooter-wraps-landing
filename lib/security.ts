@@ -171,13 +171,9 @@ export async function verifyHMACSignature(
     // Import secret key
     const encoder = new TextEncoder()
     const keyData = encoder.encode(secret)
-    const key = await crypto.subtle.importKey(
-      'raw',
-      keyData,
-      { name: 'HMAC', hash: algo },
-      false,
-      ['sign']
-    )
+    const key = await crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: algo }, false, [
+      'sign',
+    ])
 
     // Sign payload
     const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(payload))
@@ -219,10 +215,7 @@ export function verifyHMACSignatureSync(
       const hmac = nodeCrypto.createHmac(algorithm, secret)
       hmac.update(payload)
       const expectedSignature = hmac.digest('hex')
-      return nodeCrypto.timingSafeEqual(
-        Buffer.from(signature),
-        Buffer.from(expectedSignature)
-      )
+      return nodeCrypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))
     } catch (error) {
       console.error('HMAC verification error (Node.js):', error)
       return false

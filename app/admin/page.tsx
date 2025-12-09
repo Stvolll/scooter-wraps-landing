@@ -1,6 +1,16 @@
 import Link from 'next/link'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+import LogoutButton from '@/components/LogoutButton'
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const cookieStore = await cookies()
+  const authCookie = cookieStore.get('admin_auth')?.value
+
+  if (!authCookie || authCookie !== 'authenticated') {
+    redirect('/admin/login')
+  }
+
   return (
     <div
       className="min-h-screen p-8"
@@ -12,7 +22,7 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 pt-24 px-4 md:px-8 lg:px-16">
           <h1 className="text-4xl md:text-5xl font-semibold text-white mb-2">Admin Dashboard</h1>
-          <p className="text-white/60">Manage your design lifecycle</p>
+          <p className="text-white/60">Welcome, Stvolll</p>
         </div>
 
         <div
@@ -49,6 +59,7 @@ export default function AdminPage() {
             >
               Create New Design
             </Link>
+            <LogoutButton />
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import FileUpload from '@/components/FileUpload'
+import UploadGuide from '@/components/UploadGuide'
 
 export default function NewDesignPage() {
   const router = useRouter()
@@ -14,28 +15,40 @@ export default function NewDesignPage() {
   const [glbModelUrl, setGlbModelUrl] = useState<string>('')
   const [textureUrl, setTextureUrl] = useState<string>('')
 
+  const [error, setError] = useState<string>('')
+  const [loading, setLoading] = useState(false)
+
   const handleSubmit = async (formData: FormData) => {
-    const title = formData.get('title') as string
-    const slug = formData.get('slug') as string
-    const scooterModel = formData.get('scooterModel') as string
-    const price = Number(formData.get('price') || 0)
-    const editionTotal = Number(formData.get('editionTotal') || 5)
-    const description = formData.get('description') as string
+    setError('')
+    setLoading(true)
 
-    await createDesign({
-      title,
-      slug,
-      scooterModel,
-      price,
-      editionTotal,
-      description,
-      coverImage: coverImage || undefined,
-      galleryImages,
-      glbModelUrl: glbModelUrl || undefined,
-      textureUrl: textureUrl || undefined,
-    })
+    try {
+      const title = formData.get('title') as string
+      const slug = formData.get('slug') as string
+      const scooterModel = formData.get('scooterModel') as string
+      const price = Number(formData.get('price') || 0)
+      const editionTotal = Number(formData.get('editionTotal') || 5)
+      const description = formData.get('description') as string
 
-    router.push('/admin/designs')
+      await createDesign({
+        title,
+        slug,
+        scooterModel,
+        price,
+        editionTotal,
+        description,
+        coverImage: coverImage || undefined,
+        galleryImages,
+        glbModelUrl: glbModelUrl || undefined,
+        textureUrl: textureUrl || undefined,
+      })
+
+      router.push('/admin/designs')
+    } catch (err: any) {
+      console.error('Error creating design:', err)
+      setError(err.message || 'Failed to create design. Please check your database connection.')
+      setLoading(false)
+    }
   }
 
   return (
@@ -142,35 +155,47 @@ export default function NewDesignPage() {
               />
             </div>
 
+            {/* Upload Guide */}
+            <div className="pt-4 border-t border-white/10">
+              <UploadGuide />
+            </div>
+
             {/* File Uploads */}
-            <div className="space-y-4 pt-4 border-t border-white/10">
+            <div className="space-y-4 pt-4">
               <FileUpload
                 label="Cover Image"
                 accept="image/*"
-                onUploadComplete={url => setCoverImage(url)}
+                onUploadComplete={(url) => setCoverImage(url)}
               />
               <FileUpload
                 label="3D Model (GLB)"
                 accept=".glb,model/gltf-binary"
                 maxSize={50 * 1024 * 1024}
-                onUploadComplete={url => setGlbModelUrl(url)}
+                onUploadComplete={(url) => setGlbModelUrl(url)}
               />
               <FileUpload
                 label="Texture"
                 accept="image/*"
-                onUploadComplete={url => setTextureUrl(url)}
+                onUploadComplete={(url) => setTextureUrl(url)}
               />
             </div>
 
+            {error && (
+              <div className="p-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+
             <button
               type="submit"
-              className="px-6 py-3 rounded-2xl font-semibold text-black transition-all hover:scale-105"
+              disabled={loading}
+              className="px-6 py-3 rounded-2xl font-semibold text-black transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 background: 'linear-gradient(135deg, #00FFA9 0%, #00D4FF 100%)',
                 boxShadow: '0 8px 32px -4px rgba(0, 255, 169, 0.4)',
               }}
             >
-              Create Design
+              {loading ? 'Creating...' : 'Create Design'}
             </button>
           </form>
         </div>

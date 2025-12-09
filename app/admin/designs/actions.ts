@@ -16,34 +16,41 @@ export async function createDesign(data: {
   glbModelUrl?: string
   textureUrl?: string
 }) {
-  const design = await prisma.design.create({
-    data: {
-      title: data.title,
-      slug: data.slug,
-      scooterModel: data.scooterModel,
-      description: data.description || null,
-      price: data.price || 0,
-      editionTotal: data.editionTotal || 5,
-      editionAvailable: data.editionTotal || 5,
-      coverImage: data.coverImage || null,
-      galleryImages: data.galleryImages || [],
-      glbModelUrl: data.glbModelUrl || null,
-      textureUrl: data.textureUrl || null,
-      status: DesignStatus.CREATIVE,
-      published: false,
-    },
-  })
+  try {
+    const design = await prisma.design.create({
+      data: {
+        title: data.title,
+        slug: data.slug,
+        scooterModel: data.scooterModel,
+        description: data.description || null,
+        price: data.price || 0,
+        editionTotal: data.editionTotal || 5,
+        editionAvailable: data.editionTotal || 5,
+        coverImage: data.coverImage || null,
+        galleryImages: data.galleryImages || [],
+        glbModelUrl: data.glbModelUrl || null,
+        textureUrl: data.textureUrl || null,
+        status: DesignStatus.CREATIVE,
+        published: false,
+      },
+    })
 
-  // Create initial status history entry
-  await prisma.designStatusHistory.create({
-    data: {
-      designId: design.id,
-      status: DesignStatus.CREATIVE,
-      note: 'Design created',
-    },
-  })
+    // Create initial status history entry
+    await prisma.designStatusHistory.create({
+      data: {
+        designId: design.id,
+        status: DesignStatus.CREATIVE,
+        note: 'Design created',
+      },
+    })
 
-  return design
+    return design
+  } catch (error: any) {
+    console.error('Error creating design:', error)
+    throw new Error(
+      error.message || 'Failed to create design. Please check your database connection and ensure DATABASE_URL is set in .env.local'
+    )
+  }
 }
 
 export async function updateDesignStatus(designId: string, status: DesignStatus, note?: string) {

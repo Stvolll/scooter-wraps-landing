@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 
 interface FileUploadProps {
-  onUploadComplete: (url: string, key: string) => void
+  onUploadComplete: (url: string, key?: string) => void
   accept?: string
   maxSize?: number
   label?: string

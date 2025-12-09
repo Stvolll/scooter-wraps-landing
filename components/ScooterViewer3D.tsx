@@ -60,44 +60,44 @@ function ScooterModel({
   useEffect(() => {
     if (selectedDesign?.texture && scene) {
       const textureLoader = new THREE.TextureLoader()
-      const texturePath = selectedDesign.texture.startsWith('/') 
-        ? selectedDesign.texture 
+      const texturePath = selectedDesign.texture.startsWith('/')
+        ? selectedDesign.texture
         : `/${selectedDesign.texture}`
-      
+
       console.log('🎨 [ScooterViewer3D] Loading texture:', texturePath)
-      
+
       textureLoader.load(
         texturePath,
         texture => {
           console.log('✅ [ScooterViewer3D] Texture loaded:', texturePath)
           texture.flipY = false
-          
+
           // Set proper encoding
           if (THREE.sRGBEncoding !== undefined) {
             texture.encoding = THREE.sRGBEncoding
           } else if (THREE.SRGBColorSpace !== undefined) {
             texture.colorSpace = THREE.SRGBColorSpace
           }
-          
+
           texture.needsUpdate = true
-          
+
           let materialsFound = 0
           let materialsUpdated = 0
-          
+
           scene.traverse(node => {
             if (node instanceof THREE.Mesh && node.material) {
               const materials = Array.isArray(node.material) ? node.material : [node.material]
               materialsFound += materials.length
-              
+
               materials.forEach(material => {
                 // Apply to ANY material type, not just MeshStandardMaterial
                 if (material && typeof material === 'object') {
                   // Store original properties
                   const originalMap = material.map
-                  
+
                   // Apply texture
                   material.map = texture
-                  
+
                   // Ensure material properties are correct
                   if (material.metalness !== undefined && material.metalness > 0.8) {
                     material.metalness = 0.2
@@ -105,13 +105,13 @@ function ScooterModel({
                   if (material.roughness !== undefined && material.roughness > 0.8) {
                     material.roughness = 0.6
                   }
-                  
+
                   // Force updates
                   material.needsUpdate = true
                   if (material.map) {
                     material.map.needsUpdate = true
                   }
-                  
+
                   // Update geometry UVs
                   if (node.geometry) {
                     node.geometry.uvsNeedUpdate = true
@@ -119,7 +119,7 @@ function ScooterModel({
                       node.geometry.attributes.uv.needsUpdate = true
                     }
                   }
-                  
+
                   materialsUpdated++
                   console.log('✅ [ScooterViewer3D] Texture applied to material:', {
                     type: material.type,
@@ -131,14 +131,16 @@ function ScooterModel({
               })
             }
           })
-          
-          console.log(`📊 [ScooterViewer3D] Texture application: ${materialsUpdated}/${materialsFound} materials updated`)
-          
+
+          console.log(
+            `📊 [ScooterViewer3D] Texture application: ${materialsUpdated}/${materialsFound} materials updated`
+          )
+
           // Force all materials to update again
-          scene.traverse((obj) => {
+          scene.traverse(obj => {
             if (obj instanceof THREE.Mesh && obj.material) {
               const materials = Array.isArray(obj.material) ? obj.material : [obj.material]
-              materials.forEach((mat) => {
+              materials.forEach(mat => {
                 mat.needsUpdate = true
                 if (mat.map) {
                   mat.map.needsUpdate = true

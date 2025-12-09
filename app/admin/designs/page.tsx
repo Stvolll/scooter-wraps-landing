@@ -4,6 +4,8 @@ import Link from 'next/link'
 
 export default async function DesignsPage() {
   let designs: any[] = []
+  let dbError: string | null = null
+
   try {
     designs = await prisma.design.findMany({
       orderBy: { createdAt: 'desc' },
@@ -16,6 +18,7 @@ export default async function DesignsPage() {
     })
   } catch (error: any) {
     console.error('Database error:', error.message)
+    dbError = error.message || 'Database connection error'
     // If database is not configured, show empty state
   }
 
@@ -64,7 +67,15 @@ export default async function DesignsPage() {
             </Link>
           </div>
 
-          {designs.length === 0 ? (
+          {dbError ? (
+            <div className="text-center py-12">
+              <p className="text-red-400 mb-2">Database Error</p>
+              <p className="text-white/60 text-sm mb-4">{dbError}</p>
+              <p className="text-white/40 text-xs">
+                Please check your DATABASE_URL in .env.local and ensure Prisma is properly configured.
+              </p>
+            </div>
+          ) : designs.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-white/60">No designs found</p>
             </div>
