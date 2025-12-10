@@ -674,6 +674,10 @@ export default function ScooterViewer({
     if (selectedDesign.texture && !selectedDesign.variant) {
       console.log('🎨 Attempting to apply texture:', selectedDesign.texture)
       try {
+        // Retry counter to prevent infinite loops (declared outside function to persist between calls)
+        let retryCount = 0
+        const MAX_RETRIES = 10
+        
         // Wait for model to be fully loaded before accessing scene
         const applyTexture = () => {
           // Re-get model-viewer element (it might have changed)
