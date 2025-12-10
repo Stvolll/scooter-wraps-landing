@@ -1,10 +1,12 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET() {
-  return NextResponse.redirect(new URL('/admin/designs', process.env.NEXT_PUBLIC_SITE_URL || 'https://txd.bike'), 301)
+export async function GET(request: NextRequest) {
+  const url = new URL('/admin/designs', request.url)
+  return NextResponse.redirect(url, 301)
 }
 
-export async function POST() {
-  return NextResponse.redirect(new URL('/admin/designs', process.env.NEXT_PUBLIC_SITE_URL || 'https://txd.bike'), 301)
+export async function POST(request: NextRequest) {
+  const url = new URL('/admin/designs', request.url)
+  return NextResponse.redirect(url, 301)
 }
 
