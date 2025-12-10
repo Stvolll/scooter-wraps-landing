@@ -787,20 +787,43 @@ export default function ScooterViewer({
 
             // If scene not found, wait and retry with better diagnostics
             if (!scene) {
-              // Enhanced diagnostics
-              const diagnostics = {
-                hasModel: !!currentModelViewer.model,
-                modelType: currentModelViewer.model?.constructor?.name || 'unknown',
-                hasModelScene: !!currentModelViewer.model?.scene,
-                hasModelScenes: !!currentModelViewer.model?.scenes,
-                modelScenesLength: currentModelViewer.model?.scenes?.length || 0,
-                hasDirectScene: !!currentModelViewer.scene,
-                hasRenderer: !!currentModelViewer.renderer,
-                loaded: currentModelViewer.loaded,
-                modelKeys: currentModelViewer.model ? Object.keys(currentModelViewer.model) : [],
+              retryCount++
+              
+              // Stop retrying after max attempts
+              if (retryCount > MAX_RETRIES) {
+                console.error('❌ Failed to access scene after', MAX_RETRIES, 'attempts')
+                console.error('💡 Texture application skipped. Model may not support dynamic texture swapping.')
+                console.error('💡 Consider using material variants in the GLB file instead.')
+                return
               }
               
-              console.warn('⚠️ Scene not available yet, diagnostics:', diagnostics)
+              // Enhanced diagnostics (only log on first attempt and last attempt)
+              if (retryCount === 1 || retryCount === MAX_RETRIES) {
+                const diagnostics = {
+                  attempt: retryCount,
+                  hasModel: !!currentModelViewer.model,
+                  modelType: currentModelViewer.model?.constructor?.name || 'unknown',
+                  hasModelScene: !!currentModelViewer.model?.scene,
+                  hasModelScenes: !!currentModelViewer.model?.scenes,
+                  modelScenesLength: currentModelViewer.model?.scenes?.length || 0,
+                  hasDirectScene: !!currentModelViewer.scene,
+                  hasRenderer: !!currentModelViewer.renderer,
+                  loaded: currentModelViewer.loaded,
+                  modelKeys: currentModelViewer.model ? Object.keys(currentModelViewer.model).slice(0, 20) : [],
+                  // Try to inspect model structure more deeply
+                  modelValue: currentModelViewer.model ? JSON.stringify(Object.keys(currentModelViewer.model).reduce((acc, key) => {
+                    try {
+                      const val = currentModelViewer.model[key]
+                      acc[key] = typeof val === 'object' ? (val?.constructor?.name || 'object') : typeof val
+                    } catch (e) {
+                      acc[key] = 'error'
+                    }
+                    return acc
+                  }, {})).slice(0, 500) : 'no model',
+                }
+                
+                console.warn(`⚠️ Scene not available (attempt ${retryCount}/${MAX_RETRIES}), diagnostics:`, diagnostics)
+              }
               
               // Wait for model-loaded event if not loaded yet
               if (!currentModelViewer.loaded) {
@@ -817,17 +840,19 @@ export default function ScooterViewer({
               }
               
               // If loaded but scene still not found, wait a bit more for internal initialization
-              console.log('⏳ Model is loaded but scene not ready, waiting for internal initialization...')
+              // Use exponential backoff: 500ms, 1000ms, 1500ms, etc.
+              const delay = Math.min(500 * retryCount, 3000)
+              console.log(`⏳ Model is loaded but scene not ready (attempt ${retryCount}), waiting ${delay}ms...`)
               setTimeout(() => {
                 const retryContainer = containerRef.current
                 if (retryContainer) {
                   const retryModelViewer = retryContainer.querySelector('model-viewer')
                   if (retryModelViewer && retryModelViewer.loaded) {
-                    console.log('🔄 Retrying texture application after delay...')
+                    console.log(`🔄 Retrying texture application (attempt ${retryCount + 1})...`)
                     applyTexture()
                   }
                 }
-              }, 800)
+              }, delay)
               return
             }
 
