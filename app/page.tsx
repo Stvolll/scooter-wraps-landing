@@ -20,6 +20,7 @@ import LandingDesignCard from '@/components/LandingDesignCard'
 import ThreeDViewerPlaceholder from '@/components/ThreeDViewerPlaceholder'
 
 // Landing sections
+import ProductExperience from '@/components/ProductExperience'
 import USPSection from '@/components/sections/USPSection'
 import ProcessSection from '@/components/sections/ProcessSection'
 import TestimonialsSection from '@/components/sections/TestimonialsSection'
@@ -355,6 +356,7 @@ export default function Home() {
             'linear-gradient(180deg, rgba(0, 0, 0, 1) 0%, rgba(15, 15, 15, 1) 5%, rgba(15, 15, 15, 1) 100%)',
         }}
       >
+        <ProductExperience selectedModel={selectedModel} scooterName={currentScooter.name} />
         <USPSection />
         <ProcessSection />
         <GallerySection />

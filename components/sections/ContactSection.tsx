@@ -18,15 +18,53 @@ export default function ContactSection() {
     model: '',
     message: '',
   })
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission
-    console.log('Form submitted:', formData)
+    setLoading(true)
+    setError(null)
+    setSuccess(false)
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to send message')
+      }
+
+      setSuccess(true)
+      // Reset form
+      setFormData({
+        name: '',
+        phone: '',
+        model: '',
+        message: '',
+      })
+
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setSuccess(false)
+      }, 5000)
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const contactMethods = [
@@ -273,16 +311,33 @@ export default function ContactSection() {
                 />
               </div>
 
+              {/* Success message */}
+              {success && (
+                <div className="p-4 rounded-2xl bg-[#00FFA9]/20 border border-[#00FFA9]/30 text-[#00FFA9] text-sm">
+                  {t('contactSection.success') || 'Thank you! We will contact you within 2 hours.'}
+                </div>
+              )}
+
+              {/* Error message */}
+              {error && (
+                <div className="p-4 rounded-2xl bg-red-500/20 border border-red-500/30 text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
+
               {/* Submit button */}
               <button
                 type="submit"
-                className="w-full py-4 rounded-2xl font-semibold text-black transition-all duration-300 hover:scale-105"
+                disabled={loading}
+                className="w-full py-4 rounded-2xl font-semibold text-black transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   background: 'linear-gradient(135deg, #00FFA9 0%, #00D4FF 100%)',
                   boxShadow: '0 8px 32px -4px rgba(0, 255, 169, 0.4)',
                 }}
               >
-                {t('contactSection.send')}
+                {loading
+                  ? t('contactSection.sending') || 'Sending...'
+                  : t('contactSection.send')}
               </button>
 
               {/* Privacy note */}

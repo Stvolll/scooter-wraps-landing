@@ -200,9 +200,10 @@
       "description": "Bảo vệ sơn gốc khỏi trầy xước và hư hại tia UV"
     },
     "certified": "Được Chứng Nhận 3M™",
-    "warranty": "Bảo Hành 5 Năm",
-    "clients": "500+ Khách Hàng Hài Lòng",
-    "consultation": "Tư Vấn Miễn Phí"
+    "warranty": "Năm Bảo Hành",
+    "clients": "Khách Hàng Hài Lòng",
+    "consultation": "Tư Vấn Miễn Phí",
+    "certifications": "Vật Liệu Cao Cấp Được Chứng Nhận"
   },
   "process": {
     "title": "Cách Hoạt Động",
@@ -229,23 +230,55 @@
     },
     "startJourney": "Bắt Đầu Hành Trình"
   },
+  "clientJourney": {
+    "title": "Trải Nghiệm Của Bạn",
+    "subtitle": "Từ liên hệ đầu tiên đến hỗ trợ trọn đời - hành trình của bạn với TXD",
+    "step1": {
+      "title": "Tư Vấn Miễn Phí",
+      "description": "Nhận lời khuyên chuyên gia và xem thiết kế của bạn trong xem trước 3D. Không ràng buộc, chỉ khám phá các tùy chọn của bạn.",
+      "duration": "15 phút"
+    },
+    "step2": {
+      "title": "Đặt Hàng",
+      "description": "Thanh toán an toàn và xác nhận đơn hàng. Chúng tôi sẽ cập nhật cho bạn từng bước.",
+      "duration": "5 phút"
+    },
+    "step3": {
+      "title": "Sản Xuất Cao Cấp",
+      "description": "Thiết kế của bạn được chế tác bằng vật liệu cao cấp. Xem quy trình sản xuất của chúng tôi.",
+      "duration": "3-5 ngày"
+    },
+    "step4": {
+      "title": "Lắp Đặt Chuyên Nghiệp",
+      "description": "Đội ngũ được chứng nhận của chúng tôi đến địa điểm của bạn. Lắp đặt chuyên nghiệp trong 2-3 giờ.",
+      "duration": "2-3 giờ"
+    },
+    "step5": {
+      "title": "Hỗ Trợ Trọn Đời",
+      "description": "Bảo hành 5 năm, mẹo bảo trì và hỗ trợ liên tục. Chúng tôi luôn ở đây cho bạn.",
+      "duration": "5 năm"
+    },
+    "startJourney": "Bắt Đầu Hành Trình"
+  },
   "gallery": {
     "title": "Tác Phẩm Của Chúng Tôi",
     "subtitle": "Bọc phim thật, biến đổi thật",
     "allModels": "Tất Cả Dòng Xe",
     "wantMore": "Muốn xem thêm?",
-    "viewPortfolio": "Xem Toàn Bộ Portfolio"
+    "viewPortfolio": "Xem Toàn Bộ Portfolio",
+    "noItems": "Chưa có mục nào trong bộ sưu tập. Vui lòng quay lại sau!"
   },
   "testimonials": {
     "title": "Người Dùng Nói Gì",
     "subtitle": "Tham gia 500+ khách hàng hài lòng lái xe phong cách",
     "rating": "4.9",
-    "reviews": "/ 500+ đánh giá",
+    "reviews": "đánh giá",
     "trusted": "Được tin tưởng bởi người dùng trên khắp Việt Nam",
     "bestRated": "🏆 Được Đánh Giá Tốt Nhất 2024",
     "premiumPartner": "✨ Đối Tác Cao Cấp",
     "securePayment": "🔒 Thanh Toán An Toàn",
-    "support": "📱 Hỗ Trợ 24/7"
+    "support": "📱 Hỗ Trợ 24/7",
+    "noTestimonials": "Chưa có đánh giá nào. Vui lòng quay lại sau!"
   },
   "faq": {
     "title": "Câu Hỏi Thường Gặp",
@@ -283,6 +316,8 @@
     "messageOptional": "Tin Nhắn (Tùy Chọn)",
     "messagePlaceholder": "Cho chúng tôi biết về sở thích thiết kế của bạn...",
     "send": "Gửi Tin Nhắn",
+    "sending": "Đang gửi...",
+    "success": "Cảm ơn! Chúng tôi sẽ liên hệ với bạn trong vòng 2 giờ.",
     "privacyNote": "Bằng cách gửi, bạn đồng ý với chính sách bảo mật của chúng tôi. Chúng tôi sẽ phản hồi trong vòng 2 giờ.",
     "chatNow": "Chat Ngay",
     "callNow": "Gọi Ngay",

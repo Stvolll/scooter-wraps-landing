@@ -1,8 +1,9 @@
 'use client'
 
 /**
- * Process Section - How It Works
- * Modern approach: Step-by-step visual journey with progress indicators
+ * Client Journey Section - Your Experience
+ * Focus on customer experience from consultation to support
+ * Different from ProductExperience which shows internal production process
  */
 
 import { motion } from 'framer-motion'
@@ -20,31 +21,43 @@ export default function ProcessSection() {
   const steps = [
     {
       number: '01',
-      title: t('process.step1.title'),
-      description: t('process.step1.description'),
-      icon: '🎨',
-      duration: t('process.step1.duration'),
+      title: t('clientJourney.step1.title'),
+      description: t('clientJourney.step1.description'),
+      icon: '💬',
+      duration: t('clientJourney.step1.duration'),
+      highlight: 'Free',
     },
     {
       number: '02',
-      title: t('process.step2.title'),
-      description: t('process.step2.description'),
-      icon: '📅',
-      duration: t('process.step2.duration'),
+      title: t('clientJourney.step2.title'),
+      description: t('clientJourney.step2.description'),
+      icon: '📝',
+      duration: t('clientJourney.step2.duration'),
+      highlight: 'Secure',
     },
     {
       number: '03',
-      title: t('process.step3.title'),
-      description: t('process.step3.description'),
-      icon: '🔧',
-      duration: t('process.step3.duration'),
+      title: t('clientJourney.step3.title'),
+      description: t('clientJourney.step3.description'),
+      icon: '🏭',
+      duration: t('clientJourney.step3.duration'),
+      highlight: 'Premium',
     },
     {
       number: '04',
-      title: t('process.step4.title'),
-      description: t('process.step4.description'),
-      icon: '🏍️',
-      duration: t('process.step4.duration'),
+      title: t('clientJourney.step4.title'),
+      description: t('clientJourney.step4.description'),
+      icon: '🔧',
+      duration: t('clientJourney.step4.duration'),
+      highlight: 'Professional',
+    },
+    {
+      number: '05',
+      title: t('clientJourney.step5.title'),
+      description: t('clientJourney.step5.description'),
+      icon: '🛡️',
+      duration: t('clientJourney.step5.duration'),
+      highlight: 'Lifetime',
     },
   ]
 
@@ -62,10 +75,10 @@ export default function ProcessSection() {
           className="text-center mb-16 md:mb-24"
         >
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-            {t('process.title')}
+            {t('clientJourney.title')}
           </h2>
           <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto">
-            {t('process.subtitle')}
+            {t('clientJourney.subtitle')}
           </p>
         </motion.div>
 
@@ -74,7 +87,7 @@ export default function ProcessSection() {
           {/* Connection line */}
           <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-[#00FFA9]/20 via-[#00D4FF]/20 to-[#B77EFF]/20 -translate-y-1/2" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-4">
             {steps.map((step, index) => (
               <motion.div
                 key={step.number}
@@ -108,10 +121,17 @@ export default function ProcessSection() {
                   {/* Description */}
                   <p className="text-sm text-white/60 leading-relaxed mb-4">{step.description}</p>
 
-                  {/* Duration badge */}
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-                    <span className="text-xs text-white/40">⏱</span>
-                    <span className="text-xs text-white/60">{step.duration}</span>
+                  {/* Duration and highlight badge */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+                      <span className="text-xs text-white/40">⏱</span>
+                      <span className="text-xs text-white/60">{step.duration}</span>
+                    </div>
+                    {step.highlight && (
+                      <div className="inline-flex items-center px-3 py-1 rounded-full bg-[#00FFA9]/10 border border-[#00FFA9]/30">
+                        <span className="text-xs text-[#00FFA9] font-semibold">{step.highlight}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -152,7 +172,7 @@ export default function ProcessSection() {
               boxShadow: '0 8px 32px -4px rgba(0, 255, 169, 0.4)',
             }}
           >
-            <span className="relative z-10">{t('process.startJourney')}</span>
+            <span className="relative z-10">{t('clientJourney.startJourney')}</span>
             <div className="absolute inset-0 rounded-2xl bg-white opacity-0 group-hover:opacity-20 transition-opacity" />
           </button>
         </motion.div>

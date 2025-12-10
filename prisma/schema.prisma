@@ -57,10 +57,14 @@ model Deal {
   designId  String
   buyerName  String?
   buyerEmail String?
-  status     String   @default("open") // open | paid
+  status     String   @default("open") // open | paid | delivered
+  feedback   String?  // Customer feedback/review
+  rating     Int?     // Rating 1-5
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([designId])
+  @@index([status])
 }
 
 model User {

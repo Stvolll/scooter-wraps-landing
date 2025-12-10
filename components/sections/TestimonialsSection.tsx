@@ -8,53 +8,51 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
+import Image from 'next/image'
+import Link from 'next/link'
 
-const testimonials = [
-  {
-    id: 1,
-    name: 'Nguyen Van A',
-    location: 'Ho Chi Minh City',
-    rating: 5,
-    text: 'Absolutely stunning! The wrap quality exceeded my expectations. My Honda Lead looks like it came straight from a showroom. Professional team, fast service.',
-    design: 'Neon Blade',
-    model: 'Honda Lead',
-    image: '/images/testimonials/customer-1.jpg',
-    verified: true,
-    date: '2 weeks ago',
-  },
-  {
-    id: 2,
-    name: 'Tran Thi B',
-    location: 'Hanoi',
-    rating: 5,
-    text: 'I was skeptical at first, but the 3D preview convinced me. The installation was flawless and done at my office. Best decision ever!',
-    design: 'Cyberpunk',
-    model: 'Yamaha NVX',
-    image: '/images/testimonials/customer-2.jpg',
-    verified: true,
-    date: '1 month ago',
-  },
-  {
-    id: 3,
-    name: 'Le Van C',
-    location: 'Da Nang',
-    rating: 5,
-    text: 'The custom design service is incredible! They helped me create exactly what I envisioned. The wrap protects my scooter and looks amazing.',
-    design: 'Custom Design',
-    model: 'Honda SH',
-    image: '/images/testimonials/customer-3.jpg',
-    verified: true,
-    date: '3 weeks ago',
-  },
-]
+interface Testimonial {
+  id: string
+  name: string
+  location: string
+  rating: number
+  text: string
+  design: string
+  model: string
+  image: string | null
+  verified: boolean
+  date: string
+  designSlug?: string
+}
 
 export default function TestimonialsSection() {
   const { t } = useLanguage()
   const [isMounted, setIsMounted] = useState(false)
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setIsMounted(true)
+    const loadTestimonials = async () => {
+      try {
+        const response = await fetch('/api/testimonials')
+        const data = await response.json()
+        setTestimonials(data.testimonials || [])
+      } catch (error) {
+        console.error('Failed to load testimonials:', error)
+        setTestimonials([])
+      } finally {
+        setLoading(false)
+        setIsMounted(true)
+      }
+    }
+    loadTestimonials()
   }, [])
+
+  // Calculate average rating
+  const averageRating =
+    testimonials.length > 0
+      ? (testimonials.reduce((sum, t) => sum + t.rating, 0) / testimonials.length).toFixed(1)
+      : '5.0'
 
   return (
     <section className="relative pt-12 md:pt-16 pb-20 md:pb-32 overflow-hidden">
@@ -83,104 +81,150 @@ export default function TestimonialsSection() {
           </p>
 
           {/* Overall rating */}
-          <div className="flex items-center justify-center gap-4 mt-8">
-            <div className="flex gap-1">
-              {[1, 2, 3, 4, 5].map(star => (
-                <svg
-                  key={star}
-                  className="w-6 h-6 text-[#FFB800]"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
+          {!loading && testimonials.length > 0 && (
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map(star => (
+                  <svg
+                    key={star}
+                    className="w-6 h-6 text-[#FFB800]"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+              <span className="text-2xl font-bold text-white">{averageRating}</span>
+              <span className="text-white/40">{testimonials.length}+ {t('testimonials.reviews')}</span>
             </div>
-            <span className="text-2xl font-bold text-white">{t('testimonials.rating')}</span>
-            <span className="text-white/40">{t('testimonials.reviews')}</span>
-          </div>
+          )}
         </motion.div>
 
         {/* Testimonials grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {testimonials.map((testimonial, index) => (
-            <motion.div
-              key={testimonial.id}
-              initial={isMounted ? { opacity: 0, y: 30 } : false}
-              animate={isMounted ? { opacity: 1, y: 0 } : false}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={isMounted ? { y: -5 } : undefined}
-              className="group"
-            >
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
               <div
-                className="relative h-full p-6 rounded-3xl transition-all duration-500 hover:bg-white/5"
+                key={i}
+                className="h-64 rounded-3xl bg-white/5 animate-pulse"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.06)',
-                  backdropFilter: 'blur(24px) saturate(180%)',
-                  WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
-                  boxShadow:
-                    '0 12px 40px -8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08) inset',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
                 }}
+              />
+            ))}
+          </div>
+        ) : testimonials.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-white/60">
+              {t('testimonials.noTestimonials') || 'No testimonials available yet.'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {testimonials.map((testimonial, index) => (
+              <motion.div
+                key={testimonial.id}
+                initial={isMounted ? { opacity: 0, y: 30 } : false}
+                animate={isMounted ? { opacity: 1, y: 0 } : false}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={isMounted ? { y: -5 } : undefined}
+                className="group"
               >
-                {/* Header */}
-                <div className="flex items-start gap-3 mb-4">
-                  {/* Avatar placeholder */}
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#00FFA9] to-[#00D4FF] flex items-center justify-center text-white font-bold">
-                    {testimonial.name.charAt(0)}
-                  </div>
+                <div
+                  className="relative h-full p-6 rounded-3xl transition-all duration-500 hover:bg-white/5"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.06)',
+                    backdropFilter: 'blur(24px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    boxShadow:
+                      '0 12px 40px -8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08) inset',
+                  }}
+                >
+                  {/* Header */}
+                  <div className="flex items-start gap-3 mb-4">
+                    {/* Avatar - use design image if available, otherwise placeholder */}
+                    {testimonial.image ? (
+                      <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                        <Image
+                          src={testimonial.image}
+                          alt={testimonial.name}
+                          width={48}
+                          height={48}
+                          className="object-cover"
+                          unoptimized={testimonial.image.startsWith('http')}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#00FFA9] to-[#00D4FF] flex items-center justify-center text-white font-bold flex-shrink-0">
+                        {testimonial.name.charAt(0)}
+                      </div>
+                    )}
 
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-semibold text-white">{testimonial.name}</h4>
-                      {testimonial.verified && (
-                        <svg
-                          className="w-4 h-4 text-[#00D4FF]"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      )}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold text-white">{testimonial.name}</h4>
+                        {testimonial.verified && (
+                          <svg
+                            className="w-4 h-4 text-[#00D4FF]"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                      <p className="text-xs text-white/40">{testimonial.location}</p>
                     </div>
-                    <p className="text-xs text-white/40">{testimonial.location}</p>
+                  </div>
+
+                  {/* Rating */}
+                  <div className="flex gap-1 mb-3">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <svg
+                        key={star}
+                        className={`w-4 h-4 ${star <= testimonial.rating ? 'text-[#FFB800]' : 'text-white/20'}`}
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+
+                  {/* Review text */}
+                  <p className="text-sm text-white/70 leading-relaxed mb-4">
+                    &quot;{testimonial.text}&quot;
+                  </p>
+
+                  {/* Design info */}
+                  <div className="flex items-center justify-between text-xs">
+                    {testimonial.designSlug ? (
+                      <Link
+                        href={`/designs/${testimonial.designSlug}`}
+                        className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/60 hover:text-[#00FFA9] hover:border-[#00FFA9]/30 transition-colors"
+                      >
+                        {testimonial.design}
+                      </Link>
+                    ) : (
+                      <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/60">
+                        {testimonial.design}
+                      </div>
+                    )}
+                    <span className="text-white/40">{testimonial.date}</span>
                   </div>
                 </div>
-
-                {/* Rating */}
-                <div className="flex gap-1 mb-3">
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <svg
-                      key={star}
-                      className={`w-4 h-4 ${star <= testimonial.rating ? 'text-[#FFB800]' : 'text-white/20'}`}
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-
-                {/* Review text */}
-                <p className="text-sm text-white/70 leading-relaxed mb-4">
-                  &quot;{testimonial.text}&quot;
-                </p>
-
-                {/* Design info */}
-                <div className="flex items-center justify-between text-xs">
-                  <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/60">
-                    {testimonial.design}
-                  </div>
-                  <span className="text-white/40">{testimonial.date}</span>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         {/* Trust indicators */}
         <motion.div

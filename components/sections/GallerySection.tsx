@@ -2,80 +2,97 @@
 
 /**
  * Gallery Section - Showcase of Completed Wraps
- * Modern approach: Masonry grid with filters, before/after slider
+ * Modern approach: Masonry grid with filters, lightbox for detailed view
+ * Loads real images from database via API
  */
 
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
+import Image from 'next/image'
+import Link from 'next/link'
+import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 
-const galleryItems = [
-  {
-    id: 1,
-    model: 'Honda Lead',
-    design: 'Neon Blade',
-    image: '/images/gallery/lead-neon.jpg',
-    category: 'lead',
-  },
-  {
-    id: 2,
-    model: 'Yamaha NVX',
-    design: 'Cyberpunk',
-    image: '/images/gallery/nvx-cyber.jpg',
-    category: 'nvx',
-  },
-  {
-    id: 3,
-    model: 'Honda SH',
-    design: 'Minimal White',
-    image: '/images/gallery/sh-minimal.jpg',
-    category: 'sh',
-  },
-  {
-    id: 4,
-    model: 'Honda Vision',
-    design: 'Carbon Fiber',
-    image: '/images/gallery/vision-carbon.jpg',
-    category: 'vision',
-  },
-  {
-    id: 5,
-    model: 'Honda PCX',
-    design: 'Matte Black',
-    image: '/images/gallery/pcx-matte.jpg',
-    category: 'pcx',
-  },
-  {
-    id: 6,
-    model: 'Honda Lead',
-    design: 'Racing Stripes',
-    image: '/images/gallery/lead-racing.jpg',
-    category: 'lead',
-  },
-]
+interface GalleryItem {
+  id: string
+  designId: string
+  designSlug: string
+  title: string
+  model: string
+  image: string
+  category: string
+  price: number
+  isPrimary: boolean
+}
 
 export default function GallerySection() {
   const { t } = useLanguage()
   const [isMounted, setIsMounted] = useState(false)
   const [activeCategory, setActiveCategory] = useState('all')
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
 
+  // Load gallery items from API
+  useEffect(() => {
+    const loadGallery = async () => {
+      try {
+        const response = await fetch('/api/gallery')
+        const data = await response.json()
+        setGalleryItems(data.items || [])
+      } catch (error) {
+        console.error('Failed to load gallery:', error)
+        setGalleryItems([])
+      } finally {
+        setLoading(false)
+        setIsMounted(true)
+      }
+    }
+    loadGallery()
+  }, [])
+
+  // Extract unique categories from gallery items
   const categories = [
     { id: 'all', label: t('gallery.allModels') },
-    { id: 'lead', label: 'Honda Lead' },
-    { id: 'vision', label: 'Honda Vision' },
-    { id: 'sh', label: 'Honda SH' },
-    { id: 'pcx', label: 'Honda PCX' },
-    { id: 'nvx', label: 'Yamaha NVX' },
+    ...Array.from(
+      new Set(galleryItems.map(item => item.category))
+    )
+      .filter(Boolean)
+      .map(category => ({
+        id: category,
+        label: galleryItems.find(item => item.category === category)?.model || category,
+      })),
   ]
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
 
   const filteredItems =
     activeCategory === 'all'
-      ? galleryItems
-      : galleryItems.filter(item => item.category === activeCategory)
+      ? galleryItems.filter(item => item.isPrimary) // Show only primary images when "all" is selected
+      : galleryItems.filter(item => item.category === activeCategory && item.isPrimary)
+
+  // Get all images for lightbox (including non-primary)
+  const allLightboxItems = activeCategory === 'all'
+    ? galleryItems
+    : galleryItems.filter(item => item.category === activeCategory)
+
+  const openLightbox = (index: number) => {
+    const item = filteredItems[index]
+    const lightboxItemIndex = allLightboxItems.findIndex(li => li.id === item.id)
+    setLightboxIndex(lightboxItemIndex >= 0 ? lightboxItemIndex : 0)
+    setLightboxOpen(true)
+  }
+
+  const closeLightbox = () => {
+    setLightboxOpen(false)
+  }
+
+  const nextImage = () => {
+    setLightboxIndex((prev) => (prev + 1) % allLightboxItems.length)
+  }
+
+  const prevImage = () => {
+    setLightboxIndex((prev) => (prev - 1 + allLightboxItems.length) % allLightboxItems.length)
+  }
 
   return (
     <section className="relative pt-12 md:pt-16 pb-20 md:pb-32 overflow-hidden">
@@ -127,62 +144,186 @@ export default function GallerySection() {
         </motion.div>
 
         {/* Gallery grid */}
-        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map((item, index) => (
-            <motion.div
-              key={item.id}
-              layout
-              initial={isMounted ? { opacity: 0, scale: 0.9 } : false}
-              animate={isMounted ? { opacity: 1, scale: 1 } : false}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
-              whileHover={isMounted ? { scale: 1.05 } : undefined}
-              className="group relative aspect-[4/5] rounded-3xl overflow-hidden cursor-pointer"
-            >
-              {/* Placeholder image with gradient */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
-                className="absolute inset-0 bg-gradient-to-br from-neutral-800 to-neutral-900"
+                key={i}
+                className="aspect-[4/5] rounded-3xl bg-white/5 animate-pulse"
                 style={{
-                  backgroundImage: `linear-gradient(135deg, 
-                    ${index % 3 === 0 ? '#00FFA920' : index % 3 === 1 ? '#00D4FF20' : '#B77EFF20'}, 
-                    transparent)`,
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
                 }}
               />
-
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-300" />
-
-              {/* Content */}
-              <div className="absolute inset-0 p-6 flex flex-col justify-end">
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  whileHover={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <h3 className="text-xl font-semibold text-white mb-1">{item.design}</h3>
-                  <p className="text-sm text-white/70">{item.model}</p>
-                </motion.div>
-              </div>
-
-              {/* Zoom icon */}
-              <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"
+            ))}
+          </div>
+        ) : filteredItems.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-white/60">{t('gallery.noItems') || 'No gallery items available'}</p>
+          </div>
+        ) : (
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredItems.map((item, index) => (
+              <motion.div
+                key={item.id}
+                layout
+                initial={isMounted ? { opacity: 0, scale: 0.9 } : false}
+                animate={isMounted ? { opacity: 1, scale: 1 } : false}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+                whileHover={isMounted ? { scale: 1.05 } : undefined}
+                className="group relative aspect-[4/5] rounded-3xl overflow-hidden cursor-pointer"
+                onClick={() => openLightbox(index)}
+              >
+                {/* Real image */}
+                {item.image ? (
+                  <Image
+                    src={item.image}
+                    alt={`${item.title} - ${item.model}`}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    unoptimized={item.image.startsWith('http')} // Allow external images from S3
                   />
-                </svg>
-              </div>
+                ) : (
+                  // Fallback gradient if no image
+                  <div
+                    className="absolute inset-0 bg-gradient-to-br from-neutral-800 to-neutral-900"
+                    style={{
+                      backgroundImage: `linear-gradient(135deg, 
+                        ${index % 3 === 0 ? '#00FFA920' : index % 3 === 1 ? '#00D4FF20' : '#B77EFF20'}, 
+                        transparent)`,
+                    }}
+                  />
+                )}
+
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-300" />
+
+                {/* Content */}
+                <div className="absolute inset-0 p-6 flex flex-col justify-end">
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    whileHover={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Link
+                      href={`/designs/${item.designSlug}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="block"
+                    >
+                      <h3 className="text-xl font-semibold text-white mb-1 hover:text-[#00FFA9] transition-colors">
+                        {item.title}
+                      </h3>
+                    </Link>
+                    <p className="text-sm text-white/70">{item.model}</p>
+                    {item.price > 0 && (
+                      <p className="text-sm text-[#00FFA9] font-semibold mt-1">
+                        ${(item.price / 100).toFixed(2)}
+                      </p>
+                    )}
+                  </motion.div>
+                </div>
+
+                {/* Zoom icon */}
+                <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"
+                    />
+                  </svg>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        {/* Lightbox */}
+        <AnimatePresence>
+          {lightboxOpen && allLightboxItems.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md"
+              onClick={closeLightbox}
+            >
+              {/* Close button */}
+              <button
+                onClick={closeLightbox}
+                className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              {/* Navigation buttons */}
+              {allLightboxItems.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      prevImage()
+                    }}
+                    className="absolute left-4 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      nextImage()
+                    }}
+                    className="absolute right-4 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </>
+              )}
+
+              {/* Image */}
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center p-8"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {allLightboxItems[lightboxIndex] && (
+                  <>
+                    <Image
+                      src={allLightboxItems[lightboxIndex].image}
+                      alt={`${allLightboxItems[lightboxIndex].title} - ${allLightboxItems[lightboxIndex].model}`}
+                      width={1920}
+                      height={1080}
+                      className="object-contain max-w-full max-h-full rounded-2xl"
+                      unoptimized={allLightboxItems[lightboxIndex].image.startsWith('http')}
+                    />
+                    {/* Image info */}
+                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center">
+                      <h3 className="text-xl font-semibold text-white mb-1">
+                        {allLightboxItems[lightboxIndex].title}
+                      </h3>
+                      <p className="text-sm text-white/70">{allLightboxItems[lightboxIndex].model}</p>
+                      <p className="text-xs text-white/50 mt-2">
+                        {lightboxIndex + 1} / {allLightboxItems.length}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </motion.div>
             </motion.div>
-          ))}
-        </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* CTA */}
         <motion.div

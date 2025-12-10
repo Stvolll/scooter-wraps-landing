@@ -151,6 +151,128 @@ export default function UploadGuide() {
         </ul>
       </div>
 
+      <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
+        <p className="text-white/90 font-medium mb-2">💡 Optimization Tips:</p>
+        <ul className="list-disc list-inside space-y-1 text-white/70 text-sm">
+          <li>Use WebP for images (smaller size with same quality)</li>
+          <li>
+            Compress GLB files with <code className="text-[#00FFA9]">gltf-pipeline</code> before
+            upload
+          </li>
+          <li>Textures should be square (power of 2: 512, 1024, 2048, 4096)</li>
+          <li>Avoid overly large files - they slow down site loading</li>
+          <li>For best performance, use KTX2/Basis Universal format for textures</li>
+        </ul>
+      </div>
+
+      <div className="mt-6 p-6 rounded-2xl bg-gradient-to-br from-[#00FFA9]/10 to-[#00D4FF]/10 border border-[#00FFA9]/20">
+        <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          <span>📍</span> Where Your Content Appears on the Site
+        </h4>
+        <div className="space-y-4 text-white/80 text-sm">
+          <div>
+            <strong className="text-[#00FFA9]">1. Hero Section (First Screen):</strong>
+            <ul className="list-disc list-inside ml-2 mt-1 space-y-1 text-white/70">
+              <li>
+                <strong>3D Model (GLB)</strong> - Displayed in the interactive 3D viewer at the top
+                of the page
+              </li>
+              <li>
+                <strong>Texture</strong> - Applied to the 3D model when a design is selected
+              </li>
+              <li>
+                <strong>Cover Image</strong> - Shown in design cards below the 3D viewer
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <strong className="text-[#00D4FF]">2. Product Experience Section:</strong>
+            <ul className="list-disc list-inside ml-2 mt-1 space-y-1 text-white/70">
+              <li>
+                <strong>&quot;How to Apply&quot;</strong> - Interactive blueprint guide (uses
+                model-specific data)
+              </li>
+              <li>
+                <strong>&quot;Production Process&quot;</strong> - Static workflow timeline (no file
+                uploads needed)
+              </li>
+              <li>
+                <strong>Bento Grid</strong> - Uses placeholder images for product highlights
+                (film-texture-macro.svg, packaging-tube.svg)
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <strong className="text-[#B77EFF]">3. Gallery Section:</strong>
+            <ul className="list-disc list-inside ml-2 mt-1 space-y-1 text-white/70">
+              <li>
+                <strong>Gallery Images</strong> - Displayed in the masonry grid with filters
+              </li>
+              <li>Used to showcase completed wraps and real installations</li>
+              <li>Best practice: Include 3-5 high-quality photos per design</li>
+            </ul>
+          </div>
+
+          <div>
+            <strong className="text-[#FFB800]">4. Other Sections (Static Content):</strong>
+            <ul className="list-disc list-inside ml-2 mt-1 space-y-1 text-white/70">
+              <li>
+                <strong>USP Section</strong> - &quot;Why Choose TXD?&quot; (no file uploads needed)
+              </li>
+              <li>
+                <strong>Process Section</strong> - &quot;How It Works&quot; workflow (no file
+                uploads needed)
+              </li>
+              <li>
+                <strong>Testimonials Section</strong> - Customer reviews (managed separately)
+              </li>
+              <li>
+                <strong>FAQ Section</strong> - Frequently asked questions (static content)
+              </li>
+              <li>
+                <strong>CTA Section</strong> - Call-to-action banners (static content)
+              </li>
+              <li>
+                <strong>Contact Section</strong> - Contact form and methods (static content)
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
+        <p className="text-white/90 font-medium mb-2">📝 Content Workflow:</p>
+        <ol className="list-decimal list-inside space-y-2 text-white/70 text-sm">
+          <li>
+            <strong>Create Design Entry:</strong> Fill in title, slug, scooter model, price, and
+            description
+          </li>
+          <li>
+            <strong>Upload Cover Image:</strong> This appears in design cards on the main page
+          </li>
+          <li>
+            <strong>Upload 3D Model (GLB):</strong> Required for the interactive 3D viewer
+          </li>
+          <li>
+            <strong>Upload Texture:</strong> Applied to the 3D model when design is selected
+          </li>
+          <li>
+            <strong>Upload Gallery Images:</strong> These appear in the Gallery section below
+          </li>
+          <li>
+            <strong>Set Status:</strong> Use the stage checklist to track production progress
+            (CREATIVE → MODELING_3D → UV_TEMPLATE → PRINTING → FOR_SALE → SOLD → DELIVERY →
+            FEEDBACK)
+          </li>
+          <li>
+            <strong>Publish:</strong> Toggle &quot;Published&quot; to make the design visible on the
+            public site
+          </li>
+        </ol>
+      </div>
+
       <p className="mt-6 text-white/60 text-sm italic">
         All files will be uploaded to the configured S3 bucket. Ensure your file names are unique
         and descriptive.

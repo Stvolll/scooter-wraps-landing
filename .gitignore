@@ -19,6 +19,15 @@ node_modules/
 .DS_Store
 __MACOSX/
 *.pem
+*.log
+*.tmp
+*.cache
+*.bak
+*.backup
+*~
+*.swp
+*.swo
+Thumbs.db
 
 # uploads
 /public/uploads/
@@ -28,6 +37,7 @@ __MACOSX/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # local env files
 .env*.local
@@ -41,6 +51,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# uploads
-/public/uploads/
+# backups
+.backup/
+*.backup
 

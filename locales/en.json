@@ -200,9 +200,10 @@
       "description": "Protects original paint from scratches and UV damage"
     },
     "certified": "3M™ Certified",
-    "warranty": "5-Year Warranty",
-    "clients": "500+ Happy Clients",
-    "consultation": "Free Consultation"
+    "warranty": "Years Warranty",
+    "clients": "Happy Clients",
+    "consultation": "Free Consultation",
+    "certifications": "Certified Premium Materials"
   },
   "process": {
     "title": "How It Works",
@@ -229,23 +230,55 @@
     },
     "startJourney": "Start Your Journey"
   },
+  "clientJourney": {
+    "title": "Your Experience",
+    "subtitle": "From first contact to lifetime support - your journey with TXD",
+    "step1": {
+      "title": "Free Consultation",
+      "description": "Get expert advice and see your design in 3D preview. No commitment, just explore your options.",
+      "duration": "15 min"
+    },
+    "step2": {
+      "title": "Place Your Order",
+      "description": "Secure payment and order confirmation. We'll keep you updated every step of the way.",
+      "duration": "5 min"
+    },
+    "step3": {
+      "title": "Premium Production",
+      "description": "Your design is crafted with premium materials. See our production process in action.",
+      "duration": "3-5 days"
+    },
+    "step4": {
+      "title": "Professional Installation",
+      "description": "Our certified team comes to your location. Professional installation in 2-3 hours.",
+      "duration": "2-3 hours"
+    },
+    "step5": {
+      "title": "Lifetime Support",
+      "description": "5-year warranty, maintenance tips, and ongoing support. We're here for you.",
+      "duration": "5 years"
+    },
+    "startJourney": "Start Your Journey"
+  },
   "gallery": {
     "title": "Our Work",
     "subtitle": "Real wraps, real transformations",
     "allModels": "All Models",
     "wantMore": "Want to see more?",
-    "viewPortfolio": "View Full Portfolio"
+    "viewPortfolio": "View Full Portfolio",
+    "noItems": "No gallery items available yet. Check back soon!"
   },
   "testimonials": {
     "title": "What Our Riders Say",
     "subtitle": "Join 500+ satisfied customers riding in style",
     "rating": "4.9",
-    "reviews": "/ 500+ reviews",
+    "reviews": "reviews",
     "trusted": "Trusted by riders across Vietnam",
     "bestRated": "🏆 Best Rated 2024",
     "premiumPartner": "✨ Premium Partner",
     "securePayment": "🔒 Secure Payment",
-    "support": "📱 24/7 Support"
+    "support": "📱 24/7 Support",
+    "noTestimonials": "No testimonials available yet. Check back soon!"
   },
   "faq": {
     "title": "Frequently Asked Questions",
@@ -283,6 +316,8 @@
     "messageOptional": "Message (Optional)",
     "messagePlaceholder": "Tell us about your design preferences...",
     "send": "Send Message",
+    "sending": "Sending...",
+    "success": "Thank you! We will contact you within 2 hours.",
     "privacyNote": "By submitting, you agree to our privacy policy. We'll respond within 2 hours.",
     "chatNow": "Chat Now",
     "callNow": "Call Now",
