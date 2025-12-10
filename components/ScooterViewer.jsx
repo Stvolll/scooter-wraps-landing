@@ -785,42 +785,51 @@ export default function ScooterViewer({
             }
           }
 
-          // If scene not found, wait and retry
-          if (!scene) {
-            console.warn('⚠️ Scene not available yet, waiting for model to load...', {
-              hasModel: !!currentModelViewer.model,
-              hasScene: !!currentModelViewer.scene,
-              hasRenderer: !!currentModelViewer.renderer,
-              loaded: currentModelViewer.loaded,
-            })
-            // Retry after a short delay
-            setTimeout(() => {
-              const retryContainer = containerRef.current
-              if (retryContainer) {
-                const retryModelViewer = retryContainer.querySelector('model-viewer')
-                if (retryModelViewer && retryModelViewer.loaded && retryModelViewer.model) {
-                  // Try again with updated model
-                  if (retryModelViewer.model.scene) {
-                    scene = retryModelViewer.model.scene
-                    if (scene) {
-                      console.log('🔄 Retrying texture application after delay...')
-                      applyTexture()
-                    }
-                  } else if (retryModelViewer.model.scenes && retryModelViewer.model.scenes[0]) {
-                    scene = retryModelViewer.model.scenes[0]
-                    if (scene) {
-                      console.log('🔄 Retrying texture application after delay (scenes[0])...')
-                      applyTexture()
-                    }
-                  } else {
-                    console.log('🔄 Retrying texture application with current state...')
-                    applyTexture() // Retry with current state
+            // If scene not found, wait and retry with better diagnostics
+            if (!scene) {
+              // Enhanced diagnostics
+              const diagnostics = {
+                hasModel: !!currentModelViewer.model,
+                modelType: currentModelViewer.model?.constructor?.name || 'unknown',
+                hasModelScene: !!currentModelViewer.model?.scene,
+                hasModelScenes: !!currentModelViewer.model?.scenes,
+                modelScenesLength: currentModelViewer.model?.scenes?.length || 0,
+                hasDirectScene: !!currentModelViewer.scene,
+                hasRenderer: !!currentModelViewer.renderer,
+                loaded: currentModelViewer.loaded,
+                modelKeys: currentModelViewer.model ? Object.keys(currentModelViewer.model) : [],
+              }
+              
+              console.warn('⚠️ Scene not available yet, diagnostics:', diagnostics)
+              
+              // Wait for model-loaded event if not loaded yet
+              if (!currentModelViewer.loaded) {
+                console.log('⏳ Waiting for model to load...')
+                const onModelLoaded = () => {
+                  console.log('✅ Model loaded event fired, retrying...')
+                  setTimeout(() => {
+                    applyTexture()
+                  }, 300)
+                  currentModelViewer.removeEventListener('model-loaded', onModelLoaded)
+                }
+                currentModelViewer.addEventListener('model-loaded', onModelLoaded)
+                return
+              }
+              
+              // If loaded but scene still not found, wait a bit more for internal initialization
+              console.log('⏳ Model is loaded but scene not ready, waiting for internal initialization...')
+              setTimeout(() => {
+                const retryContainer = containerRef.current
+                if (retryContainer) {
+                  const retryModelViewer = retryContainer.querySelector('model-viewer')
+                  if (retryModelViewer && retryModelViewer.loaded) {
+                    console.log('🔄 Retrying texture application after delay...')
+                    applyTexture()
                   }
                 }
-              }
-            }, 500)
-            return
-          }
+              }, 800)
+              return
+            }
 
           // Get Three.js from model-viewer's internal context
           // model-viewer uses its own Three.js instance, need to access it correctly

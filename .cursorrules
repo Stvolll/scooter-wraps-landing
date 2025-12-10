@@ -1,0 +1,68 @@
+# Cursor Rules for Automatic Error Fixing
+
+## Common Errors and Auto-Fixes
+
+### 1. Duplicate Closing Tags
+**Pattern**: `</div>.*</div>` or multiple closing tags in a row
+**Fix**: Remove duplicate closing tags, ensure proper nesting
+
+### 2. Missing Scene Access in model-viewer
+**Pattern**: `modelViewer.model` exists but `scene` is not accessible
+**Fix**: 
+- Always check `modelViewer.model.scene` first
+- Then check `modelViewer.model.scenes[0]`
+- Add proper wait for `model-loaded` event
+- Use diagnostics to understand structure
+
+### 3. MIME Type Errors (CSS/JS returning HTML)
+**Pattern**: Static files return `text/html` instead of proper MIME type
+**Fix**:
+- Clear `.next` cache: `rm -rf .next`
+- Restart dev server
+- Check Next.js configuration
+
+### 4. Hydration Errors
+**Pattern**: Server-rendered HTML doesn't match client
+**Fix**:
+- Use `useState` with `useEffect` for client-only values
+- Check for `window`/`document` usage in server components
+- Use `'use client'` directive where needed
+
+### 5. Prisma Client Not Initialized
+**Pattern**: `DATABASE_URL` not set or Prisma not configured
+**Fix**:
+- Check `.env.local` for `DATABASE_URL`
+- Run `npx prisma generate`
+- Use graceful error handling in `lib/prisma.ts`
+
+## Auto-Fix Script Usage
+
+Run `./scripts/fix-common-errors.sh` to automatically:
+1. Clear Next.js cache
+2. Fix syntax errors
+3. Run linter and formatter
+4. Verify dependencies
+5. Check critical files
+
+## Best Practices
+
+1. **Always check for existence before accessing nested properties**
+   ```javascript
+   if (obj?.property?.nested) { ... }
+   ```
+
+2. **Use proper error handling**
+   ```javascript
+   try { ... } catch (error) { console.error(...) }
+   ```
+
+3. **Wait for async operations**
+   ```javascript
+   await waitForCondition(() => modelViewer.loaded)
+   ```
+
+4. **Clear cache when static files fail**
+   ```bash
+   rm -rf .next && npm run dev
+   ```
+
