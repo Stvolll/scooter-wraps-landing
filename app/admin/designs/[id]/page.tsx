@@ -4,6 +4,8 @@ import StageChecklist from '@/components/StageChecklist'
 import { togglePublish } from '../actions'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import BatchUploadClient from '@/components/BatchUploadClient'
+import ModelPropertiesEditorClient from '@/components/ModelPropertiesEditorClient'
 
 export default async function DesignEditPage({ params }: { params: { id: string } }) {
   let design: any = null
@@ -13,6 +15,10 @@ export default async function DesignEditPage({ params }: { params: { id: string 
       include: {
         statusHistory: {
           orderBy: { at: 'desc' },
+        },
+        modelProperties: true,
+        textures: {
+          orderBy: { layer: 'asc' },
         },
       },
     })
@@ -119,6 +125,40 @@ export default async function DesignEditPage({ params }: { params: { id: string 
               </button>
             </form>
           </div>
+        </div>
+
+        <div
+          className="p-6 mx-4 md:mx-8 lg:mx-16 mb-6"
+          style={{
+            background: 'rgba(255, 255, 255, 0.06)',
+            backdropFilter: 'blur(24px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+            borderRadius: '28px',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            boxShadow:
+              '0 8px 32px -4px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.08) inset',
+          }}
+        >
+          <h2 className="text-2xl font-semibold text-white mb-4">📦 Пакетная загрузка контента</h2>
+          <p className="text-sm text-white/60 mb-6">
+            Загрузите все файлы для этого дизайна: 3D модели, текстуры, видео, схемы и другие материалы.
+          </p>
+          <BatchUploadClient designId={design.id} />
+        </div>
+
+        <div
+          className="p-6 mx-4 md:mx-8 lg:mx-16 mb-6"
+          style={{
+            background: 'rgba(255, 255, 255, 0.06)',
+            backdropFilter: 'blur(24px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+            borderRadius: '28px',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            boxShadow:
+              '0 8px 32px -4px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.08) inset',
+          }}
+        >
+          <ModelPropertiesEditorClient designId={design.id} initialProperties={design?.modelProperties || null} />
         </div>
 
         <div

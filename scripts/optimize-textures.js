@@ -132,3 +132,4 @@ imageFiles.forEach(async inputPath => {
     console.error(`❌ Error processing ${inputPath}:`, error.message)
   }
 })
+

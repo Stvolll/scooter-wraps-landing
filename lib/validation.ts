@@ -34,6 +34,7 @@ export const checkoutSchema = z.object({
   totalPrice: z.number().positive().max(1000000), // Max 1M
   cryptoAddress: z.string().optional(), // For crypto payments
   cryptoCurrency: z.enum(['BTC', 'ETH', 'USDT', 'USDC']).optional(),
+  promoCode: z.string().optional(), // Promo code
 })
 
 /**

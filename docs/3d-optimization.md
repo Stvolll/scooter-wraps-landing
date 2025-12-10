@@ -124,3 +124,4 @@ npm run texture:optimize
 - [gltfpack documentation](https://github.com/zeux/meshoptimizer/tree/master/gltf)
 - [KTX2 specification](https://www.khronos.org/ktx/)
 - [Basis Universal](https://github.com/BinomialLLC/basis_universal)
+

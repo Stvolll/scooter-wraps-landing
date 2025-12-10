@@ -79,3 +79,4 @@ vercel --prod
 
 Убедитесь, что оба домена добавлены в Vercel Project Settings → Domains.
 
+

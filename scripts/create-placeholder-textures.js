@@ -74,3 +74,4 @@ console.log('\n✅ Placeholder files created!')
 console.log(
   '⚠️  Note: These are text placeholders. Replace with actual PNG images (2048x2048 recommended).'
 )
+

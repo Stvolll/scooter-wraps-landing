@@ -7,6 +7,26 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 
+/**
+ * Security logging
+ */
+export function logSecurityEvent(
+  type: 'csrf_failed' | 'rate_limit_exceeded' | 'invalid_request' | 'suspicious_activity',
+  details: Record<string, any>
+) {
+  const timestamp = new Date().toISOString()
+  console.warn(`[SECURITY] ${timestamp} [${type}]`, details)
+  
+  // In production, send to logging service
+  if (process.env.NODE_ENV === 'production' && process.env.SECURITY_LOG_WEBHOOK) {
+    fetch(process.env.SECURITY_LOG_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, details, timestamp }),
+    }).catch(err => console.error('Failed to send security log:', err))
+  }
+}
+
 // Initialize Redis for rate limiting (fallback to in-memory if not configured)
 let redis: Redis | null = null
 let rateLimiter: Ratelimit | null = null

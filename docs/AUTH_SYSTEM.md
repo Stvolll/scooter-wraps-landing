@@ -256,3 +256,4 @@ npx prisma db push
 
 - В development: проверьте консоль сервера
 - В production: настройте SMTP в `.env.local`
+

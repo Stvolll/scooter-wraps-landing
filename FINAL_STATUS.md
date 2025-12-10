@@ -100,3 +100,4 @@ git push https://YOUR_TOKEN@github.com/Stvolll/scooter-wraps-landing.git main
 **Дата**: 2025-01-10
 **Статус**: ✅ Очистка завершена, готов к push и деплою
 
+

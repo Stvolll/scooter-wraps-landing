@@ -118,3 +118,4 @@ export async function updateLastLogin(userId: string): Promise<void> {
     data: { lastLoginAt: new Date() },
   })
 }
+

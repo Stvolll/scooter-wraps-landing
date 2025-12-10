@@ -163,6 +163,7 @@ export default function ScooterViewer({
     return result
   }, [modelPath])
 
+
   // Логируем isHondaLead только на клиенте
   useEffect(() => {
     if (typeof window !== 'undefined' && modelPath) {

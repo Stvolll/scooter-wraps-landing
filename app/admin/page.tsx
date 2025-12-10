@@ -39,11 +39,22 @@ export default async function AdminPage() {
         >
           <div className="flex flex-col gap-4">
             <Link
-              href="/admin/designs"
+              href="/admin/analytics"
               className="px-6 py-4 rounded-2xl font-semibold text-black transition-all hover:scale-105 text-center"
               style={{
                 background: 'linear-gradient(135deg, #00FFA9 0%, #00D4FF 100%)',
                 boxShadow: '0 8px 32px -4px rgba(0, 255, 169, 0.4)',
+              }}
+            >
+              Analytics Dashboard
+            </Link>
+            <Link
+              href="/admin/designs"
+              className="px-6 py-4 rounded-2xl font-semibold text-white transition-all hover:bg-white/10 text-center"
+              style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
               }}
             >
               Manage Designs

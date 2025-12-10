@@ -7,13 +7,30 @@
  * Updates the language context when clicked.
  */
 
+import { useState, useEffect } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function LanguageSwitcher() {
   const { language, setLanguage } = useLanguage()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'vi' : 'en')
+  }
+
+  if (!mounted) {
+    return (
+      <button
+        className="font-semibold text-sm md:text-base transition-all duration-300 text-white/90 hover:text-white px-2 py-1"
+        aria-label="Switch language"
+      >
+        EN
+      </button>
+    )
   }
 
   return (

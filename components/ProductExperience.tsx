@@ -9,9 +9,10 @@
  */
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { Palette, Monitor, Printer, Truck, ChevronRight } from 'lucide-react'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import { Palette, Monitor, Printer, Truck, ChevronRight, Wrench, Droplet, Scissors, Wind, Sparkles } from 'lucide-react'
 import InteractiveScooterBlueprint from './InteractiveScooterBlueprint'
+import VietnamInstallationMap from './VietnamInstallationMap'
 import Image from 'next/image'
 
 
@@ -50,6 +51,7 @@ interface ProductExperienceProps {
 
 export default function ProductExperience({ selectedModel = 'vision', scooterName }: ProductExperienceProps) {
   const [isMounted, setIsMounted] = useState(false)
+  const [hoveredTool, setHoveredTool] = useState<string | null>(null)
   const protocolRef = useRef<HTMLDivElement>(null)
   
   // Scroll progress for protocol section
@@ -73,55 +75,207 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
 
   return (
     <div className="relative text-white">
-      {/* SECTION 1: Interactive Installation Guide */}
-      <section className="relative py-24 md:py-32 overflow-hidden">
-        {/* Glow effect in center background */}
+      {/* SECTION 1: Interactive Installation Guide - Redesigned */}
+      <section className="relative py-20 md:py-28 overflow-hidden">
+        {/* Subtle glow effect */}
         <div className="absolute inset-0">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#00FFA9] rounded-full blur-[150px] opacity-15" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#00FFA9] rounded-full blur-[120px] opacity-10" />
         </div>
         
-        <div className="relative container mx-auto px-4 md:px-8 lg:px-16">
-          {/* Section Header */}
+        <div className="relative container mx-auto px-4 md:px-8 lg:px-16 max-w-7xl">
+          {/* Section Header - Compact */}
           <motion.div
             initial={isMounted ? { opacity: 0, y: 20 } : false}
             animate={isMounted ? { opacity: 1, y: 0 } : false}
             transition={{ duration: 0.6 }}
             className="mb-12 text-center"
           >
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#00FFA9]/10 border border-[#00FFA9]/20 mb-4">
+              <span className="text-[10px] font-semibold text-[#00FFA9] uppercase tracking-wider">
+                Installation Guide
+              </span>
+            </div>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 text-white">
               How to Apply
             </h2>
-            <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto">
+            <p className="text-sm md:text-base text-white/60 max-w-xl mx-auto">
               {scooterName ? (
                 <>
-                  Interactive guide for{' '}
-                  <span className="text-[#00FFA9] font-semibold">{scooterName}</span>
-                  : hover or tap on parts to see installation details
+                  Interactive guide for <span className="text-[#00FFA9] font-medium">{scooterName}</span>
                 </>
               ) : (
-                'Interactive guide: hover or tap on parts to see installation details'
+                'Interactive installation guide'
               )}
             </p>
           </motion.div>
 
-          {/* Interactive Blueprint */}
+          {/* Required Tools & Accessories - Redesigned */}
           <motion.div
             initial={isMounted ? { opacity: 0, y: 20 } : false}
             animate={isMounted ? { opacity: 1, y: 0 } : false}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="mb-12"
+          >
+            <div
+              className="p-6 md:p-8 rounded-2xl"
+              style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                backdropFilter: 'blur(16px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+                boxShadow: '0 4px 24px -2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.08) inset',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+              }}
+            >
+              <div className="flex items-center gap-2.5 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-[#00FFA9]/10 border border-[#00FFA9]/20 flex items-center justify-center">
+                  <Wrench className="w-5 h-5 text-[#00FFA9]" />
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-white">
+                  Required Tools & Accessories
+                </h3>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* Tool items */}
+                {[
+                  { 
+                    id: 'solution',
+                    icon: Droplet, 
+                    name: 'Application Solution', 
+                    desc: 'Water + soap mix',
+                    image: '/images/application-solution.webp'
+                  },
+                  { 
+                    id: 'knife',
+                    icon: Scissors, 
+                    name: 'Precision Knife', 
+                    desc: 'For trimming',
+                    image: '/images/precision-knife.webp'
+                  },
+                  { 
+                    id: 'heatgun',
+                    icon: Wind, 
+                    name: 'Heat Gun', 
+                    desc: 'For curves',
+                    image: '/images/heat-gun.webp'
+                  },
+                  { 
+                    id: 'squeegee',
+                    icon: Sparkles, 
+                    name: 'Squeegee', 
+                    desc: 'Bubble removal',
+                    image: '/images/squeegee.webp'
+                  },
+                ].map((item, index) => {
+                  const Icon = item.icon
+                  const isHovered = hoveredTool === item.id
+                  return (
+                    <motion.div
+                      key={item.name}
+                      initial={isMounted ? { opacity: 0, scale: 0.95 } : false}
+                      animate={isMounted ? { opacity: 1, scale: 1 } : false}
+                      transition={{ duration: 0.3, delay: 0.1 + index * 0.05 }}
+                      className="relative p-4 rounded-xl border transition-all overflow-hidden aspect-square flex flex-col group"
+                      style={{
+                        borderColor: isHovered ? 'rgba(0, 255, 169, 0.35)' : 'rgba(255, 255, 255, 0.08)',
+                        backgroundColor: isHovered ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.04)',
+                        boxShadow: isHovered 
+                          ? '0 6px 24px -2px rgba(0, 255, 169, 0.25), 0 0 0 1px rgba(0, 255, 169, 0.2) inset' 
+                          : '0 2px 12px -2px rgba(0, 0, 0, 0.15)',
+                      }}
+                      whileHover={{ 
+                        scale: 1.02,
+                        y: -2,
+                        transition: { duration: 0.2 }
+                      }}
+                      onMouseEnter={() => setHoveredTool(item.id)}
+                      onMouseLeave={() => setHoveredTool(null)}
+                      onTouchStart={() => setHoveredTool(hoveredTool === item.id ? null : item.id)}
+                    >
+                      {/* Icon - Top Left */}
+                      <div className="absolute top-3 left-3 z-20">
+                        <div className="w-9 h-9 rounded-lg bg-[#00FFA9]/12 border border-[#00FFA9]/25 flex items-center justify-center transition-transform duration-200"
+                          style={{
+                            transform: isHovered ? 'scale(1.08) rotate(4deg)' : 'scale(1) rotate(0deg)',
+                          }}
+                        >
+                          <Icon className="w-5 h-5 text-[#00FFA9]" />
+                        </div>
+                      </div>
+
+                      {/* Text - Bottom */}
+                      <div className="relative z-10 mt-auto pt-2">
+                        <div className="text-sm font-bold text-white mb-0.5 leading-tight">{item.name}</div>
+                        <div className="text-xs text-white/60 leading-snug">{item.desc}</div>
+                      </div>
+
+                      {/* Image that slides in from right - over text */}
+                      <AnimatePresence>
+                        {isHovered && (
+                          <motion.div
+                            initial={{ x: '100%', opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            exit={{ x: '100%', opacity: 0 }}
+                            transition={{ 
+                              type: 'spring', 
+                              stiffness: 300, 
+                              damping: 30,
+                              duration: 0.35 
+                            }}
+                            className="absolute inset-0 rounded-xl overflow-hidden z-10"
+                          >
+                            <div className="relative w-full h-full">
+                              <Image
+                                src={item.image}
+                                alt={item.name}
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 768px) 50vw, 25vw"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement
+                                  target.style.display = 'none'
+                                  target.parentElement!.style.background = 'linear-gradient(135deg, rgba(0, 255, 169, 0.2), rgba(0, 212, 255, 0.2))'
+                                }}
+                              />
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Interactive Blueprint - Redesigned */}
+          <motion.div
+            initial={isMounted ? { opacity: 0, y: 20 } : false}
+            animate={isMounted ? { opacity: 1, y: 0 } : false}
+            transition={{ duration: 0.6, delay: 0.15 }}
             className="mb-16"
           >
             <div
-              className="p-8 md:p-12 rounded-3xl"
+              className="p-6 md:p-8 rounded-2xl"
               style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                backdropFilter: 'blur(20px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                boxShadow: '0 8px 32px -4px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
+                background: 'rgba(255, 255, 255, 0.05)',
+                backdropFilter: 'blur(16px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+                boxShadow: '0 4px 24px -2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.08) inset',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
               <InteractiveScooterBlueprint selectedModel={selectedModel} />
             </div>
+          </motion.div>
+
+          {/* Installation Services Map - Moved above Premium Print Quality */}
+          <motion.div
+            initial={isMounted ? { opacity: 0, y: 20 } : false}
+            animate={isMounted ? { opacity: 1, y: 0 } : false}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="mb-16"
+          >
+            <VietnamInstallationMap />
           </motion.div>
 
           {/* Bento Grid */}

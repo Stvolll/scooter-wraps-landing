@@ -91,3 +91,4 @@ NEXT_PUBLIC_IMAGE_CDN_DOMAIN=your_cdn_domain
 **Дата**: 2025-01-10
 **Статус**: Готов к деплою через Dashboard
 
+

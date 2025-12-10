@@ -81,3 +81,4 @@ vercel --prod
 - GitHub: https://github.com/Stvolll/scooter-wraps-landing
 - Vercel: Настроить после push
 
+

@@ -1,42 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '@/contexts/LanguageContext'
 import LanguageSwitcher from './LanguageSwitcher'
-import InterModal from './InterModal'
-import ContactModal from './ContactModal'
-import DonateModal from './DonateModal'
+// Модальные окна временно отключены - можно вернуть в будущем
+// import InterModal from './InterModal'
+// import ContactModal from './ContactModal'
+// import DonateModal from './DonateModal'
 
 export default function Header() {
   const { t } = useLanguage()
   const [isLogoHovered, setIsLogoHovered] = useState(false)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isInterOpen, setIsInterOpen] = useState(false)
-  const [isContactOpen, setIsContactOpen] = useState(false)
-  const [isDonateOpen, setIsDonateOpen] = useState(false)
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    if (isMenuOpen) {
-      const handleClickOutside = (e: MouseEvent) => {
-        const target = e.target as HTMLElement
-        if (!target.closest('.menu-container')) {
-          setIsMenuOpen(false)
-        }
-      }
-      document.addEventListener('click', handleClickOutside)
-      return () => document.removeEventListener('click', handleClickOutside)
-    }
-  }, [isMenuOpen])
-
-  const handleMenuClick = (action: 'inter' | 'contact' | 'donate') => {
-    setIsMenuOpen(false)
-    if (action === 'inter') setIsInterOpen(true)
-    if (action === 'contact') setIsContactOpen(true)
-    if (action === 'donate') setIsDonateOpen(true)
-  }
+  const [cartItemsCount] = useState(0) // TODO: Подключить реальную корзину
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
@@ -79,89 +56,48 @@ export default function Header() {
           </Link>
 
           {/* Navigation Menu */}
-          <div className="flex items-center gap-4">
-            {/* Menu Items - horizontal */}
-            <AnimatePresence>
-              {isMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex items-center gap-4"
-                >
-                  <button
-                    onClick={() => handleMenuClick('inter')}
-                    className="text-white/90 hover:text-white transition-colors font-medium px-3 py-2 rounded-xl hover:bg-white/10"
-                  >
-                    {t('menu.inter')}
-                  </button>
-                  <button
-                    onClick={() => handleMenuClick('contact')}
-                    className="text-white/90 hover:text-white transition-colors font-medium px-3 py-2 rounded-xl hover:bg-white/10"
-                  >
-                    {t('menu.contact')}
-                  </button>
-                  <button
-                    onClick={() => handleMenuClick('donate')}
-                    className="text-white/90 hover:text-white transition-colors font-medium px-3 py-2 rounded-xl hover:bg-white/10"
-                  >
-                    {t('menu.donate')}
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
+          <div className="flex items-center gap-2">
             {/* Language Switcher */}
             <LanguageSwitcher />
 
-            {/* Hamburger Menu Button */}
-            <div className="menu-container relative">
-              <button
-                onClick={e => {
-                  e.stopPropagation()
-                  setIsMenuOpen(!isMenuOpen)
-                }}
-                className="relative w-10 h-10 flex flex-col justify-center items-center gap-1.5 transition-all duration-300 rounded-xl hover:bg-white/10"
-                aria-label="Menu"
+            {/* Paper Roll Icon - Using paper-roll.svg */}
+            <Link
+              href="/cart"
+              className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition-all duration-300 group"
+              aria-label="Shopping Cart"
+            >
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="relative w-6 h-6"
               >
-                <span
-                  className={`w-6 h-0.5 transition-all duration-300 ${
-                    isMenuOpen ? 'rotate-45 translate-y-2' : ''
-                  }`}
+                <img
+                  src="/paper-roll.svg"
+                  alt="Paper Roll"
+                  className="w-6 h-6 object-contain opacity-90 group-hover:opacity-100 transition-opacity"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    borderRadius: '2px',
+                    filter: 'brightness(0) saturate(100%) invert(1)',
                   }}
                 />
-                <span
-                  className={`w-6 h-0.5 transition-all duration-300 ${
-                    isMenuOpen ? 'opacity-0' : ''
-                  }`}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    borderRadius: '2px',
-                  }}
-                />
-                <span
-                  className={`w-6 h-0.5 transition-all duration-300 ${
-                    isMenuOpen ? '-rotate-45 -translate-y-2' : ''
-                  }`}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    borderRadius: '2px',
-                  }}
-                />
-              </button>
-            </div>
+              </motion.div>
+              {cartItemsCount > 0 && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-[#00FFA9] text-black text-xs font-bold rounded-full flex items-center justify-center"
+                >
+                  {cartItemsCount > 9 ? '9+' : cartItemsCount}
+                </motion.span>
+              )}
+            </Link>
           </div>
         </div>
       </nav>
 
-      {/* Modals */}
-      <InterModal isOpen={isInterOpen} onClose={() => setIsInterOpen(false)} />
-      <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
-      <DonateModal isOpen={isDonateOpen} onClose={() => setIsDonateOpen(false)} />
+      {/* Modals - временно отключены, можно вернуть в будущем */}
+      {/* <InterModal isOpen={isInterOpen} onClose={() => setIsInterOpen(false)} /> */}
+      {/* <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} /> */}
+      {/* <DonateModal isOpen={isDonateOpen} onClose={() => setIsDonateOpen(false)} /> */}
     </header>
   )
 }

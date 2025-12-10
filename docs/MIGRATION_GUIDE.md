@@ -87,3 +87,4 @@ DROP INDEX IF EXISTS "Deal_status_idx";
 - The API endpoint `/api/testimonials` will only return deals with both feedback and rating
 - Rating should be between 1 and 5 (enforced in application logic)
 
+

@@ -14,6 +14,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
+import { motion } from 'framer-motion'
 import { scooters, getDefaultScooter } from '@/config/scooters'
 import { useLanguage } from '@/contexts/LanguageContext'
 import LandingDesignCard from '@/components/LandingDesignCard'
@@ -298,22 +299,35 @@ export default function Home() {
           transition: 'background 0.3s ease-out',
         }}
       >
-        <div className="pt-8 md:pt-12 pb-20 md:pb-32">
+        <div className="pb-20 md:pb-32" style={{ paddingTop: 'calc(5rem - 44px)' }}>
           {/* Product Strip - Horizontal Scroll */}
-          <div className="mb-16">
-            {/* Title Container */}
-            <div className="container mx-auto px-4 md:px-6 lg:px-8 mb-6">
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-3 text-center text-white">
-                {currentScooter.name} {t('hero3d.designs')}
-              </h2>
-              <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto text-center">
-                {t('page.chooseDesign')}
-              </p>
+          <div className="mb-20">
+            {/* Title Container - Enhanced with gradient and badge */}
+            <div className="container mx-auto px-4 md:px-6 lg:px-8 mb-12">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '0px 0px -100px 0px' }}
+                transition={{ duration: 0.6 }}
+                className="text-center"
+              >
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00FFA9]/10 border border-[#00FFA9]/20 mb-6">
+                  <span className="text-xs font-semibold text-[#00FFA9] uppercase tracking-wider">
+                    Premium Designs
+                  </span>
+                </div>
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-center bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent">
+                  {currentScooter.name} {t('hero3d.designs')}
+                </h2>
+                <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">
+                  {t('page.chooseDesign')}
+                </p>
+              </motion.div>
             </div>
 
-            {/* Horizontal Scroll Container - Full Width */}
+            {/* Horizontal Scroll Container - Full Width with enhanced styling */}
             <div
-              className="overflow-x-auto overflow-y-visible no-scrollbar snap-x snap-mandatory flex gap-6 px-4 md:px-8 py-6"
+              className="overflow-x-auto overflow-y-visible no-scrollbar snap-x snap-mandatory flex gap-6 px-4 md:px-8 py-8"
               style={{
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
@@ -325,7 +339,20 @@ export default function Home() {
                 const isSelected = (selectedDesign as any)?.id === design.id
 
                 return (
-                  <div key={design.id} className="snap-start">
+                  <motion.div
+                    key={design.id}
+                    className="snap-start"
+                    initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: true, margin: '-100px' }}
+                    transition={{ 
+                      duration: 0.5, 
+                      delay: index * 0.1,
+                      type: 'spring',
+                      stiffness: 100,
+                      damping: 15
+                    }}
+                  >
                     <LandingDesignCard
                       design={design}
                       modelName={currentScooter.name}
@@ -335,15 +362,30 @@ export default function Home() {
                       onImageClick={() => handleDesignSelect(design)}
                       onDetailsClick={() => handleViewDetails(design)}
                     />
-                  </div>
+                  </motion.div>
                 )
               })}
             </div>
 
-            {/* Scroll hint (mobile) */}
-            <div className="mt-6 text-center md:hidden">
-              <p className="text-white/40 text-sm">{t('page.swipeToExplore')}</p>
-            </div>
+            {/* Scroll hint (mobile) - Enhanced */}
+            <motion.div 
+              className="mt-8 text-center md:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+                <p className="text-white/50 text-sm">{t('page.swipeToExplore')}</p>
+                <motion.div
+                  animate={{ x: [0, 4, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                >
+                  <svg className="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </motion.div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>

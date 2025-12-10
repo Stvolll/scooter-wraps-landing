@@ -60,3 +60,4 @@ fs.writeFileSync(CONFIG_FILE, configContent)
 console.log('\n✅ Asset paths updated!')
 console.log(`   Config file: ${path.relative(process.cwd(), CONFIG_FILE)}`)
 console.log('\n⚠️  Note: Review the changes before committing!')
+

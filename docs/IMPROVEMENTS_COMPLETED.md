@@ -147,3 +147,4 @@ psql $DATABASE_URL -f prisma/migrations/add_feedback_to_deal.sql
 **Дата завершения**: 2025-01-10
 **Версия**: 1.0
 
+

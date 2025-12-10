@@ -19,47 +19,59 @@ enum DesignStatus {
 }
 
 model Design {
-  id               String      @id @default(cuid())
-  title            String
-  slug             String      @unique
-  scooterModel     String
-  description      String?
-  price            Int         @default(0)         // price in smallest currency unit
-  editionTotal     Int         @default(5)
-  editionAvailable Int         @default(5)
-  coverImage       String?      // S3 URL
-  galleryImages    String[]    @default([])
-  videoPreview     String?
-  glbModelUrl      String?
-  textureUrl       String?
-  status           DesignStatus @default(CREATIVE)
-  published        Boolean     @default(false)
-  statusHistory    DesignStatusHistory[]
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  deals            Deal[]
+  id                 String                 @id @default(cuid())
+  title              String
+  slug               String                 @unique
+  scooterModel       String
+  description        String?
+  price              Int                    @default(0) // price in smallest currency unit
+  editionTotal       Int                    @default(5)
+  editionAvailable   Int                    @default(5)
+  coverImage         String? // S3 URL
+  galleryImages      String[]               @default([])
+  videoPreview       String?
+  videoFull          String? // Full video URL
+  videoTutorial      String? // Tutorial video URL
+  glbModelUrl        String?
+  glbModelCompressed String? // Draco compressed version
+  glbModelMobile     String? // Simplified mobile version
+  textureUrl         String? // Legacy: single texture (deprecated, use textures relation)
+  blueprintSvg       String? // SVG схема для "How to Apply"
+  blueprintPdf       String? // PDF инструкция
+  blueprintHotspots  Json? // Интерактивные точки { points: [{ x, y, label, description }] }
+  thumbnail          String? // Миниатюра
+  socialPreview      String? // Preview для соцсетей
+  status             DesignStatus           @default(CREATIVE)
+  published          Boolean                @default(false)
+  statusHistory      DesignStatusHistory[]
+  textures           DesignTexture[]
+  modelProperties    DesignModelProperties?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  deals              Deal[]
+  orders             Order[]
 }
 
 model DesignStatusHistory {
-  id        String      @id @default(cuid())
-  design    Design      @relation(fields: [designId], references: [id], onDelete: Cascade)
-  designId  String
-  status    DesignStatus
-  note      String?
-  at        DateTime    @default(now())
+  id       String       @id @default(cuid())
+  design   Design       @relation(fields: [designId], references: [id], onDelete: Cascade)
+  designId String
+  status   DesignStatus
+  note     String?
+  at       DateTime     @default(now())
 
   @@index([designId])
 }
 
 model Deal {
-  id        String   @id @default(cuid())
-  design    Design   @relation(fields: [designId], references: [id], onDelete: Cascade)
-  designId  String
+  id         String   @id @default(cuid())
+  design     Design   @relation(fields: [designId], references: [id], onDelete: Cascade)
+  designId   String
   buyerName  String?
   buyerEmail String?
   status     String   @default("open") // open | paid | delivered
-  feedback   String?  // Customer feedback/review
-  rating     Int?     // Rating 1-5
+  feedback   String? // Customer feedback/review
+  rating     Int? // Rating 1-5
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -68,18 +80,18 @@ model Deal {
 }
 
 model User {
-  id                String          @id @default(cuid())
-  email             String          @unique
-  username          String          @unique
-  passwordHash      String          // bcrypt hashed password
-  twoFactorEnabled  Boolean         @default(false)
-  twoFactorSecret   String?         // For 2FA token generation
-  emailVerified     Boolean         @default(false)
-  isActive          Boolean         @default(true)
-  lastLoginAt       DateTime?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  twoFactorCodes    TwoFactorCode[]
+  id               String          @id @default(cuid())
+  email            String          @unique
+  username         String          @unique
+  passwordHash     String // bcrypt hashed password
+  twoFactorEnabled Boolean         @default(false)
+  twoFactorSecret  String? // For 2FA token generation
+  emailVerified    Boolean         @default(false)
+  isActive         Boolean         @default(true)
+  lastLoginAt      DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  twoFactorCodes   TwoFactorCode[]
 
   @@index([email])
   @@index([username])
@@ -96,4 +108,107 @@ model TwoFactorCode {
 
   @@index([userId])
   @@index([code])
+}
+
+model DesignTexture {
+  id         String   @id @default(cuid())
+  design     Design   @relation(fields: [designId], references: [id], onDelete: Cascade)
+  designId   String
+  url        String // S3 URL
+  type       String // "diffuse" | "normal" | "roughness" | "metallic" | "ao" | "emissive"
+  format     String // "png" | "jpg" | "ktx2" | "basis"
+  resolution String? // "2048x2048"
+  layer      Int      @default(0) // Слой текстуры (0 = основной)
+  createdAt  DateTime @default(now())
+
+  @@index([designId])
+  @@index([type])
+}
+
+model DesignModelProperties {
+  id       String @id @default(cuid())
+  design   Design @relation(fields: [designId], references: [id], onDelete: Cascade)
+  designId String @unique
+
+  // Camera
+  cameraPosition Json? // { x: number, y: number, z: number, rotation?: { x, y, z } }
+  cameraTarget   Json? // { x: number, y: number, z: number }
+
+  // Lighting
+  lighting Json? // { ambient: number, directional: { color, intensity }, shadows: boolean }
+
+  // Materials
+  materials Json? // { metalness: number, roughness: number, emissive?: { color, intensity } }
+
+  // Environment
+  environmentMap String? // HDRI URL
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NewsletterSubscriber {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String?
+  subscribed        Boolean  @default(true)
+  verified          Boolean  @default(false)
+  verificationToken String?  @unique
+  preferences       String[] @default([]) // e.g., ["new_designs", "promotions", "tips"]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([email])
+  @@index([subscribed])
+}
+
+model PromoCode {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  description   String?
+  discountType  String // "percentage" | "fixed"
+  discountValue Int // percentage (0-100) or fixed amount in VND
+  minPurchase   Int? // Minimum purchase amount in VND
+  maxDiscount   Int? // Maximum discount amount in VND
+  usageLimit    Int? // Total usage limit (null = unlimited)
+  usedCount     Int      @default(0)
+  validFrom     DateTime
+  validUntil    DateTime
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  orders        Order[]
+
+  @@index([code])
+  @@index([active])
+  @@index([validUntil])
+}
+
+model Order {
+  id                 String     @id @default(cuid())
+  orderId            String     @unique // Human-readable order ID (ORD-xxx)
+  design             Design     @relation(fields: [designId], references: [id], onDelete: Cascade)
+  designId           String
+  buyerName          String
+  buyerEmail         String?
+  buyerPhone         String
+  address            String
+  paymentMethod      String // momo | zalopay | cod | bank_transfer | card
+  totalPrice         Int // Price in smallest currency unit (VND)
+  discountAmount     Int        @default(0) // Discount applied
+  promoCode          PromoCode? @relation(fields: [promoCodeId], references: [id])
+  promoCodeId        String?
+  status             String     @default("pending") // pending | payment_pending | paid | processing | shipped | delivered | cancelled
+  paymentUrl         String? // For e-wallets
+  paymentId          String? // Payment gateway transaction ID
+  paymentConfirmedAt DateTime?
+  notes              String?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  @@index([designId])
+  @@index([status])
+  @@index([orderId])
+  @@index([paymentMethod])
+  @@index([promoCodeId])
 }

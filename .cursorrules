@@ -66,3 +66,4 @@ Run `./scripts/fix-common-errors.sh` to automatically:
    rm -rf .next && npm run dev
    ```
 
+
