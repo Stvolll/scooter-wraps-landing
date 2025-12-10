@@ -1,0 +1,48 @@
+═══════════════════════════════════════════════════════════
+  🚀 БЫСТРЫЙ ДЕПЛОЙ НА VERCEL
+═══════════════════════════════════════════════════════════
+
+✅ ПРОЕКТ ГОТОВ:
+   • Build: Успешно
+   • Vercel CLI: Установлен
+   • Конфигурация: Правильная
+
+📋 ШАГИ ДЛЯ ДЕПЛОЯ:
+
+1. Откройте: https://vercel.com/new
+
+2. Нажмите "Import Git Repository"
+
+3. Выберите: Stvolll/scooter-wraps-landing
+   Или вставьте: https://github.com/Stvolll/scooter-wraps-landing
+
+4. Vercel автоматически определит:
+   ✅ Framework: Next.js
+   ✅ Build Command: npm run build
+   ✅ Output Directory: .next
+
+5. (Опционально) Добавьте Environment Variables:
+   - DATABASE_URL
+   - AWS_ACCESS_KEY_ID
+   - AWS_SECRET_ACCESS_KEY
+   - AWS_REGION
+   - AWS_S3_BUCKET_NAME
+   - NEXT_PUBLIC_S3_BUCKET
+   - NEXT_PUBLIC_S3_REGION
+
+6. Нажмите "Deploy"
+
+7. Дождитесь завершения билда
+
+8. Получите URL деплоя
+
+═══════════════════════════════════════════════════════════
+
+⚠️  ЕСЛИ ОШИБКА С ПРАВАМИ:
+
+Добавьте пользователя в команду:
+https://vercel.com/teams/stvollls-projects/settings/members
+
+Или деплойте через Dashboard (см. выше)
+
+═══════════════════════════════════════════════════════════
