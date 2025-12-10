@@ -673,11 +673,11 @@ export default function ScooterViewer({
     // Method 2: Apply texture if specified (requires accessing Three.js scene)
     if (selectedDesign.texture && !selectedDesign.variant) {
       console.log('🎨 Attempting to apply texture:', selectedDesign.texture)
+      // Retry counter to prevent infinite loops (declared outside function to persist between calls)
+      let retryCount = 0
+      const MAX_RETRIES = 10
+      
       try {
-        // Retry counter to prevent infinite loops (declared outside function to persist between calls)
-        let retryCount = 0
-        const MAX_RETRIES = 10
-        
         // Wait for model to be fully loaded before accessing scene
         const applyTexture = () => {
           // Re-get model-viewer element (it might have changed)
