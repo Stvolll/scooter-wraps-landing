@@ -35,6 +35,13 @@ model-viewer [slot='ar-button'] {
     overflow-x: hidden;
   }
 
+  /* Ensure footer is completely opaque */
+  footer {
+    background-color: #000000 !important;
+    background: #000000 !important;
+    opacity: 1 !important;
+  }
+
   /* Strong typography hierarchy */
   h1,
   h2,

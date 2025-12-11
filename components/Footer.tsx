@@ -40,11 +40,47 @@ export default function Footer() {
   }
 
   return (
-    <footer className="relative w-full bg-gradient-to-b from-black via-neutral-950 to-black border-t border-white/10">
-      {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#00FFA9]/5 via-transparent to-transparent pointer-events-none" />
+    <footer 
+      className="relative w-full border-t border-white/10"
+      style={{
+        backgroundColor: '#000000',
+        background: '#000000',
+        position: 'relative',
+        isolation: 'isolate',
+        zIndex: 50,
+        minHeight: '100%',
+      }}
+    >
+      {/* Solid opaque background layer - completely opaque, no transparency */}
+      <div 
+        className="absolute inset-0" 
+        style={{ 
+          backgroundColor: '#000000', 
+          background: '#000000',
+          opacity: 1,
+          zIndex: 0,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
+          minHeight: '100%',
+        }} 
+      />
+      
+      {/* Additional solid layer to ensure opacity */}
+      <div 
+        className="absolute inset-0 bg-black" 
+        style={{ 
+          backgroundColor: '#000000', 
+          opacity: 1,
+          zIndex: 0,
+        }} 
+      />
 
-      <div className="relative container mx-auto px-4 md:px-8 lg:px-16 py-16 max-w-7xl">
+      <div className="relative z-50 container mx-auto px-4 md:px-8 lg:px-16 py-16 max-w-7xl" style={{ position: 'relative', zIndex: 50, backgroundColor: 'transparent' }}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Brand & Description */}
           <div className="space-y-4">
