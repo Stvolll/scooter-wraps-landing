@@ -11,6 +11,7 @@ import {
   Truck,
   MessageSquare,
   ChevronRight,
+  CheckCircle2,
 } from 'lucide-react'
 
 const STATUS_ORDER: DesignStatus[] = [
@@ -52,6 +53,10 @@ const STATUS_LABELS: Record<DesignStatus, { active: string; past: string }> = {
     active: 'Feedback',
     past: 'Feedback',
   },
+  [DesignStatus.SOLD]: {
+    active: 'Sold',
+    past: 'Sold',
+  },
 }
 
 const STATUS_ICONS: Record<DesignStatus, React.ComponentType<{ className?: string }>> = {
@@ -62,6 +67,7 @@ const STATUS_ICONS: Record<DesignStatus, React.ComponentType<{ className?: strin
   [DesignStatus.FOR_SALE]: ShoppingCart,
   [DesignStatus.DELIVERY]: Truck,
   [DesignStatus.FEEDBACK]: MessageSquare,
+  [DesignStatus.SOLD]: CheckCircle2,
 }
 
 interface DesignTimelineProps {

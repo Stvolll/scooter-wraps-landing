@@ -17,6 +17,7 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   Phone,
   Mail,
   Zap,
@@ -567,7 +568,7 @@ export default function DesignDetailClient({
                     currentStatus={design.status || DesignStatus.CREATIVE}
                     statusHistory={
                       design.statusHistory && Array.isArray(design.statusHistory) && design.statusHistory.length > 0
-                        ? design.statusHistory.map(h => ({
+                        ? design.statusHistory.map((h: any) => ({
                             status: h.status,
                             at: h.at instanceof Date ? h.at : new Date(h.at),
                             note: h.note || null,

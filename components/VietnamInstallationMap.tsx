@@ -18,7 +18,7 @@ import {
   X,
   CheckCircle2,
   AlertCircle,
-  ChevronRight,
+  ArrowRight,
   Globe,
   Building2,
 } from 'lucide-react'
@@ -391,7 +391,7 @@ export default function VietnamInstallationMap() {
             </button>
             {selectedCountry && (
               <>
-                <ChevronRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4" />
                 <button
                   onClick={() => {
                     setSelectedCity(null)
@@ -409,7 +409,7 @@ export default function VietnamInstallationMap() {
             )}
             {selectedCity && (
               <>
-                <ChevronRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4" />
                 <span className="text-white">{selectedCity.name}</span>
               </>
             )}
