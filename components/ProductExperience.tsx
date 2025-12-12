@@ -115,8 +115,8 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
         <div className="relative container mx-auto px-4 md:px-8 lg:px-16 max-w-7xl">
           {/* Section Header - Compact */}
           <motion.div
-            initial={isMounted ? { opacity: 0, y: 20 } : false}
-            animate={isMounted ? { opacity: 1, y: 0 } : false}
+            initial={{ opacity: 0, y: 20 }}
+            animate={isMounted ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="mb-12 text-center"
           >
@@ -141,8 +141,8 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
 
           {/* Required Tools & Accessories - Redesigned */}
           <motion.div
-            initial={isMounted ? { opacity: 0, y: 20 } : false}
-            animate={isMounted ? { opacity: 1, y: 0 } : false}
+            initial={{ opacity: 0, y: 20 }}
+            animate={isMounted ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mb-12"
           >
@@ -201,8 +201,8 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
                   return (
                     <motion.div
                       key={item.name}
-                      initial={isMounted ? { opacity: 0, scale: 0.95 } : false}
-                      animate={isMounted ? { opacity: 1, scale: 1 } : false}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={isMounted ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3, delay: 0.1 + index * 0.05 }}
                       className="relative p-4 rounded-xl border transition-all overflow-hidden aspect-square flex flex-col group"
                       style={{
@@ -283,8 +283,8 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
 
           {/* Interactive Blueprint - Redesigned */}
           <motion.div
-            initial={isMounted ? { opacity: 0, y: 20 } : false}
-            animate={isMounted ? { opacity: 1, y: 0 } : false}
+            initial={{ opacity: 0, y: 20 }}
+            animate={isMounted ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
             className="mb-16"
           >
@@ -312,8 +312,8 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
 
           {/* Installation Services Map - Moved above Premium Print Quality */}
           <motion.div
-            initial={isMounted ? { opacity: 0, y: 20 } : false}
-            animate={isMounted ? { opacity: 1, y: 0 } : false}
+            initial={{ opacity: 0, y: 20 }}
+            animate={isMounted ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="mb-16"
           >
@@ -324,8 +324,8 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Large card: Film texture macro */}
             <motion.div
-              initial={isMounted ? { opacity: 0, scale: 0.9 } : false}
-              animate={isMounted ? { opacity: 1, scale: 1 } : false}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={isMounted ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
               className="lg:col-span-2 lg:row-span-2 rounded-3xl overflow-hidden group cursor-pointer transition-all duration-300 hover:scale-[1.02]"
               style={{
@@ -355,8 +355,8 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
 
             {/* Small card: Film stretch video */}
             <motion.div
-              initial={isMounted ? { opacity: 0, scale: 0.9 } : false}
-              animate={isMounted ? { opacity: 1, scale: 1 } : false}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={isMounted ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.4 }}
               className="rounded-3xl overflow-hidden group cursor-pointer transition-all duration-300 hover:scale-[1.02] relative"
               style={{
@@ -393,8 +393,8 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
 
             {/* Typography card: 5 Year Warranty */}
             <motion.div
-              initial={isMounted ? { opacity: 0, scale: 0.9 } : false}
-              animate={isMounted ? { opacity: 1, scale: 1 } : false}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={isMounted ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.5 }}
               className="rounded-3xl p-8 flex flex-col justify-center group cursor-pointer transition-all duration-300 hover:scale-[1.02]"
               style={{
@@ -416,8 +416,8 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
 
             {/* Packaging card */}
             <motion.div
-              initial={isMounted ? { opacity: 0, scale: 0.9 } : false}
-              animate={isMounted ? { opacity: 1, scale: 1 } : false}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={isMounted ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.6 }}
               className="rounded-3xl overflow-hidden group cursor-pointer transition-all duration-300 hover:scale-[1.02]"
               style={{
@@ -452,8 +452,8 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
         <div className="container mx-auto px-4 md:px-8 lg:px-16">
           {/* Section Header */}
           <motion.div
-            initial={isMounted ? { opacity: 0, y: 20 } : false}
-            animate={isMounted ? { opacity: 1, y: 0 } : false}
+            initial={{ opacity: 0, y: 20 }}
+            animate={isMounted ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="mb-12 text-center"
           >
@@ -468,8 +468,8 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Left Side: Sticky Header */}
             <motion.div
-              initial={isMounted ? { opacity: 0 } : false}
-              animate={isMounted ? { opacity: 1 } : false}
+              initial={{ opacity: 0 }}
+              animate={isMounted ? { opacity: 1 } : { opacity: 1 }}
               transition={{ duration: 0.6 }}
               className="lg:col-span-3 lg:sticky lg:top-24 h-fit"
             >
@@ -501,8 +501,8 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
                 return (
                   <motion.div
                     key={step.number}
-                    initial={isMounted ? { opacity: 0, x: 50 } : false}
-                    animate={isMounted ? { opacity: 1, x: 0 } : false}
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={isMounted ? { opacity: 1, x: 0 } : { opacity: 1, x: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.15 }}
                     style={{ y: yTransform }}
                     className="mb-6"

@@ -15,7 +15,7 @@ interface InstallationZone {
   y: number // Center Y in percentage
   radius: number // Radius in percentage
   name: string
-  difficulty: 'Easy' | 'Medium' | 'Hard'
+  difficulty: string // 'Easy' | 'Medium' | 'Hard' or translated versions
   time: string
   steps: string[]
   tips: string[]

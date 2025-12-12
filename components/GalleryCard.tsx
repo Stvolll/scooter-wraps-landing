@@ -20,15 +20,15 @@ import { useLanguage } from '@/contexts/LanguageContext'
 
 interface GalleryCardProps {
   design: Design
-  language: 'en' | 'vi'
+  language: 'en' | 'vi' | 'ko'
   onClick: () => void
 }
 
 export default function GalleryCard({ design, language, onClick }: GalleryCardProps) {
   const { t } = useLanguage()
 
-  const displayName = language === 'vi' ? design.nameVi : design.name
-  const displayDescription = language === 'vi' ? design.descriptionVi : design.description
+  const displayName = language === 'vi' ? design.nameVi : language === 'ko' ? (design as any).nameKo || design.name : design.name
+  const displayDescription = language === 'vi' ? design.descriptionVi : language === 'ko' ? (design as any).descriptionKo || design.description : design.description
   const priceText = design.priceFrom ? `from $${design.price}` : `$${design.price}`
 
   return (
