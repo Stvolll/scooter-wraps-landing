@@ -88,3 +88,4 @@ DROP INDEX IF EXISTS "Deal_status_idx";
 - Rating should be between 1 and 5 (enforced in application logic)
 
 
+

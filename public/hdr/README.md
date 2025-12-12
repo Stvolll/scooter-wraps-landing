@@ -32,3 +32,4 @@ The HDRI is used by the model-viewer component to provide:
 
 If no HDRI is provided, model-viewer will use its default environment lighting.
 
+

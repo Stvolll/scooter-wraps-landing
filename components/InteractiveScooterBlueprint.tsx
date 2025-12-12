@@ -7,6 +7,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface InstallationZone {
   id: string
@@ -21,7 +22,8 @@ interface InstallationZone {
   side?: 'left' | 'right' // Which side to show info panel
 }
 
-const installationZones: InstallationZone[] = [
+// Default zones (will be replaced by translated versions in useEffect)
+const defaultZones: InstallationZone[] = [
   {
     id: 'under-seat',
     x: 50,
@@ -113,14 +115,110 @@ interface InteractiveScooterBlueprintProps {
 }
 
 export default function InteractiveScooterBlueprint({ selectedModel = 'vision' }: InteractiveScooterBlueprintProps) {
+  const { t, language } = useLanguage()
   const [activeZone, setActiveZone] = useState<string | null>(null)
   const [hoveredZone, setHoveredZone] = useState<string | null>(null)
-  const [zones, setZones] = useState<InstallationZone[]>(installationZones)
+  const [zones, setZones] = useState<InstallationZone[]>(defaultZones)
   const [draggedZone, setDraggedZone] = useState<string | null>(null)
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null)
+  const [isMounted, setIsMounted] = useState(false)
   const svgRef = useRef<SVGSVGElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const activeZoneData = zones.find(z => z.id === activeZone)
+
+  // Update zones when language changes
+  useEffect(() => {
+    setZones([
+      {
+        id: 'under-seat',
+        x: zones.find(z => z.id === 'under-seat')?.x || 50,
+        y: zones.find(z => z.id === 'under-seat')?.y || 35,
+        radius: 12,
+        name: t('installationGuide.zones.underSeat.name'),
+        difficulty: language === 'vi' ? 'Trung Bình' : 'Medium',
+        time: t('installationGuide.zones.underSeat.time'),
+        side: 'right',
+        steps: [
+          t('installationGuide.zones.underSeat.steps.0'),
+          t('installationGuide.zones.underSeat.steps.1'),
+          t('installationGuide.zones.underSeat.steps.2'),
+          t('installationGuide.zones.underSeat.steps.3'),
+        ],
+        tips: [
+          t('installationGuide.zones.underSeat.tips.0'),
+          t('installationGuide.zones.underSeat.tips.1'),
+          t('installationGuide.zones.underSeat.tips.2'),
+        ],
+      },
+      {
+        id: 'foot-panel',
+        x: zones.find(z => z.id === 'foot-panel')?.x || 50,
+        y: zones.find(z => z.id === 'foot-panel')?.y || 55,
+        radius: 12,
+        name: t('installationGuide.zones.footPanel.name'),
+        difficulty: language === 'vi' ? 'Khó' : 'Hard',
+        time: t('installationGuide.zones.footPanel.time'),
+        side: 'left',
+        steps: [
+          t('installationGuide.zones.footPanel.steps.0'),
+          t('installationGuide.zones.footPanel.steps.1'),
+          t('installationGuide.zones.footPanel.steps.2'),
+          t('installationGuide.zones.footPanel.steps.3'),
+        ],
+        tips: [
+          t('installationGuide.zones.footPanel.tips.0'),
+          t('installationGuide.zones.footPanel.tips.1'),
+          t('installationGuide.zones.footPanel.tips.2'),
+        ],
+      },
+      {
+        id: 'handlebar-area',
+        x: zones.find(z => z.id === 'handlebar-area')?.x || 35,
+        y: zones.find(z => z.id === 'handlebar-area')?.y || 25,
+        radius: 12,
+        name: t('installationGuide.zones.handlebarArea.name'),
+        difficulty: language === 'vi' ? 'Dễ' : 'Easy',
+        time: t('installationGuide.zones.handlebarArea.time'),
+        side: 'right',
+        steps: [
+          t('installationGuide.zones.handlebarArea.steps.0'),
+          t('installationGuide.zones.handlebarArea.steps.1'),
+          t('installationGuide.zones.handlebarArea.steps.2'),
+          t('installationGuide.zones.handlebarArea.steps.3'),
+        ],
+        tips: [
+          t('installationGuide.zones.handlebarArea.tips.0'),
+          t('installationGuide.zones.handlebarArea.tips.1'),
+          t('installationGuide.zones.handlebarArea.tips.2'),
+        ],
+      },
+      {
+        id: 'front-wheel-panel',
+        x: zones.find(z => z.id === 'front-wheel-panel')?.x || 35,
+        y: zones.find(z => z.id === 'front-wheel-panel')?.y || 75,
+        radius: 12,
+        name: t('installationGuide.zones.frontWheelPanel.name'),
+        difficulty: language === 'vi' ? 'Trung Bình' : 'Medium',
+        time: t('installationGuide.zones.frontWheelPanel.time'),
+        side: 'left',
+        steps: [
+          t('installationGuide.zones.frontWheelPanel.steps.0'),
+          t('installationGuide.zones.frontWheelPanel.steps.1'),
+          t('installationGuide.zones.frontWheelPanel.steps.2'),
+          t('installationGuide.zones.frontWheelPanel.steps.3'),
+        ],
+        tips: [
+          t('installationGuide.zones.frontWheelPanel.tips.0'),
+          t('installationGuide.zones.frontWheelPanel.tips.1'),
+          t('installationGuide.zones.frontWheelPanel.tips.2'),
+        ],
+      },
+    ])
+  }, [language, t])
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Get SVG path based on model
   const getSvgPath = () => {
@@ -135,7 +233,10 @@ export default function InteractiveScooterBlueprint({ selectedModel = 'vision' }
   }
 
   const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
+    const normalizedDifficulty = difficulty === 'Dễ' || difficulty === 'Easy' ? 'Easy' :
+                                 difficulty === 'Trung Bình' || difficulty === 'Medium' ? 'Medium' :
+                                 difficulty === 'Khó' || difficulty === 'Hard' ? 'Hard' : difficulty
+    switch (normalizedDifficulty) {
       case 'Easy':
         return '#00FFA9'
       case 'Medium':
@@ -148,7 +249,10 @@ export default function InteractiveScooterBlueprint({ selectedModel = 'vision' }
   }
 
   const getDifficultyGlow = (difficulty: string) => {
-    switch (difficulty) {
+    const normalizedDifficulty = difficulty === 'Dễ' || difficulty === 'Easy' ? 'Easy' :
+                                 difficulty === 'Trung Bình' || difficulty === 'Medium' ? 'Medium' :
+                                 difficulty === 'Khó' || difficulty === 'Hard' ? 'Hard' : difficulty
+    switch (normalizedDifficulty) {
       case 'Easy':
         return 'rgba(0, 255, 169, 0.6)'
       case 'Medium':
@@ -270,159 +374,160 @@ export default function InteractiveScooterBlueprint({ selectedModel = 'vision' }
 
   return (
     <div className="relative w-full">
-      {/* Sticky info panel - Redesigned with modern UI */}
-      <AnimatePresence mode="wait">
-        {(activeZone || hoveredZone) && (() => {
-          const zone = zones.find(z => z.id === (activeZone || hoveredZone))
-          if (!zone) return null
-          
-          const difficultyColor = getDifficultyColor(zone.difficulty)
-          const difficultyGlow = getDifficultyGlow(zone.difficulty)
-          
-          return (
-            <motion.div
-              key={`info-${activeZone || hoveredZone}`}
-              initial={{ opacity: 0, y: 40, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 40, scale: 0.96 }}
-              transition={{ duration: 0.5, type: 'spring', stiffness: 280, damping: 28 }}
-              className="sticky bottom-0 z-[105] w-full mt-8"
-              style={{
-                background: `linear-gradient(to top, rgba(0, 0, 0, 0.99) 0%, rgba(0, 0, 0, 0.97) 40%, rgba(0, 0, 0, 0.94) 100%)`,
-                backdropFilter: 'blur(28px) saturate(200%)',
-                WebkitBackdropFilter: 'blur(28px) saturate(200%)',
-                borderTop: `4px solid ${difficultyColor}70`,
-                boxShadow: `0 -16px 64px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, 0 0 60px ${difficultyGlow}50`,
-              }}
-            >
-              <div className="container mx-auto px-5 md:px-10 lg:px-20 max-w-6xl">
-                {/* Header Section - Polished */}
-                <div className="py-7 border-b border-white/12">
-                  <div className="flex items-start justify-between gap-5 mb-4">
-                    <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight tracking-tight">
-                      {zone.name}
-                    </h3>
+      {/* SVG Blueprint Container */}
+      <div ref={containerRef} className="relative w-full aspect-[2816/1536] max-w-4xl mx-auto overflow-visible">
+        {/* Info panel - Positioned above SVG, below header */}
+        {isMounted && (
+          <AnimatePresence mode="wait">
+            {(activeZone || hoveredZone) && (() => {
+            const zone = zones.find(z => z.id === (activeZone || hoveredZone))
+            if (!zone) return null
+            
+            const difficultyColor = getDifficultyColor(zone.difficulty)
+            const difficultyGlow = getDifficultyGlow(zone.difficulty)
+            
+            return (
+              <motion.div
+                key={`info-${activeZone || hoveredZone}`}
+                initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                transition={{ duration: 0.35, type: 'spring', stiffness: 320, damping: 28 }}
+                className="absolute -top-28 md:-top-32 left-0 right-0 z-50"
+                style={{
+                  pointerEvents: 'auto',
+                }}
+              >
+              <div
+                className="relative rounded-2xl mx-auto max-w-5xl"
+                style={{
+                  background: `linear-gradient(135deg, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.96) 100%)`,
+                  backdropFilter: 'blur(32px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(32px) saturate(180%)',
+                  border: `2px solid ${difficultyColor}50`,
+                  boxShadow: `0 8px 32px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.15) inset, 0 0 40px ${difficultyGlow}40`,
+                }}
+              >
+                <div className="p-5 md:p-6">
+                  {/* Header Section - Compact */}
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-xl md:text-2xl font-bold text-white leading-tight mb-2" style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.8)' }}>
+                        {zone.name}
+                      </h3>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span
+                          className="px-3 py-1.5 rounded-lg text-xs font-bold"
+                          style={{
+                            background: `linear-gradient(135deg, ${difficultyColor}25, ${difficultyColor}15)`,
+                            color: difficultyColor,
+                            border: `1.5px solid ${difficultyColor}50`,
+                            boxShadow: `0 2px 8px ${difficultyGlow}30`,
+                            textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)',
+                          }}
+                        >
+                          {zone.difficulty}
+                        </span>
+                        <div className="flex items-center gap-2 text-white/90 text-xs" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)' }}>
+                          <svg className="w-3.5 h-3.5 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="font-semibold">{zone.time}</span>
+                        </div>
+                      </div>
+                    </div>
                     <motion.button
                       onClick={() => {
                         setActiveZone(null)
                         setHoveredZone(null)
                       }}
                       whileHover={{ scale: 1.1, rotate: 90 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex-shrink-0 w-9 h-9 rounded-xl bg-white/8 hover:bg-white/15 border border-white/15 flex items-center justify-center transition-all"
+                      whileTap={{ scale: 0.9 }}
+                      className="flex-shrink-0 w-7 h-7 rounded-lg bg-white/8 hover:bg-white/15 border border-white/15 flex items-center justify-center transition-all"
                       aria-label="Close"
                     >
-                      <svg className="w-5 h-5 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-4 h-4 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </motion.button>
                   </div>
-                  <div className="flex items-center gap-4 flex-wrap">
-                    <motion.span
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.1 }}
-                      className="px-5 py-2.5 rounded-xl text-sm font-bold"
-                      style={{
-                        background: `linear-gradient(135deg, ${difficultyColor}25, ${difficultyColor}15)`,
-                        color: difficultyColor,
-                        border: `2px solid ${difficultyColor}60`,
-                        boxShadow: `0 4px 12px ${difficultyGlow}40, inset 0 1px 0 rgba(255, 255, 255, 0.1)`,
-                      }}
-                    >
-                      {zone.difficulty}
-                    </motion.span>
-                    <motion.div
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.15 }}
-                      className="flex items-center gap-2.5 text-white/75 text-sm"
-                    >
-                      <svg className="w-4.5 h-4.5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span className="font-semibold">{zone.time}</span>
-                    </motion.div>
-                  </div>
-                </div>
 
-                {/* Content Grid - Two Columns - Polished */}
-                <div className="grid md:grid-cols-2 gap-8 py-8">
-                  {/* Installation Steps */}
-                  <div>
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="w-1.5 h-7 rounded-full" style={{ background: difficultyColor, boxShadow: `0 0 12px ${difficultyGlow}60` }} />
-                      <h4 className="text-xs font-bold text-white/90 uppercase tracking-widest">
-                        Installation Steps
-                      </h4>
-                    </div>
-                    <ol className="space-y-4">
-                      {zone.steps.map((step, index) => (
-                        <motion.li
-                          key={index}
-                          initial={{ opacity: 0, x: -15 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.2 + index * 0.08, type: 'spring', stiffness: 300 }}
-                          className="flex gap-4 group"
-                        >
-                          <motion.span
-                            whileHover={{ scale: 1.15, rotate: 5 }}
-                            className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm border-2 transition-all"
-                            style={{
-                              background: `linear-gradient(135deg, ${difficultyColor}25, ${difficultyColor}15)`,
-                              color: difficultyColor,
-                              borderColor: `${difficultyColor}60`,
-                              boxShadow: `0 4px 12px ${difficultyGlow}30, inset 0 1px 0 rgba(255, 255, 255, 0.1)`,
-                            }}
+                  {/* Content Grid - Compact Two Columns */}
+                  <div className="grid md:grid-cols-2 gap-4 pt-4 border-t border-white/10">
+                    {/* Installation Steps */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-1 h-5 rounded-full" style={{ background: difficultyColor, boxShadow: `0 0 8px ${difficultyGlow}50` }} />
+                        <h4 className="text-[10px] font-bold text-white uppercase tracking-wider" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)' }}>
+                          {t('installationGuide.steps')}
+                        </h4>
+                      </div>
+                      <ol className="space-y-2.5">
+                        {zone.steps.map((step, index) => (
+                          <motion.li
+                            key={index}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.1 + index * 0.05, type: 'spring', stiffness: 300 }}
+                            className="flex gap-2.5 items-start"
                           >
-                            {index + 1}
-                          </motion.span>
-                          <span className="pt-1.5 text-sm text-white/90 leading-relaxed flex-1 font-medium">{step}</span>
-                        </motion.li>
-                      ))}
-                    </ol>
-                  </div>
+                            <span
+                              className="flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs border transition-all"
+                              style={{
+                                background: `linear-gradient(135deg, ${difficultyColor}20, ${difficultyColor}10)`,
+                                color: difficultyColor,
+                                borderColor: `${difficultyColor}40`,
+                                boxShadow: `0 2px 6px ${difficultyGlow}20`,
+                                textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)',
+                              }}
+                            >
+                              {index + 1}
+                            </span>
+                            <span className="pt-0.5 text-sm text-white leading-relaxed flex-1 font-medium" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.9)' }}>{step}</span>
+                          </motion.li>
+                        ))}
+                      </ol>
+                    </div>
 
-                  {/* Pro Tips */}
-                  <div>
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="w-1.5 h-7 rounded-full bg-[#00FFA9]" style={{ boxShadow: '0 0 12px rgba(0, 255, 169, 0.6)' }} />
-                      <h4 className="text-xs font-bold text-white/90 uppercase tracking-widest">
-                        Pro Tips
-                      </h4>
-                    </div>
-                    <ul className="space-y-4">
-                      {zone.tips.map((tip, index) => (
-                        <motion.li
-                          key={index}
-                          initial={{ opacity: 0, x: -15 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.2 + (zone.steps.length + index) * 0.08, type: 'spring', stiffness: 300 }}
-                          className="flex gap-4 group"
-                        >
-                          <motion.div
-                            whileHover={{ scale: 1.15, rotate: 5 }}
-                            className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-[#00FFA9]/25 to-[#00FFA9]/15 border-2 border-[#00FFA9]/40 flex items-center justify-center transition-all"
-                            style={{
-                              boxShadow: '0 4px 12px rgba(0, 255, 169, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-                            }}
+                    {/* Pro Tips */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-1 h-5 rounded-full bg-[#00FFA9]" style={{ boxShadow: '0 0 8px rgba(0, 255, 169, 0.5)' }} />
+                        <h4 className="text-[10px] font-bold text-white uppercase tracking-wider" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)' }}>
+                          {t('installationGuide.tips')}
+                        </h4>
+                      </div>
+                      <ul className="space-y-2.5">
+                        {zone.tips.map((tip, index) => (
+                          <motion.li
+                            key={index}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.1 + (zone.steps.length + index) * 0.05, type: 'spring', stiffness: 300 }}
+                            className="flex gap-2.5 items-start"
                           >
-                            <span className="text-[#00FFA9] text-xl">💡</span>
-                          </motion.div>
-                          <span className="pt-1.5 text-sm text-white/90 leading-relaxed flex-1 font-medium">{tip}</span>
-                        </motion.li>
-                      ))}
-                    </ul>
+                            <div
+                              className="flex-shrink-0 w-6 h-6 rounded-lg bg-gradient-to-br from-[#00FFA9]/20 to-[#00FFA9]/10 border border-[#00FFA9]/30 flex items-center justify-center transition-all"
+                              style={{
+                                boxShadow: '0 2px 6px rgba(0, 255, 169, 0.2)',
+                              }}
+                            >
+                              <span className="text-[#00FFA9] text-sm">💡</span>
+                            </div>
+                            <span className="pt-0.5 text-sm text-white leading-relaxed flex-1 font-medium" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.9)' }}>{tip}</span>
+                          </motion.li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
             </motion.div>
           )
         })()}
-      </AnimatePresence>
+          </AnimatePresence>
+        )}
 
-      {/* SVG Blueprint */}
-      <div ref={containerRef} className="relative w-full aspect-[2816/1536] max-w-4xl mx-auto overflow-visible">
         <svg
           ref={svgRef}
           viewBox="0 0 2816 1536"
@@ -434,7 +539,7 @@ export default function InteractiveScooterBlueprint({ selectedModel = 'vision' }
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          {/* Load SVG from file based on model */}
+          {/* Load SVG from file based on model - Light graphite color */}
           <image
             href={getSvgPath()}
             x="0"
@@ -442,6 +547,10 @@ export default function InteractiveScooterBlueprint({ selectedModel = 'vision' }
             width="2816"
             height="1536"
             preserveAspectRatio="xMidYMid meet"
+            style={{
+              filter: 'brightness(0.85) saturate(0.3) contrast(1.1)',
+              opacity: 0.9,
+            }}
           />
 
           {/* Interactive zones as circles */}
@@ -525,13 +634,13 @@ export default function InteractiveScooterBlueprint({ selectedModel = 'vision' }
                   }}
                   onMouseLeave={() => {
                     if (!draggedZone) {
-                      // Delay closing to allow moving to panel
+                      // Don't close immediately - allow moving to panel
                       setTimeout(() => {
                         setHoveredZone(null)
                         if (!isActive) {
                           setActiveZone(null)
                         }
-                      }, 100)
+                      }, 200)
                     }
                   }}
                   onClick={(e) => {

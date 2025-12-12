@@ -101,3 +101,4 @@ import Image from 'next/image'
 - Изображения из CDN/S3 автоматически поддерживаются через `remotePatterns` в `next.config.js`
 - Manifest файл содержит все метаданные для программного использования
 
+

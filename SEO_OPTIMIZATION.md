@@ -147,3 +147,4 @@ NEXT_PUBLIC_SITE_URL=https://decalwrap.co
 3. **Sitemap indexing**: Отправить sitemap в Google Search Console
 4. **Analytics**: Настроить отслеживание индексации страниц
 
+

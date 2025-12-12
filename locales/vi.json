@@ -71,6 +71,9 @@
   },
   "faq": {
     "title": "Câu Hỏi Thường Gặp",
+    "subtitle": "Mọi thứ bạn cần biết về bọc phim vinyl",
+    "stillQuestions": "Vẫn còn câu hỏi?",
+    "contactSupport": "Liên Hệ Hỗ Trợ",
     "durability": {
       "question": "Bọc phim vinyl bền như thế nào?",
       "answer": "Bọc phim vinyl cao cấp của chúng tôi được thiết kế để sử dụng 3-5 năm nếu chăm sóc đúng cách. Chúng chống tia UV và chống thời tiết."
@@ -90,6 +93,40 @@
     "custom": {
       "question": "Thiết kế tùy chỉnh mất bao lâu?",
       "answer": "Thiết kế tùy chỉnh thường mất 5-7 ngày làm việc để phê duyệt thiết kế, cộng thời gian sản xuất và vận chuyển."
+    },
+    "items": {
+      "durability": {
+        "question": "Bọc phim vinyl kéo dài bao lâu?",
+        "answer": "Bọc phim vinyl cao cấp 3M™ của chúng tôi được thiết kế để sử dụng 5-7 năm nếu chăm sóc đúng cách. Chúng chống hư hại tia UV, thời tiết và hao mòn hàng ngày. Chúng tôi cung cấp bảo hành 5 năm cho tất cả các lắp đặt."
+      },
+      "paintDamage": {
+        "question": "Bọc phim có làm hỏng sơn xe máy của tôi không?",
+        "answer": "Hoàn toàn không! Bọc phim vinyl thực sự bảo vệ sơn gốc của bạn khỏi trầy xước, vỡ và hư hại tia UV. Khi được gỡ bỏ chuyên nghiệp, sơn của bạn sẽ ở tình trạng nguyên vẹn bên dưới."
+      },
+      "customDesign": {
+        "question": "Tôi có thể chọn thiết kế tùy chỉnh không?",
+        "answer": "Có! Bạn có thể chọn từ các thiết kế sẵn có của chúng tôi hoặc tạo thiết kế tùy chỉnh của riêng bạn. Tải lên tác phẩm của bạn hoặc làm việc với đội ngũ thiết kế của chúng tôi để tạo ra thứ gì đó độc đáo. Xem trước nó trong 3D trước khi đặt hàng."
+      },
+      "installationTime": {
+        "question": "Lắp đặt mất bao lâu?",
+        "answer": "Lắp đặt chuyên nghiệp thường mất 2-3 giờ tùy thuộc vào mô hình và độ phức tạp của thiết kế. Chúng tôi đến địa điểm của bạn, vì vậy bạn không cần để xe máy ở bất cứ đâu."
+      },
+      "priceIncludes": {
+        "question": "Giá bao gồm những gì?",
+        "answer": "Giá bao gồm vật liệu vinyl 3M cao cấp, lắp đặt chuyên nghiệp tại địa điểm của bạn, đảm bảo chất lượng và bảo hành 5 năm. Không có phí ẩn!"
+      },
+      "maintenance": {
+        "question": "Làm thế nào để bảo trì bọc phim?",
+        "answer": "Đơn giản! Rửa bằng xà phòng nhẹ và nước. Tránh máy rửa áp lực cao trực tiếp trên các đường nối. Không cần đánh bóng. Hướng dẫn chăm sóc chi tiết được cung cấp sau khi lắp đặt."
+      },
+      "removal": {
+        "question": "Tôi có thể gỡ bỏ bọc phim sau này không?",
+        "answer": "Có, bọc phim có thể được gỡ bỏ chuyên nghiệp bất cứ lúc nào mà không làm hỏng sơn. Việc gỡ bỏ mất khoảng 1-2 giờ. Chúng tôi cung cấp dịch vụ gỡ bỏ với mức giá giảm cho khách hàng của chúng tôi."
+      },
+      "paymentPlans": {
+        "question": "Bạn có cung cấp kế hoạch thanh toán không?",
+        "answer": "Có! Chúng tôi cung cấp các tùy chọn thanh toán linh hoạt bao gồm kế hoạch trả góp. Liên hệ với chúng tôi để thảo luận về tùy chọn tốt nhất cho bạn."
+      }
     }
   },
   "contact": {
@@ -125,6 +162,20 @@
     "note": "Lưu ý:",
     "noteDescription": "Đặt các tệp mô hình .glb của bạn trong",
     "andTextureImages": "và hình ảnh kết cấu trong"
+  },
+  "designCards": {
+    "premiumDesigns": "Thiết Kế Cao Cấp",
+    "viewDetails": "Xem Chi Tiết",
+    "forSale": "Đang Bán",
+    "sold": "Đã Bán",
+    "inDevelopment": "Đang Phát Triển",
+    "models": {
+      "vision": "Honda Vision",
+      "lead": "Honda Lead",
+      "sh": "Honda SH",
+      "pcx": "Honda PCX",
+      "nvx": "Yamaha NVX"
+    }
   },
   "menu": {
     "inter": "Truy cập",
@@ -328,5 +379,145 @@
     "title": "Trang Web Đang Bảo Trì",
     "message": "Chúng tôi đang thực hiện bảo trì theo lịch trình. Vui lòng quay lại sau.",
     "backHome": "Về Trang Chủ"
+  },
+  "installationGuide": {
+    "title": "Hướng Dẫn Lắp Đặt",
+    "howToApply": "Cách Áp Dụng",
+    "interactiveGuide": "Hướng dẫn lắp đặt tương tác",
+    "interactiveGuideFor": "Hướng dẫn tương tác cho",
+    "requiredTools": "Công Cụ & Phụ Kiện Cần Thiết",
+    "interactiveInstallationGuide": "Hướng Dẫn Lắp Đặt Tương Tác",
+    "tools": {
+      "applicationSolution": {
+        "name": "Dung Dịch Áp Dụng",
+        "desc": "Hỗn hợp nước + xà phòng"
+      },
+      "precisionKnife": {
+        "name": "Dao Cắt Chính Xác",
+        "desc": "Để cắt tỉa"
+      },
+      "heatGun": {
+        "name": "Súng Nhiệt",
+        "desc": "Cho các đường cong"
+      },
+      "squeegee": {
+        "name": "Gạt Nước",
+        "desc": "Loại bỏ bọt khí"
+      }
+    },
+    "zones": {
+      "underSeat": {
+        "name": "Tấm Dưới Yên",
+        "difficulty": "Trung Bình",
+        "time": "15-20 phút",
+        "steps": [
+          "Tháo yên nếu có thể",
+          "Làm sạch bề mặt bằng cồn isopropyl",
+          "Áp dụng từ trung tâm, làm việc ra ngoài",
+          "Sử dụng gạt nước để loại bỏ bọt khí"
+        ],
+        "tips": [
+          "Tháo yên để dễ tiếp cận hơn",
+          "Làm việc theo từng phần",
+          "Giữ bề mặt ướt trong quá trình áp dụng"
+        ]
+      },
+      "footPanel": {
+        "name": "Tấm Chân",
+        "difficulty": "Khó",
+        "time": "25-35 phút",
+        "steps": [
+          "Tháo bàn đạp nếu có thể",
+          "Làm sạch kỹ bằng chất tẩy dầu mỡ",
+          "Áp dụng trong một chuyển động liên tục",
+          "Cắt bỏ phần thừa bằng dao cắt chính xác"
+        ],
+        "tips": [
+          "Khu vực dễ thấy nhất - hãy dành thời gian",
+          "Làm việc từ trên xuống dưới",
+          "Sử dụng súng nhiệt cho các đường cong phức tạp"
+        ]
+      },
+      "handlebarArea": {
+        "name": "Khu Vực Tay Lái",
+        "difficulty": "Dễ",
+        "time": "10-15 phút",
+        "steps": [
+          "Làm sạch bề mặt xung quanh tay lái",
+          "Áp dụng từ cạnh trên",
+          "Làm mịn xuống dưới cẩn thận",
+          "Cắt tỉa các cạnh gần điều khiển"
+        ],
+        "tips": [
+          "Cẩn thận xung quanh điều khiển",
+          "Làm việc nhanh chóng trước khi dung dịch khô",
+          "Sử dụng băng dính để bảo vệ"
+        ]
+      },
+      "frontWheelPanel": {
+        "name": "Tấm Bánh Xe Trước",
+        "difficulty": "Trung Bình",
+        "time": "20-25 phút",
+        "steps": [
+          "Làm sạch khu vực phía trên bánh xe trước",
+          "Áp dụng với dung dịch thêm",
+          "Làm mịn cẩn thận xung quanh vòm bánh xe",
+          "Cho thêm thời gian để khô"
+        ],
+        "tips": [
+          "Chú ý các đường cong vòm bánh xe",
+          "Sử dụng gạt nước dài hơn",
+          "Kiểm tra bọt khí sau 24 giờ"
+        ]
+      }
+    },
+    "steps": "Các Bước",
+    "tips": "Mẹo"
+  },
+  "installationServices": {
+    "title": "Dịch Vụ Lắp Đặt",
+    "subtitle": "Tìm dịch vụ lắp đặt chuyên nghiệp gần bạn. Nhấp vào thành phố để xem địa điểm, giá cả và thông tin liên hệ.",
+    "installationNetwork": "Mạng Lưới Lắp Đặt",
+    "sale": "Giảm Giá",
+    "location": "địa điểm",
+    "locations": "địa điểm",
+    "activeService": "Dịch Vụ Hoạt Động",
+    "comingSoon": "Sắp Ra Mắt",
+    "specialDiscount": "Giảm Giá Đặc Biệt",
+    "contact": "Liên Hệ",
+    "address": "Địa Chỉ",
+    "phone": "Điện Thoại",
+    "email": "Email",
+    "whatsapp": "WhatsApp",
+    "priceRange": "Khoảng Giá",
+    "installationPrice": "Giá Lắp Đặt",
+    "discount": "Giảm Giá",
+    "save": "Tiết Kiệm",
+    "off": "OFF",
+    "close": "Đóng"
+  },
+  "productionProcess": {
+    "title": "Quy Trình Sản Xuất",
+    "subtitle": "Từ ý tưởng đến hoàn thành - quy trình làm việc của chúng tôi",
+    "ourProcess": "Quy Trình",
+    "our": "Của Chúng Tôi",
+    "steps": {
+      "creative": {
+        "title": "SÁNG TẠO",
+        "description": "Thích ứng thiết kế cho hình dạng cụ thể."
+      },
+      "render": {
+        "title": "RENDER",
+        "description": "Xác minh hình ảnh 3D."
+      },
+      "execution": {
+        "title": "THỰC HIỆN",
+        "description": "In độ phân giải cao & ép phim."
+      },
+      "deploy": {
+        "title": "TRIỂN KHAI",
+        "description": "Vận chuyển & Hỗ trợ lắp đặt."
+      }
+    }
   }
 }

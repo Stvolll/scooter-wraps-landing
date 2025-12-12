@@ -160,3 +160,4 @@ npx prisma generate
 - Branch: `checkpoint/2025-01-10-stable`
 - Vercel: https://vercel.com/stvollls-projects/scooter-wraps-landing
 
+

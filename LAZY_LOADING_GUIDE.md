@@ -115,3 +115,4 @@ const ThreeDViewer = dynamic(() => import('./ThreeDViewer'), {
 2. Добавить preloading для критических 3D компонентов
 3. Использовать intersection observer для lazy loading при скролле
 
+

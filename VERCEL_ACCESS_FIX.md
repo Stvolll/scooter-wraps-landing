@@ -162,3 +162,4 @@ npx vercel --prod
 - **Настройки аутентификации**: https://vercel.com/account
 - **Проект**: https://vercel.com/stvollls-projects/scooter-wraps-landing
 
+

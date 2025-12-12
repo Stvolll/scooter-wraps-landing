@@ -148,3 +148,4 @@ const testimonials = await prisma.deal.findMany({
 **См. подробный анализ**: `docs/IMPROVEMENTS_ANALYSIS.md`
 
 
+

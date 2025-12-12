@@ -71,6 +71,9 @@
   },
   "faq": {
     "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about vinyl wraps",
+    "stillQuestions": "Still have questions?",
+    "contactSupport": "Contact Support",
     "durability": {
       "question": "How durable are the vinyl wraps?",
       "answer": "Our premium vinyl wraps are designed to last 3-5 years with proper care. They are UV-resistant and weatherproof."
@@ -90,6 +93,40 @@
     "custom": {
       "question": "How long does a custom design take?",
       "answer": "Custom designs typically take 5-7 business days for design approval, plus production and shipping time."
+    },
+    "items": {
+      "durability": {
+        "question": "How long does the vinyl wrap last?",
+        "answer": "Our premium 3M™ vinyl wraps are designed to last 5-7 years with proper care. They resist UV damage, weather, and daily wear. We provide a 5-year warranty on all installations."
+      },
+      "paintDamage": {
+        "question": "Will the wrap damage my scooter's paint?",
+        "answer": "Absolutely not! Vinyl wraps actually protect your original paint from scratches, chips, and UV damage. When professionally removed, your paint will be in pristine condition underneath."
+      },
+      "customDesign": {
+        "question": "Can I choose a custom design?",
+        "answer": "Yes! You can choose from our ready-made designs or create your own custom design. Upload your artwork or work with our design team to create something unique. Preview it in 3D before ordering."
+      },
+      "installationTime": {
+        "question": "How long does installation take?",
+        "answer": "Professional installation typically takes 2-3 hours depending on the model and design complexity. We come to your location, so you don't need to leave your scooter anywhere."
+      },
+      "priceIncludes": {
+        "question": "What's included in the price?",
+        "answer": "The price includes premium 3M vinyl material, professional installation at your location, quality guarantee, and 5-year warranty. No hidden fees!"
+      },
+      "maintenance": {
+        "question": "How do I maintain the wrap?",
+        "answer": "Simple! Wash with mild soap and water. Avoid high-pressure washers directly on seams. No waxing needed. Detailed care instructions are provided after installation."
+      },
+      "removal": {
+        "question": "Can I remove the wrap later?",
+        "answer": "Yes, wraps can be professionally removed anytime without damaging the paint. Removal takes about 1-2 hours. We offer removal services at a discounted rate for our customers."
+      },
+      "paymentPlans": {
+        "question": "Do you offer payment plans?",
+        "answer": "Yes! We offer flexible payment options including installment plans. Contact us to discuss the best option for you."
+      }
     }
   },
   "contact": {
@@ -125,6 +162,20 @@
     "note": "Note:",
     "noteDescription": "Place your .glb model files in",
     "andTextureImages": "and texture images in"
+  },
+  "designCards": {
+    "premiumDesigns": "Premium Designs",
+    "viewDetails": "View Details",
+    "forSale": "For Sale",
+    "sold": "Sold",
+    "inDevelopment": "In Development",
+    "models": {
+      "vision": "Honda Vision",
+      "lead": "Honda Lead",
+      "sh": "Honda SH",
+      "pcx": "Honda PCX",
+      "nvx": "Yamaha NVX"
+    }
   },
   "menu": {
     "inter": "Inter",
@@ -328,5 +379,145 @@
     "title": "Site Under Maintenance",
     "message": "We're currently performing scheduled maintenance. Please check back soon.",
     "backHome": "Go Home"
+  },
+  "installationGuide": {
+    "title": "Installation Guide",
+    "howToApply": "How to Apply",
+    "interactiveGuide": "Interactive installation guide",
+    "interactiveGuideFor": "Interactive guide for",
+    "requiredTools": "Required Tools & Accessories",
+    "interactiveInstallationGuide": "Interactive Installation Guide",
+    "tools": {
+      "applicationSolution": {
+        "name": "Application Solution",
+        "desc": "Water + soap mix"
+      },
+      "precisionKnife": {
+        "name": "Precision Knife",
+        "desc": "For trimming"
+      },
+      "heatGun": {
+        "name": "Heat Gun",
+        "desc": "For curves"
+      },
+      "squeegee": {
+        "name": "Squeegee",
+        "desc": "Bubble removal"
+      }
+    },
+    "zones": {
+      "underSeat": {
+        "name": "Under Seat Panel",
+        "difficulty": "Medium",
+        "time": "15-20 min",
+        "steps": [
+          "Remove seat if possible",
+          "Clean surface with isopropyl alcohol",
+          "Apply from center, work outward",
+          "Use squeegee to remove bubbles"
+        ],
+        "tips": [
+          "Remove seat for easier access",
+          "Work in sections",
+          "Keep surface wet during application"
+        ]
+      },
+      "footPanel": {
+        "name": "Foot Panel",
+        "difficulty": "Hard",
+        "time": "25-35 min",
+        "steps": [
+          "Remove footrests if possible",
+          "Clean thoroughly with degreaser",
+          "Apply in one continuous motion",
+          "Trim excess with precision knife"
+        ],
+        "tips": [
+          "Most visible area - take your time",
+          "Work from top to bottom",
+          "Use heat gun for complex curves"
+        ]
+      },
+      "handlebarArea": {
+        "name": "Handlebar Area",
+        "difficulty": "Easy",
+        "time": "10-15 min",
+        "steps": [
+          "Clean surface around handlebar",
+          "Apply from top edge",
+          "Smooth downward carefully",
+          "Trim edges near controls"
+        ],
+        "tips": [
+          "Be careful around controls",
+          "Work quickly before solution dries",
+          "Use masking tape for protection"
+        ]
+      },
+      "frontWheelPanel": {
+        "name": "Front Wheel Panel",
+        "difficulty": "Medium",
+        "time": "20-25 min",
+        "steps": [
+          "Clean area above front wheel",
+          "Apply with extra solution",
+          "Smooth carefully around wheel arch",
+          "Allow extra time to dry"
+        ],
+        "tips": [
+          "Watch for wheel arch curves",
+          "Use longer squeegee",
+          "Check for bubbles after 24h"
+        ]
+      }
+    },
+    "steps": "Steps",
+    "tips": "Tips"
+  },
+  "installationServices": {
+    "title": "Installation Services",
+    "subtitle": "Find professional installation services near you. Click on a city to see available locations, prices, and contact information.",
+    "installationNetwork": "Installation Network",
+    "sale": "Sale",
+    "location": "location",
+    "locations": "locations",
+    "activeService": "Active Service",
+    "comingSoon": "Coming Soon",
+    "specialDiscount": "Special Discount",
+    "contact": "Contact",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "whatsapp": "WhatsApp",
+    "priceRange": "Price Range",
+    "installationPrice": "Installation Price",
+    "discount": "Discount",
+    "save": "Save",
+    "off": "OFF",
+    "close": "Close"
+  },
+  "productionProcess": {
+    "title": "Production Process",
+    "subtitle": "From concept to completion - our workflow",
+    "ourProcess": "Process",
+    "our": "Our",
+    "steps": {
+      "creative": {
+        "title": "CREATIVE",
+        "description": "Design adaptation for specific geometry."
+      },
+      "render": {
+        "title": "RENDER",
+        "description": "3D Visualization verification."
+      },
+      "execution": {
+        "title": "EXECUTION",
+        "description": "High-DPI Printing & lamination."
+      },
+      "deploy": {
+        "title": "DEPLOY",
+        "description": "Shipping & Installation support."
+      }
+    }
   }
 }

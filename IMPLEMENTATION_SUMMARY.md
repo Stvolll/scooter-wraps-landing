@@ -178,3 +178,4 @@ If designs don't switch:
 3. Check browser console for errors
 4. Try Method 2 (separate files) as fallback
 
+

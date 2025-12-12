@@ -4,6 +4,7 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface LandingDesignCardProps {
   design: any
@@ -24,8 +25,24 @@ export default function LandingDesignCard({
   onImageClick,
   onDetailsClick,
 }: LandingDesignCardProps) {
+  const { t, language } = useLanguage()
   const images = design.images || [design.preview || design.texture]
   const currentImage = images[0] || '/images/studio-panorama.png'
+  
+  const getStatusText = () => {
+    if (design.status === 'FOR_SALE') return t('designCards.forSale')
+    if (design.status === 'SOLD') return t('designCards.sold')
+    return t('designCards.inDevelopment')
+  }
+  
+  // Function to translate model names
+  const getModelName = (modelId: string, defaultName: string) => {
+    const modelKey = modelId.toLowerCase().replace(/\s+/g, '')
+    const translationKey = `designCards.models.${modelKey}`
+    const translated = t(translationKey)
+    // If translation returns the key itself, use default name
+    return translated === translationKey ? defaultName : translated
+  }
 
   return (
     <motion.article
@@ -94,7 +111,7 @@ export default function LandingDesignCard({
       </div>
       <div className="p-4">
         <h3 className="text-lg font-semibold text-white mb-1">{design.name}</h3>
-        <div className="text-sm text-white/60 mb-3">{modelName}</div>
+        <div className="text-sm text-white/60 mb-3">{getModelName(modelId, modelName)}</div>
         
         {/* Status Badge (if available) */}
         {design.status && (
@@ -108,7 +125,7 @@ export default function LandingDesignCard({
                     : 'bg-white/10 text-white/60 border border-white/10'
               }`}
             >
-              {design.status === 'FOR_SALE' ? 'For Sale' : design.status === 'SOLD' ? 'Sold' : 'In Development'}
+              {getStatusText()}
             </span>
           </div>
         )}
@@ -124,7 +141,7 @@ export default function LandingDesignCard({
               border: '1px solid rgba(255, 255, 255, 0.1)',
             }}
           >
-            View Details
+            {t('designCards.viewDetails')}
           </Link>
         </div>
       </div>

@@ -54,3 +54,4 @@ Instead of texture swapping, you can use material variants in your GLB models:
 3. Update `config/scooters.js` to use `variant` instead of `texture`
 4. The model-viewer component will automatically switch variants
 
+

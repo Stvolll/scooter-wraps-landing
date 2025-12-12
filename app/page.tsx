@@ -42,9 +42,18 @@ const ScooterViewer3D = dynamic(() => import('@/components/ScooterViewer3D'), {
 })
 
 export default function Home() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   // Default to Honda Vision
   const [selectedModel, setSelectedModel] = useState('vision')
+  
+  // Function to translate model names
+  const getModelName = (modelId: string, defaultName: string) => {
+    const modelKey = modelId.toLowerCase().replace(/\s+/g, '')
+    const translationKey = `designCards.models.${modelKey}`
+    const translated = t(translationKey)
+    // If translation returns the key itself, use default name
+    return translated === translationKey ? defaultName : translated
+  }
   const [selectedDesign, setSelectedDesign] = useState<any>(null)
   const [scrollProgress, setScrollProgress] = useState(0)
   const [isPastTrigger, setIsPastTrigger] = useState(false)
@@ -269,7 +278,7 @@ export default function Home() {
                         }}
                       />
                     )}
-                    <span className="relative z-10">{scooter.name}</span>
+                    <span className="relative z-10">{getModelName(scooter.id, scooter.name)}</span>
                   </button>
                 )
               })}
@@ -313,11 +322,11 @@ export default function Home() {
               >
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00FFA9]/10 border border-[#00FFA9]/20 mb-6">
                   <span className="text-xs font-semibold text-[#00FFA9] uppercase tracking-wider">
-                    Premium Designs
+                    {t('designCards.premiumDesigns')}
                   </span>
                 </div>
                 <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-center bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent">
-                  {currentScooter.name} {t('hero3d.designs')}
+                  {getModelName(currentScooter.id, currentScooter.name)} {t('hero3d.designs')}
                 </h2>
                 <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">
                   {t('page.chooseDesign')}
@@ -355,7 +364,7 @@ export default function Home() {
                   >
                     <LandingDesignCard
                       design={design}
-                      modelName={currentScooter.name}
+                      modelName={getModelName(currentScooter.id, currentScooter.name)}
                       modelId={currentScooter.id}
                       index={index}
                       isSelected={isSelected}
@@ -398,7 +407,7 @@ export default function Home() {
             'linear-gradient(180deg, rgba(0, 0, 0, 1) 0%, rgba(15, 15, 15, 1) 5%, rgba(15, 15, 15, 1) 100%)',
         }}
       >
-        <ProductExperience selectedModel={selectedModel} scooterName={currentScooter.name} />
+        <ProductExperience selectedModel={selectedModel} scooterName={getModelName(currentScooter.id, currentScooter.name)} />
         <USPSection />
         <ProcessSection />
         <GallerySection />

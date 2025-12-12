@@ -284,3 +284,4 @@ Recommended events to track:
 - **Forms**: React state (ready for backend integration)
 - **Icons**: Emoji + inline SVG
 
+

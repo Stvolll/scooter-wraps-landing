@@ -17,3 +17,4 @@ CREATE INDEX IF NOT EXISTS "Deal_status_idx" ON "Deal"("status");
 UPDATE "Deal" SET "updatedAt" = "createdAt" WHERE "updatedAt" IS NULL;
 
 
+

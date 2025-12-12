@@ -31,13 +31,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     if (typeof window === 'undefined') return
 
     const saved = localStorage.getItem('txd-language') as Language | null
-    if (saved === 'en' || saved === 'vi') {
+    if (saved === 'en' || saved === 'vi' || saved === 'ko') {
       setLanguageState(saved)
     } else {
       // Try to detect browser language
       const browserLang = navigator.language.split('-')[0]
       if (browserLang === 'vi') {
         setLanguageState('vi')
+      } else if (browserLang === 'ko') {
+        setLanguageState('ko')
       }
     }
   }, [])

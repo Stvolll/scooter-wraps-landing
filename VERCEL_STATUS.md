@@ -117,3 +117,4 @@ git push origin main  # или ваша production ветка
 - **Деплои**: https://vercel.com/stvollls-projects/scooter-wraps-landing/deployments
 - **GitHub репозиторий**: https://github.com/Stvolll/scooter-wraps-landing
 
+

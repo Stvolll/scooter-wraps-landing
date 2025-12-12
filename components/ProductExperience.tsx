@@ -14,6 +14,7 @@ import { Palette, Monitor, Printer, Truck, ChevronRight, Wrench, Droplet, Scisso
 import InteractiveScooterBlueprint from './InteractiveScooterBlueprint'
 import VietnamInstallationMap from './VietnamInstallationMap'
 import Image from 'next/image'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 
 // Production protocol steps
@@ -50,9 +51,38 @@ interface ProductExperienceProps {
 }
 
 export default function ProductExperience({ selectedModel = 'vision', scooterName }: ProductExperienceProps) {
+  const { t, language } = useLanguage()
   const [isMounted, setIsMounted] = useState(false)
   const [hoveredTool, setHoveredTool] = useState<string | null>(null)
   const protocolRef = useRef<HTMLDivElement>(null)
+  
+  // Production protocol steps with translations
+  const protocolSteps = [
+    {
+      number: '01',
+      title: t('productionProcess.steps.creative.title'),
+      description: t('productionProcess.steps.creative.description'),
+      icon: Palette,
+    },
+    {
+      number: '02',
+      title: t('productionProcess.steps.render.title'),
+      description: t('productionProcess.steps.render.description'),
+      icon: Monitor,
+    },
+    {
+      number: '03',
+      title: t('productionProcess.steps.execution.title'),
+      description: t('productionProcess.steps.execution.description'),
+      icon: Printer,
+    },
+    {
+      number: '04',
+      title: t('productionProcess.steps.deploy.title'),
+      description: t('productionProcess.steps.deploy.description'),
+      icon: Truck,
+    },
+  ]
   
   // Scroll progress for protocol section
   const { scrollYProgress } = useScroll({
@@ -92,19 +122,19 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
           >
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#00FFA9]/10 border border-[#00FFA9]/20 mb-4">
               <span className="text-[10px] font-semibold text-[#00FFA9] uppercase tracking-wider">
-                Installation Guide
+                {t('installationGuide.title')}
               </span>
             </div>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 text-white">
-              How to Apply
+              {t('installationGuide.howToApply')}
             </h2>
             <p className="text-sm md:text-base text-white/60 max-w-xl mx-auto">
               {scooterName ? (
                 <>
-                  Interactive guide for <span className="text-[#00FFA9] font-medium">{scooterName}</span>
+                  {t('installationGuide.interactiveGuideFor')} <span className="text-[#00FFA9] font-medium">{scooterName}</span>
                 </>
               ) : (
-                'Interactive installation guide'
+                t('installationGuide.interactiveGuide')
               )}
             </p>
           </motion.div>
@@ -131,7 +161,7 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
                   <Wrench className="w-5 h-5 text-[#00FFA9]" />
                 </div>
                 <h3 className="text-xl md:text-2xl font-bold text-white">
-                  Required Tools & Accessories
+                  {t('installationGuide.requiredTools')}
                 </h3>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -140,29 +170,29 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
                   { 
                     id: 'solution',
                     icon: Droplet, 
-                    name: 'Application Solution', 
-                    desc: 'Water + soap mix',
+                    name: t('installationGuide.tools.applicationSolution.name'), 
+                    desc: t('installationGuide.tools.applicationSolution.desc'),
                     image: '/images/application-solution.webp'
                   },
                   { 
                     id: 'knife',
                     icon: Scissors, 
-                    name: 'Precision Knife', 
-                    desc: 'For trimming',
+                    name: t('installationGuide.tools.precisionKnife.name'), 
+                    desc: t('installationGuide.tools.precisionKnife.desc'),
                     image: '/images/precision-knife.webp'
                   },
                   { 
                     id: 'heatgun',
                     icon: Wind, 
-                    name: 'Heat Gun', 
-                    desc: 'For curves',
+                    name: t('installationGuide.tools.heatGun.name'), 
+                    desc: t('installationGuide.tools.heatGun.desc'),
                     image: '/images/heat-gun.webp'
                   },
                   { 
                     id: 'squeegee',
                     icon: Sparkles, 
-                    name: 'Squeegee', 
-                    desc: 'Bubble removal',
+                    name: t('installationGuide.tools.squeegee.name'), 
+                    desc: t('installationGuide.tools.squeegee.desc'),
                     image: '/images/squeegee.webp'
                   },
                 ].map((item, index) => {
@@ -191,27 +221,11 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
                       onMouseLeave={() => setHoveredTool(null)}
                       onTouchStart={() => setHoveredTool(hoveredTool === item.id ? null : item.id)}
                     >
-                      {/* Icon - Top Left */}
-                      <div className="absolute top-3 left-3 z-20">
-                        <div className="w-9 h-9 rounded-lg bg-[#00FFA9]/12 border border-[#00FFA9]/25 flex items-center justify-center transition-transform duration-200"
-                          style={{
-                            transform: isHovered ? 'scale(1.08) rotate(4deg)' : 'scale(1) rotate(0deg)',
-                          }}
-                        >
-                          <Icon className="w-5 h-5 text-[#00FFA9]" />
-                        </div>
-                      </div>
-
-                      {/* Text - Bottom */}
-                      <div className="relative z-10 mt-auto pt-2">
-                        <div className="text-sm font-bold text-white mb-0.5 leading-tight">{item.name}</div>
-                        <div className="text-xs text-white/60 leading-snug">{item.desc}</div>
-                      </div>
-
-                      {/* Image that slides in from right - over text */}
-                      <AnimatePresence>
+                      {/* Image that slides in from right - under text */}
+                      <AnimatePresence mode="wait">
                         {isHovered && (
                           <motion.div
+                            key={`image-${item.id}`}
                             initial={{ x: '100%', opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             exit={{ x: '100%', opacity: 0 }}
@@ -222,24 +236,44 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
                               duration: 0.35 
                             }}
                             className="absolute inset-0 rounded-xl overflow-hidden z-10"
+                            style={{ pointerEvents: 'none' }}
                           >
                             <div className="relative w-full h-full">
-                              <Image
+                              <img
                                 src={item.image}
                                 alt={item.name}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 768px) 50vw, 25vw"
+                                className="w-full h-full object-cover"
+                                loading="lazy"
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement
                                   target.style.display = 'none'
-                                  target.parentElement!.style.background = 'linear-gradient(135deg, rgba(0, 255, 169, 0.2), rgba(0, 212, 255, 0.2))'
+                                  const parent = target.parentElement
+                                  if (parent) {
+                                    parent.style.background = 'linear-gradient(135deg, rgba(0, 255, 169, 0.2), rgba(0, 212, 255, 0.2))'
+                                  }
                                 }}
                               />
                             </div>
                           </motion.div>
                         )}
                       </AnimatePresence>
+
+                      {/* Text - Bottom (above image) */}
+                      <div className="relative z-20 mt-auto pt-2">
+                        <div className="text-sm font-bold text-white mb-0.5 leading-tight">{item.name}</div>
+                        <div className="text-xs text-white/60 leading-snug">{item.desc}</div>
+                      </div>
+
+                      {/* Icon - Top Left (above everything) */}
+                      <div className="absolute top-3 left-3 z-30">
+                        <div className="w-9 h-9 rounded-lg bg-[#00FFA9]/12 border border-[#00FFA9]/25 flex items-center justify-center transition-transform duration-200"
+                          style={{
+                            transform: isHovered ? 'scale(1.08) rotate(4deg)' : 'scale(1) rotate(0deg)',
+                          }}
+                        >
+                          <Icon className="w-5 h-5 text-[#00FFA9]" />
+                        </div>
+                      </div>
                     </motion.div>
                   )
                 })}
@@ -264,6 +298,14 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
                 border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
+              <div className="flex items-center gap-2.5 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-[#00FFA9]/10 border border-[#00FFA9]/20 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-[#00FFA9]" />
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-white">
+                  {t('installationGuide.interactiveInstallationGuide')}
+                </h3>
+              </div>
               <InteractiveScooterBlueprint selectedModel={selectedModel} />
             </div>
           </motion.div>
@@ -416,10 +458,10 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
             className="mb-12 text-center"
           >
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-              Production Process
+              {t('productionProcess.title')}
             </h2>
             <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto">
-              From concept to completion - our workflow
+              {t('productionProcess.subtitle')}
             </p>
           </motion.div>
 
@@ -442,10 +484,10 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
                 }}
               >
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">
-                  Our
+                  {t('productionProcess.our')}
                 </h2>
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#00FFA9]">
-                  Process
+                  {t('productionProcess.ourProcess')}
                 </h2>
               </div>
             </motion.div>
