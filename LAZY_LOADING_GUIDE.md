@@ -116,3 +116,5 @@ const ThreeDViewer = dynamic(() => import('./ThreeDViewer'), {
 3. Использовать intersection observer для lazy loading при скролле
 
 
+
+

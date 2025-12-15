@@ -148,3 +148,5 @@ NEXT_PUBLIC_SITE_URL=https://decalwrap.co
 4. **Analytics**: Настроить отслеживание индексации страниц
 
 
+
+

@@ -79,3 +79,5 @@ curl -I https://decalwrap.co/api/skus
 - `max-age=3600` = 1 час в секундах
 
 
+
+

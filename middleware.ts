@@ -7,6 +7,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit, getClientIdentifier } from './lib/security'
 
 export async function middleware(request: NextRequest) {
+  // Check if request is for placeholder domains
+  const hostname = request.headers.get('host') || ''
+  const isPlaceholderDomain = hostname.includes('txd.bike') || hostname.includes('decalwrap.co')
+  
+  // Allow access to coming-soon page and static assets
+  const isComingSoonPage = request.nextUrl.pathname.startsWith('/coming-soon')
+  const isStaticAsset = 
+    request.nextUrl.pathname.startsWith('/_next/') ||
+    request.nextUrl.pathname.startsWith('/favicon') ||
+    request.nextUrl.pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot)$/)
+
+  // Redirect to coming-soon page for placeholder domains (except for coming-soon page itself and static assets)
+  if (isPlaceholderDomain && !isComingSoonPage && !isStaticAsset) {
+    return NextResponse.rewrite(new URL('/coming-soon', request.url))
+  }
+
   const response = NextResponse.next()
 
   // Security Headers

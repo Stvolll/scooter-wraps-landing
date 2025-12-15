@@ -55,3 +55,5 @@ Instead of texture swapping, you can use material variants in your GLB models:
 4. The model-viewer component will automatically switch variants
 
 
+
+
