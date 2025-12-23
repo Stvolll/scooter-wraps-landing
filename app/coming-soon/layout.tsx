@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Admin Login',
-  description: 'TXD Admin Login',
+  title: 'Coming Soon',
+  description: 'TXD is launching soon. Get ready for premium scooter wraps and custom designs.',
   robots: {
     index: false,
     follow: false,
@@ -13,14 +13,7 @@ export const metadata: Metadata = {
   },
 }
 
-// Login page doesn't need authentication check
-export default function LoginLayout({ children }: { children: React.ReactNode }) {
+export default function ComingSoonLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
-
-
-
-
-
-
 
