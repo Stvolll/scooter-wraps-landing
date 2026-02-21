@@ -28,8 +28,8 @@
     "create:admin": "tsx scripts/create-admin-user.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.947.0",
-    "@aws-sdk/s3-request-presigner": "^3.947.0",
+    "@aws-sdk/client-s3": "^3.995.0",
+    "@aws-sdk/s3-request-presigner": "^3.995.0",
     "@prisma/client": "^6.0.0",
     "@react-three/drei": "^9.88.13",
     "@react-three/fiber": "^8.15.11",
