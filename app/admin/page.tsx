@@ -5,10 +5,22 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
 
+const ADMIN_VERIFIED_KEY = 'admin_verified_at'
+const VERIFIED_TTL_MS = 8000
+
+function getInitialState() {
+  if (typeof window === 'undefined') return { loading: true, isAuthenticated: null as boolean | null }
+  const raw = sessionStorage.getItem(ADMIN_VERIFIED_KEY)
+  if (!raw) return { loading: true, isAuthenticated: null as boolean | null }
+  const t = parseInt(raw, 10)
+  if (Date.now() - t > VERIFIED_TTL_MS) return { loading: true, isAuthenticated: null as boolean | null }
+  return { loading: false, isAuthenticated: true as boolean }
+}
+
 export default function AdminPage() {
   const router = useRouter()
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(() => getInitialState().isAuthenticated)
+  const [loading, setLoading] = useState(() => getInitialState().loading)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -22,17 +34,21 @@ export default function AdminPage() {
         if (response.ok) {
           const data = await response.json()
           if (data.authenticated) {
+            sessionStorage.setItem(ADMIN_VERIFIED_KEY, String(Date.now()))
             setIsAuthenticated(true)
           } else {
+            sessionStorage.removeItem(ADMIN_VERIFIED_KEY)
             setIsAuthenticated(false)
             router.replace('/admin/login')
           }
         } else {
+          sessionStorage.removeItem(ADMIN_VERIFIED_KEY)
           setIsAuthenticated(false)
           router.replace('/admin/login')
         }
       } catch (error) {
         console.error('Auth check error:', error)
+        sessionStorage.removeItem(ADMIN_VERIFIED_KEY)
         setIsAuthenticated(false)
         router.replace('/admin/login')
       } finally {
@@ -45,14 +61,8 @@ export default function AdminPage() {
 
   if (loading || isAuthenticated === null) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center p-8"
-        style={{
-          background:
-            'linear-gradient(180deg, rgba(0, 0, 0, 1) 0%, rgba(15, 15, 15, 1) 5%, rgba(15, 15, 15, 1) 100%)',
-        }}
-      >
-        <div className="animate-pulse text-white/60">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center p-8 bg-[#0a0a0a]">
+        <p className="text-white/60 animate-pulse">Checking access...</p>
       </div>
     )
   }

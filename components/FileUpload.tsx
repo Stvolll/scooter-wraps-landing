@@ -130,22 +130,17 @@ export default function FileUpload({
           }),
         })
 
+        const signedUrlData = await signedUrlRes.json().catch(() => ({}))
+        // 200 с configured: false — S3 не настроен, переходим на локальную загрузку без ошибки
+        if (signedUrlData.configured === false) {
+          console.log('⚠️ [FileUpload] S3 not configured, using local upload fallback')
+          throw new Error('S3_NOT_CONFIGURED')
+        }
         if (!signedUrlRes.ok) {
-          const errorData = await signedUrlRes.json().catch(() => ({}))
-          s3Error = errorData.error || errorData.details || 'Failed to get signed URL'
-          
-          // Если S3 не настроен, сразу переключаемся на local upload
-          if (errorData.error?.includes('not configured') || 
-              errorData.error?.includes('credentials') ||
-              errorData.configured === false) {
-            console.log('⚠️ [FileUpload] S3 not configured, using local upload fallback')
-            throw new Error('S3_NOT_CONFIGURED')
-          }
-          
+          s3Error = signedUrlData.error || signedUrlData.details || 'Failed to get signed URL'
           throw new Error(s3Error)
         }
 
-        const signedUrlData = await signedUrlRes.json()
         const { url: signedUrl, key, publicUrl: serverPublicUrl } = signedUrlData
         console.log('✅ [FileUpload] Signed URL получен:', signedUrlData)
         setProgress(30)
@@ -410,19 +405,21 @@ export default function FileUpload({
         const result = await localUploadRes.json()
         setProgress(100)
         
-        // Поддержка обоих форматов ответа:
-        // 1. Старый формат: { url, key }
-        // 2. Новый формат админки: { success, files: [{ url, fileName, ... }] }
+        // Поддержка форматов ответа:
+        // 1. /api/admin/models/upload: { success, glbUrl, filename }
+        // 2. /api/admin/designs/upload: { success, files: [{ url, fileName, ... }] }
+        // 3. Старый формат: { url, key }
         let publicUrl: string
         let key: string | undefined
-        
-        if (result.files && Array.isArray(result.files) && result.files.length > 0) {
-          // Новый формат админки
+
+        if (result.glbUrl) {
+          publicUrl = result.glbUrl
+          key = result.filename
+        } else if (result.files && Array.isArray(result.files) && result.files.length > 0) {
           const firstFile = result.files[0]
           publicUrl = firstFile.url
           key = firstFile.fileName
         } else {
-          // Старый формат
           publicUrl = result.url
           key = result.key
         }

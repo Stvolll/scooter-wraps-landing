@@ -11,8 +11,8 @@
  */
 
 import { Suspense, useRef, useEffect, useState } from 'react'
-import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber'
-import { OrbitControls, useGLTF, PerspectiveCamera } from '@react-three/drei'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { OrbitControls, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 
 interface ScooterViewer3DProps {
@@ -257,15 +257,60 @@ function DynamicLighting({ rotationY }: { rotationY: number }) {
   )
 }
 
-function PanoramaBg({ url }: { url: string }) {
-  const texture = useLoader(THREE.TextureLoader, url)
-  texture.mapping = THREE.EquirectangularReflectionMapping
-  const { scene } = useThree()
+const ORBIT_TARGET_Y = 0.4
+// Радиус меньше — заметный параллакс при вращении/зуме (камера 1.5–5 внутри сферы)
+const PANORAMA_SPHERE_RADIUS = 25
+
+/** Панорама как 3D-сфера: фон в одной сцене со скутером, двигается при орбите и зуме. */
+function PanoramaSphere({ panoramaUrl }: { panoramaUrl?: string }) {
+  const [texture, setTexture] = useState<THREE.Texture | null>(null)
+  const textureRef = useRef<THREE.Texture | null>(null)
+  const url = panoramaUrl || '/hdr/panoramic_3.webp'
+
   useEffect(() => {
-    scene.background = texture
-    return () => { scene.background = null }
-  }, [texture, scene])
-  return null
+    if (!url) {
+      if (textureRef.current) {
+        textureRef.current.dispose()
+        textureRef.current = null
+      }
+      setTexture(null)
+      return
+    }
+    const loader = new THREE.TextureLoader()
+    loader.load(
+      url,
+      tex => {
+        tex.mapping = THREE.EquirectangularReflectionMapping
+        if (THREE.SRGBColorSpace !== undefined) tex.colorSpace = THREE.SRGBColorSpace
+        if (textureRef.current) textureRef.current.dispose()
+        textureRef.current = tex
+        setTexture(tex)
+      },
+      undefined,
+      () => setTexture(null)
+    )
+    return () => {
+      if (textureRef.current) {
+        textureRef.current.dispose()
+        textureRef.current = null
+      }
+      setTexture(null)
+    }
+  }, [url])
+
+  if (!texture) return null
+
+  return (
+    <mesh position={[0, ORBIT_TARGET_Y, 0]} renderOrder={-1}>
+      <sphereGeometry args={[PANORAMA_SPHERE_RADIUS, 64, 40]} />
+      <meshBasicMaterial
+        map={texture}
+        side={THREE.BackSide}
+        depthWrite={false}
+        fog={false}
+      />
+    </mesh>
+  )
 }
 
 // Main scene component
@@ -305,7 +350,7 @@ function Scene({
       {/* Lighting */}
       <DynamicLighting rotationY={rotationY} />
 
-      <PanoramaBg url={panoramaUrl || '/hdr/panoramic_3.webp'} />
+      <PanoramaSphere panoramaUrl={panoramaUrl} />
       <ambientLight intensity={0.5} />
       <directionalLight position={[5, 5, 5]} intensity={1} />
 
@@ -338,7 +383,7 @@ function Scene({
 export default function ScooterViewer3D({
   modelPath,
   selectedDesign,
-  panoramaUrl = '/images/studio-panorama.png',
+  panoramaUrl = '/hdr/panoramic_3.webp',
   className = '',
 }: ScooterViewer3DProps) {
   const [isMounted, setIsMounted] = useState(false)

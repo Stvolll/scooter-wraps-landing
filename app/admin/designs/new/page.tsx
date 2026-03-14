@@ -457,7 +457,7 @@ export default function NewDesignPage() {
                     Для создания дизайнов необходимо настроить базу данных. Добавьте в файл <code className="bg-black/30 px-1 rounded">.env.local</code>:
                   </p>
                   <pre className="mt-2 p-2 bg-black/30 rounded text-xs overflow-x-auto">
-                    DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
+                    DATABASE_URL=&quot;postgresql://user:password@localhost:5432/dbname&quot;
                   </pre>
                   <p className="mt-2 text-yellow-300/80 text-xs">
                     После настройки перезапустите dev сервер и выполните миграции: <code className="bg-black/30 px-1 rounded">npx prisma migrate dev</code>

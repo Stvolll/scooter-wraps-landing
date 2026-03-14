@@ -84,8 +84,18 @@ export async function POST(req: Request) {
     )
   } catch (error: any) {
     console.error('Error creating model:', error)
+    const msg = error.message || 'Failed to create model'
+    const isPoolTimeout =
+      msg.includes('connection pool') ||
+      msg.includes('Timed out fetching') ||
+      msg.includes('pool_timeout')
     return NextResponse.json(
-      { error: error.message || 'Failed to create model' },
+      {
+        error: msg,
+        hint: isPoolTimeout
+          ? 'Database connection pool timeout. Ensure DATABASE_URL is set and the database is reachable. You can add ?connect_timeout=30&pool_timeout=30 to DATABASE_URL.'
+          : undefined,
+      },
       { status: 500 }
     )
   }

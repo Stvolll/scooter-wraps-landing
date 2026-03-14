@@ -152,10 +152,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }),
           }}
         />
-        {/* Model Viewer Web Component — lazyOnload чтобы не блокировать первый рендер */}
+        {/* Model Viewer Web Component — type="module" нужен для 3.x (ESM), иначе Unexpected token 'export' */}
         <Script
           src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"
           strategy="lazyOnload"
+          type="module"
         />
         {/* Google Analytics GA4 */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>

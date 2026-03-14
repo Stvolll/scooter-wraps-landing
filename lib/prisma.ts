@@ -4,14 +4,28 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
+// Увеличиваем таймаут подключения к БД, если в URL ещё не задан (избегаем "Timed out fetching from connection pool")
+function getDatabaseUrl(): string {
+  const url = process.env.DATABASE_URL || ''
+  if (!url) return url
+  try {
+    const hasParams = url.includes('?')
+    if (!url.includes('connect_timeout=')) {
+      return url + (hasParams ? '&' : '?') + 'connect_timeout=30'
+    }
+  } catch {
+    // ignore
+  }
+  return url
+}
+
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-    // Add connection timeout to prevent hanging
     datasources: {
       db: {
-        url: process.env.DATABASE_URL,
+        url: getDatabaseUrl(),
       },
     },
   })

@@ -16,42 +16,8 @@ export default function AdminLogin() {
     setMounted(true)
   }, [])
 
-  // Check if already authenticated (only after mount)
-  useEffect(() => {
-    if (!mounted) return
-
-    let cancelled = false
-
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/admin/auth/verify', {
-          method: 'GET',
-          credentials: 'include',
-          cache: 'no-store',
-        })
-        
-        if (cancelled) return
-
-        if (response.ok) {
-          const data = await response.json()
-          if (data.authenticated && !cancelled) {
-            router.replace('/admin') // Use replace instead of push to avoid history issues
-          }
-        }
-      } catch (err) {
-        // Not authenticated, stay on login page
-        if (cancelled) return
-        console.error('Auth check error:', err)
-      }
-    }
-    
-    const timeoutId = setTimeout(checkAuth, 100) // Small delay to prevent race conditions
-    
-    return () => {
-      cancelled = true
-      clearTimeout(timeoutId)
-    }
-  }, [router, mounted])
+  // Не делаем авто-редирект на /admin по verify — из-за него форма мелькала и показывался чёрный экран /admin
+  // Редирект на дашборд только после успешной отправки формы (handleSubmit)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

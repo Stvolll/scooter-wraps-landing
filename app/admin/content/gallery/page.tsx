@@ -56,7 +56,7 @@ export default async function GalleryAdminPage() {
                   <h3 className="text-white font-semibold text-sm">Create Design</h3>
                 </div>
                 <p className="text-white/60 text-xs">
-                  Создайте дизайн через "Create New Design" или "Manage Designs"
+                  Создайте дизайн через &quot;Create New Design&quot; или &quot;Manage Designs&quot;
                 </p>
               </div>
               <div className="p-4 rounded-2xl bg-white/5 border border-white/10">

@@ -3,187 +3,50 @@ import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
-import { Readable } from 'stream'
 import { FileTypeDetector } from '@/lib/utils/FileTypeDetector'
-// ✅ FIX: Убрана серверная компрессия GLB - файлы загружаются как есть
-// import { compressGLBWithDraco, shouldCompress } from '@/lib/utils/glb-compressor'
 
-// Busboy loader for ESM context (Next.js 16 App Router)
-async function getBusboy() {
-  try {
-    // Try dynamic import first (ESM way)
-    const busboyModule = await import('next/dist/compiled/busboy/index.js')
-    console.log(`✅ Busboy loaded via dynamic import`)
-    return busboyModule.default || busboyModule
-  } catch (importError: any) {
-    console.warn('⚠️ Dynamic import failed, trying require:', importError.message)
-    try {
-      // Fallback to require (CommonJS way)
-      const { createRequire } = await import('module')
-      const require = createRequire(import.meta.url || __filename)
-      const busboy = require('next/dist/compiled/busboy')
-      console.log(`✅ Busboy loaded via require`)
-      return busboy.default || busboy
-    } catch (requireError: any) {
-      console.error('❌ Both import methods failed:', {
-        importError: importError.message,
-        requireError: requireError.message
-      })
-      throw new Error(`Busboy module not available. Import failed: ${importError.message}. Require failed: ${requireError.message}`)
-    }
-  }
-}
-
-// Configure route to handle large file uploads
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-export const maxDuration = 60 // 60 seconds timeout
+export const maxDuration = 60
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif']
 const ALLOWED_MODEL_TYPES = ['model/gltf-binary', 'application/octet-stream']
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm']
 
-// Helper function to parse multipart/form-data using busboy
-async function parseMultipartFormData(request: NextRequest): Promise<{ files: File[]; type?: string; folder?: string }> {
-  const contentType = request.headers.get('content-type')
-  
-  console.log('🔍 Parsing multipart form data, Content-Type:', contentType)
-  
-  if (!contentType) {
-    throw new Error('Content-Type header is missing')
-  }
-  
+/** Парсинг multipart через встроенный request.formData() — без busboy (нет ошибок createRequire). */
+async function parseFormData(
+  request: NextRequest
+): Promise<{ files: File[]; type?: string; folder?: string }> {
+  const contentType = request.headers.get('content-type') || ''
   if (!contentType.includes('multipart/form-data')) {
     throw new Error(`Content-Type must be multipart/form-data, got: ${contentType}`)
   }
-  
-  if (!contentType.includes('boundary=')) {
-    console.warn('⚠️ Content-Type missing boundary, but continuing...')
-  }
 
-  // Load busboy first
-  let Busboy: any
-  try {
-    Busboy = await getBusboy()
-  } catch (busboyError: any) {
-    throw new Error(`Failed to load busboy: ${busboyError.message}`)
-  }
+  const formData = await request.formData()
+  const files: File[] = []
+  let type: string | undefined
+  let folder: string | undefined
 
-  return new Promise((resolve, reject) => {
-    const files: File[] = []
-    let type: string | undefined = undefined
-    let folder: string | undefined = undefined
-    let hasError = false
-    let timeout: NodeJS.Timeout | null = null
-    
-    const busboy = Busboy({ headers: { 'content-type': contentType } })
-
-    busboy.on('file', (name: string, stream: NodeJS.ReadableStream, info: { filename: string; encoding?: string; mimeType?: string }) => {
-      const { filename, encoding, mimeType } = info
-      console.log(`📄 File field received: ${name}, filename: ${filename}, type: ${mimeType}`)
-      
-      if (name === 'file' || name === 'files') {
-        const chunks: Buffer[] = []
-        
-        stream.on('data', (chunk: Buffer) => {
-          chunks.push(chunk)
-        })
-        
-        stream.on('end', () => {
-          const buffer = Buffer.concat(chunks)
-          console.log(`📦 File data received: ${buffer.length} bytes`)
-          
-          const blob = new Blob([buffer], { type: mimeType || 'application/octet-stream' })
-          const file = new File([blob], filename, { type: mimeType || 'application/octet-stream' })
-          files.push(file)
-        })
-        
-        stream.on('error', (err) => {
-          console.error('❌ Error reading file stream:', err)
-          hasError = true
-          reject(new Error(`File stream error: ${err.message}`))
-        })
-      }
-    })
-
-    busboy.on('field', (name: string, value: string) => {
-      console.log(`📋 Field received: ${name} = ${value}`)
-      if (name === 'type') {
-        type = value
-      } else if (name === 'folder') {
-        folder = value
-      }
-    })
-
-    busboy.on('finish', () => {
-      if (timeout) clearTimeout(timeout)
-      if (hasError) return
-      
-      if (files.length === 0) {
-        reject(new Error('No files found in multipart data'))
-        return
-      }
-      
-      console.log(`✅ Multipart parsing complete:`, {
-        filesCount: files.length,
-        type,
-        folder
-      })
-      
-      resolve({ files, type, folder })
-    })
-
-    busboy.on('error', (err: Error) => {
-      if (timeout) clearTimeout(timeout)
-      console.error('❌ Busboy error:', err)
-      if (!hasError) {
-        hasError = true
-        reject(new Error(`Multipart parsing error: ${err.message}`))
-      }
-    })
-
-    if (!request.body) {
-      reject(new Error('Request body is empty'))
-      return
-    }
-
-    // FIX for Next.js 16: Read body directly without cloning
-    // Cloning may cause issues with large files
-    const reader = request.body.getReader()
-    const nodeStream = new Readable({
-      async read() {
-        try {
-          const { done, value } = await reader.read()
-          if (done) {
-            this.push(null)
-          } else {
-            this.push(Buffer.from(value))
-          }
-        } catch (err) {
-          console.error('❌ Error reading from stream:', err)
-          this.destroy(err as Error)
+  for (const [key, value] of formData.entries()) {
+    if (value instanceof File) {
+      if (key === 'file' || key === 'files') {
+        if (value.size > 0 && value.name) {
+          files.push(value)
+          console.log(`📄 File: ${value.name}, size: ${value.size}, type: ${value.type}`)
         }
-      },
-    })
-
-    nodeStream.on('error', (err) => {
-      if (timeout) clearTimeout(timeout)
-      console.error('❌ Node stream error:', err)
-      if (!hasError) {
-        hasError = true
-        reject(new Error(`Stream error: ${err.message}`))
       }
-    })
+    } else if (typeof value === 'string') {
+      if (key === 'type') type = value
+      else if (key === 'folder') folder = value
+    }
+  }
 
-    timeout = setTimeout(() => {
-      if (files.length === 0 && !hasError) {
-        hasError = true
-        reject(new Error('Timeout: No files received within 30 seconds'))
-      }
-    }, 30000)
+  if (files.length === 0) {
+    throw new Error('No files found in form data. Use field name "file" or "files".')
+  }
 
-    nodeStream.pipe(busboy)
-  })
+  console.log(`✅ FormData parsed: ${files.length} file(s), type=${type}, folder=${folder}`)
+  return { files, type, folder }
 }
 
 export async function POST(req: NextRequest) {
@@ -192,34 +55,22 @@ export async function POST(req: NextRequest) {
     console.log('Content-Type:', req.headers.get('content-type'))
     console.log('Content-Length:', req.headers.get('content-length'))
     
-    // Parse multipart form data directly using busboy (streaming parser)
-    // Busboy handles streaming, so we don't need to pre-load the body
-    // This is the correct approach for Next.js 16 App Router
     let files: File[]
     let type: string | undefined
     let folder: string | undefined
-    
+
     try {
-      const parsed = await parseMultipartFormData(req)
+      const parsed = await parseFormData(req)
       files = parsed.files
       type = parsed.type
       folder = parsed.folder
     } catch (parseError: any) {
-      console.error('❌ Error parsing multipart form data:', parseError)
-      console.error('❌ Error details:', {
-        message: parseError.message,
-        stack: parseError.stack,
-        name: parseError.name,
-        contentType: req.headers.get('content-type'),
-        contentLength: req.headers.get('content-length')
-      })
+      console.error('❌ Error parsing form data:', parseError)
       return NextResponse.json(
-        { 
-          error: `Failed to parse upload data: ${parseError.message}`,
+        {
+          error: parseError.message || 'Invalid file format or corrupted data. Please try again.',
           type: 'ParseError',
           details: parseError.message,
-          contentType: req.headers.get('content-type'),
-          contentLength: req.headers.get('content-length')
         },
         { status: 400 }
       )

@@ -58,28 +58,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Check if S3 is configured
+    // S3 не настроен — возвращаем 200 и configured: false, чтобы клиент перешёл на локальную загрузку без 500
     const client = getS3Client()
     if (!client) {
-      console.error('S3 not configured. Check environment variables: S3_BUCKET, S3_KEY, S3_SECRET')
       return NextResponse.json(
-        { 
-          error: 'S3 not configured. Please configure S3 credentials in environment variables.',
-          details: 'S3 storage is required for file uploads. Contact administrator to configure S3 credentials.',
-          configured: false
-        }, 
-        { status: 500 }
+        { configured: false, error: 'S3 not configured' },
+        { status: 200 }
       )
     }
 
     const bucket = process.env.S3_BUCKET || process.env.AWS_S3_BUCKET_NAME
     if (!bucket) {
       return NextResponse.json(
-        { 
-          error: 'S3 bucket not configured.',
-          configured: false
-        }, 
-        { status: 500 }
+        { configured: false, error: 'S3 bucket not configured' },
+        { status: 200 }
       )
     }
 

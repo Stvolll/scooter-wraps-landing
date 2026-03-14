@@ -233,11 +233,11 @@ export default async function AnalyticsPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#00FFA9]">•</span>
-                <span><strong>Total Revenue:</strong> Сумма всех оплаченных заказов (статус = 'paid')</span>
+                <span><strong>Total Revenue:</strong> Сумма всех оплаченных заказов (статус = &apos;paid&apos;)</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#00FFA9]">•</span>
-                <span><strong>Active Deals:</strong> Активные сделки (статус = 'open' или 'paid')</span>
+                <span><strong>Active Deals:</strong> Активные сделки (статус = &apos;open&apos; или &apos;paid&apos;)</span>
               </li>
             </ul>
           </div>
