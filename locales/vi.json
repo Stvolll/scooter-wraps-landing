@@ -150,11 +150,9 @@
     "sold": "Đã Bán",
     "inDevelopment": "Đang Phát Triển",
     "models": {
-      "vision": "Honda Vision",
-      "lead": "Honda Lead",
-      "sh": "Honda SH",
-      "pcx": "Honda PCX",
-      "nvx": "Yamaha NVX"
+      "nvx": "Yamaha NVX",
+      "sh160": "Honda SH160i",
+      "a-vision": "A-Vision"
     }
   },
   "menu": {

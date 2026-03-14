@@ -37,7 +37,8 @@ export default function Hero() {
   // Get texture path based on model name
   const getTexturePath = (modelId: string) => {
     const textureMap: Record<string, string> = {
-      'honda-lead-110': '/textures/honda-lead/3DModel.jpg',
+      'sh160': '/textures/sh160/design-1/D1_UV_SH160_Z-parts.webp',
+      'a-vision': '/textures/a-vision/3DModel.jpg',
       'yamaha-nvx': '/textures/yamaha-nvx/3DModel.jpg',
     }
     return textureMap[modelId] || ''

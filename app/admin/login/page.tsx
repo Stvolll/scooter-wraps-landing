@@ -20,20 +20,37 @@ export default function AdminLogin() {
   useEffect(() => {
     if (!mounted) return
 
+    let cancelled = false
+
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/admin/auth/verify')
+        const response = await fetch('/api/admin/auth/verify', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+        })
+        
+        if (cancelled) return
+
         if (response.ok) {
           const data = await response.json()
-          if (data.authenticated) {
-            router.push('/admin')
+          if (data.authenticated && !cancelled) {
+            router.replace('/admin') // Use replace instead of push to avoid history issues
           }
         }
       } catch (err) {
         // Not authenticated, stay on login page
+        if (cancelled) return
+        console.error('Auth check error:', err)
       }
     }
-    checkAuth()
+    
+    const timeoutId = setTimeout(checkAuth, 100) // Small delay to prevent race conditions
+    
+    return () => {
+      cancelled = true
+      clearTimeout(timeoutId)
+    }
   }, [router, mounted])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,10 +75,8 @@ export default function AdminLogin() {
       if (response.ok && data.success) {
         // Show success message briefly before redirect
         setError('')
-        setTimeout(() => {
-          router.push('/admin')
-          router.refresh()
-        }, 300)
+        // Use replace to avoid history issues and prevent redirect loops
+        router.replace('/admin')
       } else {
         setError(data.error || 'Invalid credentials')
         setLoading(false)
@@ -187,3 +202,4 @@ export default function AdminLogin() {
     </div>
   )
 }
+

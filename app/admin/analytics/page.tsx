@@ -167,6 +167,82 @@ export default async function AnalyticsPage() {
           </div>
         </div>
 
+        {/* Process Flow Diagram */}
+        <div
+          className="p-6 mx-4 md:mx-8 lg:mx-16 rounded-3xl mb-6"
+          style={{
+            background: 'rgba(255, 255, 255, 0.06)',
+            backdropFilter: 'blur(24px) saturate(180%)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+          }}
+        >
+          <h2 className="text-2xl font-semibold text-white mb-4">📊 Analytics Dashboard Process</h2>
+          <div className="mb-4">
+            <p className="text-white/70 mb-4">
+              Analytics Dashboard предоставляет обзор ключевых метрик бизнеса в реальном времени. 
+              Данные автоматически собираются из базы данных и обновляются при каждом запросе страницы.
+            </p>
+          </div>
+          
+          {/* Process Flow */}
+          <div className="space-y-4">
+            <div className="flex flex-col md:flex-row gap-4 items-start">
+              <div className="flex-1 p-4 rounded-2xl bg-white/5 border border-white/10">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-[#00FFA9]/20 flex items-center justify-center text-[#00FFA9] font-bold">1</div>
+                  <h3 className="text-white font-semibold">Data Collection</h3>
+                </div>
+                <p className="text-white/60 text-sm">
+                  Система собирает данные из трех основных источников: Designs, Orders, Deals
+                </p>
+              </div>
+              <div className="text-white/40 self-center">→</div>
+              <div className="flex-1 p-4 rounded-2xl bg-white/5 border border-white/10">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-[#00D4FF]/20 flex items-center justify-center text-[#00D4FF] font-bold">2</div>
+                  <h3 className="text-white font-semibold">Calculation</h3>
+                </div>
+                <p className="text-white/60 text-sm">
+                  Вычисляются метрики: общее количество, опубликованные, доход, статусы заказов
+                </p>
+              </div>
+              <div className="text-white/40 self-center">→</div>
+              <div className="flex-1 p-4 rounded-2xl bg-white/5 border border-white/10">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-[#00FFA9]/20 flex items-center justify-center text-[#00FFA9] font-bold">3</div>
+                  <h3 className="text-white font-semibold">Visualization</h3>
+                </div>
+                <p className="text-white/60 text-sm">
+                  Данные отображаются в виде карточек метрик и графиков статусов
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Key Metrics */}
+          <div className="mt-6 pt-6 border-t border-white/10">
+            <h3 className="text-lg font-semibold text-white mb-3">Ключевые метрики:</h3>
+            <ul className="space-y-2 text-white/70 text-sm">
+              <li className="flex items-start gap-2">
+                <span className="text-[#00FFA9]">•</span>
+                <span><strong>Total Designs:</strong> Общее количество созданных дизайнов (опубликованные и черновики)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#00FFA9]">•</span>
+                <span><strong>Total Orders:</strong> Все заказы в системе, включая pending, paid, delivered</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#00FFA9]">•</span>
+                <span><strong>Total Revenue:</strong> Сумма всех оплаченных заказов (статус = 'paid')</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#00FFA9]">•</span>
+                <span><strong>Active Deals:</strong> Активные сделки (статус = 'open' или 'paid')</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
         {/* Back Link */}
         <div className="mx-4 md:mx-8 lg:mx-16">
           <a
@@ -180,6 +256,8 @@ export default async function AnalyticsPage() {
     </div>
   )
 }
+
+
 
 
 

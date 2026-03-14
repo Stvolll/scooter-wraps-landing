@@ -1,0 +1,40 @@
+{
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.next/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/.cache/**": true,
+    "**/.turbo/**": true,
+    "**/coverage/**": true,
+    "**/assets/**": true,
+    "**/textures/**": true,
+    "**/renders/**": true,
+    "**/exports/**": true,
+    "**/print/**": true,
+    "**/mockups/**": true,
+    "**/source_images/**": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.cache": true,
+    "**/.turbo": true,
+    "**/coverage": true,
+    "**/assets": true,
+    "**/textures": true,
+    "**/renders": true,
+    "**/exports": true,
+    "**/print": true,
+    "**/mockups": true,
+    "**/source_images": true
+  },
+  "cursor.memory.enabled": true,
+  "cursor.memory.scope": "workspace"
+}
+
+
+
+

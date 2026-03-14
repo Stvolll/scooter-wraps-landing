@@ -25,7 +25,7 @@ const REVIEWS: Record<'vi' | 'en', Review[]> = {
       comment:
         'Chất lượng decal rất tốt, màu sắc đẹp và bền. Dịch vụ lắp đặt tại xưởng chuyên nghiệp, nhân viên nhiệt tình. Rất hài lòng!',
       date: '2024-01-15',
-      scooterModel: 'Honda Lead',
+      scooterModel: 'Honda SH160i',
       location: 'Nha Trang',
     },
     {
@@ -35,7 +35,7 @@ const REVIEWS: Record<'vi' | 'en', Review[]> = {
       comment:
         'Thiết kế độc đáo, đúng như hình ảnh. Decal bám chặt, không bong tróc sau 6 tháng sử dụng. Giá cả hợp lý.',
       date: '2024-01-10',
-      scooterModel: 'Honda Vision',
+      scooterModel: 'A-Vision',
       location: 'Nha Trang',
     },
     {
@@ -55,7 +55,7 @@ const REVIEWS: Record<'vi' | 'en', Review[]> = {
       comment:
         'Xe của tôi trông như mới sau khi dán decal. Màu sắc tươi sáng, không phai. Bảo hành tốt, hỗ trợ nhiệt tình.',
       date: '2023-12-28',
-      scooterModel: 'Honda Air Blade',
+      scooterModel: 'Yamaha NVX',
       location: 'Nha Trang',
     },
     {
@@ -65,7 +65,7 @@ const REVIEWS: Record<'vi' | 'en', Review[]> = {
       comment:
         'Dịch vụ lắp đặt tại xưởng rất chuyên nghiệp. Nhân viên tư vấn tận tình, lắp đặt cẩn thận. Xe đẹp hơn nhiều!',
       date: '2023-12-20',
-      scooterModel: 'VinFast',
+      scooterModel: 'Honda SH160i',
       location: 'Nha Trang',
     },
     {
@@ -75,7 +75,7 @@ const REVIEWS: Record<'vi' | 'en', Review[]> = {
       comment:
         'Thiết kế theo yêu cầu đẹp, in ấn sắc nét. Decal dễ dán, không bị nhăn. Chất lượng vượt mong đợi!',
       date: '2023-12-15',
-      scooterModel: 'Vespa',
+      scooterModel: 'A-Vision',
       location: 'Nha Trang',
     },
   ],
@@ -87,7 +87,7 @@ const REVIEWS: Record<'vi' | 'en', Review[]> = {
       comment:
         'Excellent vinyl quality with vibrant, durable colors. Professional installation service and very friendly staff. Highly satisfied!',
       date: '2024-01-15',
-      scooterModel: 'Honda Lead',
+      scooterModel: 'Honda SH160i',
       location: 'Nha Trang',
     },
     {
@@ -97,7 +97,7 @@ const REVIEWS: Record<'vi' | 'en', Review[]> = {
       comment:
         'Creative designs exactly as shown. Vinyl adheres perfectly after 6 months. Great value for money.',
       date: '2024-01-10',
-      scooterModel: 'Honda Vision',
+      scooterModel: 'A-Vision',
       location: 'Nha Trang',
     },
     {
@@ -117,7 +117,7 @@ const REVIEWS: Record<'vi' | 'en', Review[]> = {
       comment:
         'My scooter looks brand new after the wrap. Bright colors that don’t fade. Great warranty and support.',
       date: '2023-12-28',
-      scooterModel: 'Honda Air Blade',
+      scooterModel: 'Yamaha NVX',
       location: 'Nha Trang',
     },
     {
@@ -127,7 +127,7 @@ const REVIEWS: Record<'vi' | 'en', Review[]> = {
       comment:
         'Installation service is top-notch. The team advised thoughtfully and worked carefully. My scooter looks amazing!',
       date: '2023-12-20',
-      scooterModel: 'VinFast',
+      scooterModel: 'Honda SH160i',
       location: 'Nha Trang',
     },
     {
@@ -137,7 +137,7 @@ const REVIEWS: Record<'vi' | 'en', Review[]> = {
       comment:
         'Custom design turned out perfect with sharp printing. The vinyl is easy to apply without wrinkles. Beyond expectations!',
       date: '2023-12-15',
-      scooterModel: 'Vespa',
+      scooterModel: 'A-Vision',
       location: 'Nha Trang',
     },
   ],

@@ -1,126 +1,101 @@
 'use client'
 
-import React from 'react'
+/**
+ * DesignCard Component
+ * Displays a design card with media preview and 3D preview with bg_webp
+ */
+
 import Image from 'next/image'
-import Link from 'next/link'
-import { DesignStatus } from '@prisma/client'
-import DesignTimeline from './DesignTimeline'
+import { useState } from 'react'
 
 interface DesignCardProps {
   design: {
     id: string
-    title: string
+    name: string
     slug: string
-    scooterModel: string
-    description?: string | null
-    price: number
-    editionAvailable: number
-    editionTotal: number
-    coverImage?: string | null
-    status: DesignStatus
-    statusHistory?: Array<{ status: DesignStatus; at: Date; note?: string | null }>
+    texture_webp: string | null
+    bg_webp: string | null
+    design_info: {
+      film_type: string | null
+      seo_title: string
+    }
+    media: string[]
+    preview: string | null
+    description: string | null
+    price: string | undefined
+    editions: number
+    available: number
   }
+  onClick?: () => void
+  isSelected?: boolean
 }
 
-export default function DesignCard({ design }: DesignCardProps) {
-  const canBuy = design.status === DesignStatus.FOR_SALE && design.editionAvailable > 0
-  const isSoldOut = design.editionAvailable === 0 || design.status === DesignStatus.SOLD
-  const isInDevelopment = design.status < DesignStatus.FOR_SALE
+export default function DesignCard({ design, onClick, isSelected = false }: DesignCardProps) {
+  const [imageError, setImageError] = useState(false)
+
+  const mainImage = design.preview || design.media[0] || null
+  const bgImage = design.bg_webp || null
 
   return (
-    <article
-      className="rounded-[28px] overflow-hidden"
-      style={{
-        background: 'rgba(255, 255, 255, 0.08)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        boxShadow: '0 8px 32px -4px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
-      }}
+    <div
+      onClick={onClick}
+      className={`
+        relative rounded-lg overflow-hidden cursor-pointer transition-all
+        ${isSelected ? 'ring-2 ring-[#00FFA9] shadow-lg' : 'hover:shadow-md'}
+      `}
     >
-      {design.coverImage && (
-        <div className="relative w-full h-48">
+      {/* Main Image or 3D Preview */}
+      <div className="aspect-square relative bg-neutral-200">
+        {mainImage && !imageError ? (
           <Image
-            src={design.coverImage}
-            alt={design.title}
+            src={mainImage}
+            alt={design.design_info.seo_title}
             fill
             className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            onError={() => setImageError(true)}
+            loading="lazy"
           />
-        </div>
-      )}
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-white mb-1">{design.title}</h3>
-        <div className="text-sm text-white/60 mb-3">{design.scooterModel}</div>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-neutral-400">
+            <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+        )}
 
-        {/* Timeline */}
-        {design.statusHistory && design.statusHistory.length > 0 && (
-          <div className="mb-4">
-            <DesignTimeline
-              currentStatus={design.status}
-              statusHistory={design.statusHistory}
-              orientation="horizontal"
+        {/* Background WebP overlay (for 3D preview effect) */}
+        {bgImage && (
+          <div className="absolute inset-0 opacity-20 pointer-events-none">
+            <Image
+              src={bgImage}
+              alt=""
+              fill
+              className="object-cover"
+              loading="lazy"
             />
           </div>
         )}
 
-        {/* Status badge */}
-        <div className="mb-4">
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-medium ${
-              canBuy
-                ? 'bg-[#00FFA9]/20 text-[#00FFA9] border border-[#00FFA9]/30'
-                : isSoldOut
-                  ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                  : 'bg-white/10 text-white/60 border border-white/10'
-            }`}
-          >
-            {canBuy
-              ? `В продаже (${design.editionAvailable}/${design.editionTotal})`
-              : isSoldOut
-                ? 'Распродано'
-                : 'В разработке'}
-          </span>
-        </div>
+        {/* Film Type Badge */}
+        {design.design_info.film_type && (
+          <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs font-semibold">
+            {design.design_info.film_type}
+          </div>
+        )}
+      </div>
 
-        {/* Action button */}
-        <div className="mt-4">
-          {canBuy ? (
-            <Link
-              href={`/designs/${design.slug}`}
-              className="block w-full px-4 py-2 rounded-xl text-center font-medium text-black transition-all hover:scale-105"
-              style={{
-                background: 'linear-gradient(135deg, #00FFA9 0%, #00D4FF 100%)',
-                boxShadow: '0 8px 32px -4px rgba(0, 255, 169, 0.4)',
-              }}
-            >
-              Deal Open / Открыта сделка
-            </Link>
-          ) : isInDevelopment ? (
-            <button
-              className="w-full px-4 py-2 rounded-xl text-center font-medium text-white/60 transition-all cursor-not-allowed"
-              style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-              }}
-              disabled
-            >
-              In Development / Đang phát triển
-            </button>
-          ) : (
-            <button
-              className="w-full px-4 py-2 rounded-xl text-center font-medium text-white/60 transition-all cursor-not-allowed"
-              style={{
-                background: 'rgba(255, 59, 48, 0.1)',
-                border: '1px solid rgba(255, 59, 48, 0.2)',
-              }}
-              disabled
-            >
-              Sold Out / Hết hàng
-            </button>
-          )}
+      {/* Design Info */}
+      <div className="p-4 bg-white">
+        <h3 className="font-semibold text-neutral-900 mb-1 line-clamp-1">
+          {design.design_info.seo_title}
+        </h3>
+        {design.price && (
+          <p className="text-[#00FFA9] font-bold">{design.price}</p>
+        )}
+        <div className="text-xs text-neutral-500 mt-2">
+          {design.available} / {design.editions} available
         </div>
       </div>
-    </article>
+    </div>
   )
 }

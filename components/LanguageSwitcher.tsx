@@ -15,7 +15,6 @@ import { useLanguage } from '@/contexts/LanguageContext'
 const languages = [
   { code: 'en', label: 'en-US', name: 'English' },
   { code: 'vi', label: 'vi-VN', name: 'Tiếng Việt' },
-  { code: 'ko', label: 'ko-KR', name: '한국어' },
 ]
 
 export default function LanguageSwitcher() {
@@ -102,7 +101,7 @@ export default function LanguageSwitcher() {
                     <button
                       key={lang.code}
                       onClick={() => {
-                        setLanguage(lang.code as 'en' | 'vi' | 'ko')
+                        setLanguage(lang.code as 'en' | 'vi')
                         setIsOpen(false)
                       }}
                       className={`w-full px-4 py-2.5 text-left text-sm transition-all duration-200 flex items-center justify-between ${

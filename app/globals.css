@@ -33,6 +33,10 @@ model-viewer [slot='ar-button'] {
     @apply bg-black text-white;
     font-family: var(--font-inter);
     overflow-x: hidden;
+    font-feature-settings: normal;
+    font-variant-ligatures: normal;
+    -webkit-font-feature-settings: normal;
+    -moz-font-feature-settings: normal;
   }
 
   /* Ensure footer is completely opaque */

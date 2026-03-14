@@ -1,19 +1,18 @@
-export type Language = 'en' | 'vi' | 'ko'
+export type Language = 'en' | 'vi'
 
 import enTranslations from '@/locales/en.json'
 import viTranslations from '@/locales/vi.json'
-import koTranslations from '@/locales/ko.json'
 
 const translations = {
   en: enTranslations,
   vi: viTranslations,
-  ko: koTranslations,
 }
 
-export function useTranslations(language: Language) {
-  const t = (key: string): string => {
+// Translation function factory - creates stable function references
+function createTranslationFunction(lang: Language) {
+  return (key: string): string => {
     const keys = key.split('.')
-    let value: any = translations[language]
+    let value: any = translations[lang]
 
     // Navigate through the translation object
     for (const k of keys) {
@@ -26,7 +25,7 @@ export function useTranslations(language: Language) {
     }
 
     // If translation not found, try English fallback
-    if (value === undefined) {
+    if (value === undefined && lang !== 'en') {
       value = translations.en
       for (const k of keys) {
         if (value && typeof value === 'object') {
@@ -38,17 +37,23 @@ export function useTranslations(language: Language) {
       }
     }
 
-    // If still not found, return key and log warning
+    // If still not found, return key (don't log warning to prevent spam)
     if (value === undefined || (typeof value === 'object' && value !== null)) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(`Translation missing for key: ${key} in language: ${language}`)
-      }
       return key
     }
 
     // Return the translation string
     return String(value)
   }
+}
 
-  return t
+// Cache translation functions per language to ensure stable references
+const translationCache: Record<Language, (key: string) => string> = {
+  en: createTranslationFunction('en'),
+  vi: createTranslationFunction('vi'),
+}
+
+export function useTranslations(language: Language) {
+  // Return cached function to ensure stable reference
+  return translationCache[language]
 }

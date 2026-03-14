@@ -20,7 +20,7 @@ interface Design {
 const DESIGNS: Design[] = [
   {
     id: '1',
-    modelId: 'honda-lead',
+    modelId: 'nvx',
     name: 'Carbon Fiber Black',
     nameVi: 'Carbon Đen',
     image: '/designs/carbon-black.jpg',
@@ -33,7 +33,7 @@ const DESIGNS: Design[] = [
   },
   {
     id: '2',
-    modelId: 'honda-lead',
+    modelId: 'nvx',
     name: 'Racing Stripes Red',
     nameVi: 'Sọc Đua Đỏ',
     image: '/designs/racing-red.jpg',
@@ -46,7 +46,7 @@ const DESIGNS: Design[] = [
   },
   {
     id: '3',
-    modelId: 'honda-vision',
+    modelId: 'sh160',
     name: 'Matte Blue',
     nameVi: 'Xanh Mờ',
     image: '/designs/matte-blue.jpg',

@@ -5,6 +5,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { MaterialFormat } from '@/lib/materials/types'
+import {
+  findMaterialByFormat,
+  findMaterialByRole,
+  findMaterialsByFormat,
+  getMaterialDisplayUrl,
+} from '@/lib/materials/registry'
 
 interface LandingDesignCardProps {
   design: any
@@ -26,8 +33,70 @@ export default function LandingDesignCard({
   onDetailsClick,
 }: LandingDesignCardProps) {
   const { t, language } = useLanguage()
-  const images = design.images || [design.preview || design.texture]
-  const currentImage = images[0] || '/images/studio-panorama.png'
+  
+  // Use MaterialHandler to get display image
+  // Priority: preview > coverImage > images[0] > materials (cover) > materials (photo) > textureUrl
+  const getDisplayImage = () => {
+    // 1. Priority: preview field (most reliable for display)
+    if (design.preview) {
+      return design.preview
+    }
+    
+    // 2. Priority: coverImage field
+    if (design.coverImage) {
+      return design.coverImage
+    }
+    
+    // 3. Priority: first image from images array
+    if (design.images && Array.isArray(design.images) && design.images.length > 0) {
+      return design.images[0]
+    }
+    
+    // 4. Priority: materials array (new format) - cover role
+    if (design.materials && Array.isArray(design.materials)) {
+      // Try to find cover image by role
+      const coverMaterial = findMaterialByRole(design.materials, 'cover')
+      if (coverMaterial) {
+        const url = getMaterialDisplayUrl(coverMaterial)
+        if (url) return url
+      }
+      
+      // Try to find first photo material
+      const photoMaterials = findMaterialsByFormat(design.materials, MaterialFormat.PHOTO)
+      if (photoMaterials.length > 0) {
+        const url = getMaterialDisplayUrl(photoMaterials[0])
+        if (url) return url
+      }
+      
+      // Fallback to any material
+      if (design.materials.length > 0) {
+        const url = getMaterialDisplayUrl(design.materials[0])
+        if (url) return url
+      }
+    }
+    
+    // 5. Legacy format fallback
+    if (design.textureUrl || design.texture) {
+      return design.textureUrl || design.texture
+    }
+    
+    return '/images/studio-panorama.png'
+  }
+  
+  const currentImage = getDisplayImage()
+  
+  // Debug logging (remove in production)
+  if (!currentImage || currentImage === '/images/studio-panorama.png') {
+    console.warn('⚠️ LandingDesignCard: No image found for design:', {
+      id: design.id,
+      name: design.name,
+      images: design.images,
+      coverImage: design.coverImage,
+      preview: design.preview,
+      textureUrl: design.textureUrl,
+      texture: design.texture,
+    })
+  }
   
   const getStatusText = () => {
     if (design.status === 'FOR_SALE') return t('designCards.forSale')
@@ -84,6 +153,7 @@ export default function LandingDesignCard({
           fill
           className="object-cover"
           sizes="(max-width: 768px) 280px, 320px"
+          priority={index < 3} // Prioritize first 3 images to prevent hydration mismatch
           onError={e => {
             const target = e.target as HTMLImageElement
             target.src = '/images/studio-panorama.png'

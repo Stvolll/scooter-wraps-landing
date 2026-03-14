@@ -38,11 +38,29 @@ export default function GallerySection() {
   useEffect(() => {
     const loadGallery = async () => {
       try {
-        const response = await fetch('/api/gallery')
-        const data = await response.json()
-        setGalleryItems(data.items || [])
-      } catch (error) {
-        console.error('Failed to load gallery:', error)
+        // Add timeout to prevent hanging
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+        
+        const response = await fetch('/api/gallery', {
+          signal: controller.signal,
+        })
+        
+        clearTimeout(timeoutId)
+        
+        if (response.ok) {
+          const data = await response.json()
+          setGalleryItems(data.items || [])
+        } else {
+          console.warn('⚠️ Gallery API response not OK:', response.status)
+          setGalleryItems([])
+        }
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          console.warn('⚠️ Gallery API request timeout')
+        } else {
+          console.error('Failed to load gallery:', error)
+        }
         setGalleryItems([])
       } finally {
         setLoading(false)

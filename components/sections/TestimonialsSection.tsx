@@ -34,11 +34,29 @@ export default function TestimonialsSection() {
   useEffect(() => {
     const loadTestimonials = async () => {
       try {
-        const response = await fetch('/api/testimonials')
-        const data = await response.json()
-        setTestimonials(data.testimonials || [])
-      } catch (error) {
-        console.error('Failed to load testimonials:', error)
+        // Add timeout to prevent hanging
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+        
+        const response = await fetch('/api/testimonials', {
+          signal: controller.signal,
+        })
+        
+        clearTimeout(timeoutId)
+        
+        if (response.ok) {
+          const data = await response.json()
+          setTestimonials(data.testimonials || [])
+        } else {
+          console.warn('⚠️ Testimonials API response not OK:', response.status)
+          setTestimonials([])
+        }
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          console.warn('⚠️ Testimonials API request timeout')
+        } else {
+          console.error('Failed to load testimonials:', error)
+        }
         setTestimonials([])
       } finally {
         setLoading(false)

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   // Verify webhook signature (use sync version in API routes)
   if (!verifyBybitWebhookSync(request)) {
     return securityErrorResponse('Invalid webhook signature', 401, {
-      ip: request.ip,
+      ip: request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? undefined,
       headers: Object.fromEntries(request.headers.entries()),
     })
   }

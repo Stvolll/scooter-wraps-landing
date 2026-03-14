@@ -41,8 +41,8 @@ export async function middleware(request: NextRequest) {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https: blob:",
     "font-src 'self' data:",
-    "connect-src 'self' blob: data: https://api.bybit.com https://api-testnet.bybit.com https://*.amazonaws.com https://*.cloudfront.net https://www.google-analytics.com https://www.googletagmanager.com",
-    "frame-src 'self'",
+    "connect-src 'self' blob: data: https://api.bybit.com https://api-testnet.bybit.com https://*.amazonaws.com https://*.cloudfront.net https://www.google-analytics.com https://www.googletagmanager.com https://ajax.googleapis.com",
+    "frame-src 'self' https://www.google.com https://maps.google.com https://maps.googleapis.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -66,12 +66,12 @@ export async function middleware(request: NextRequest) {
     ) {
       limit = 5 // Stricter limit for payment/booking endpoints
       window = 60
-    } else if (request.nextUrl.pathname.includes('/admin')) {
-      limit = 20 // Higher limit for admin (will be further protected by auth)
-      window = 10
     } else if (request.nextUrl.pathname.includes('/uploads')) {
-      limit = 10 // File uploads
+      limit = 50 // File uploads - higher limit for admin panel
       window = 60
+    } else if (request.nextUrl.pathname.includes('/admin')) {
+      limit = 30 // Higher limit for admin (will be further protected by auth)
+      window = 10
     }
 
     const rateLimitResult = await rateLimit(request, identifier, limit, window)

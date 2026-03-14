@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { MaterialFormat } from '@prisma/client'
+import { findMaterialByRole, getMaterialDisplayUrl } from '@/lib/materials/registry'
 
 /**
  * GET /api/testimonials
@@ -7,9 +9,16 @@ import { prisma } from '@/lib/prisma'
  */
 export async function GET() {
   try {
+    // Check if Prisma is available
+    if (!prisma) {
+      console.warn('Testimonials API: Prisma not available')
+      return NextResponse.json({ testimonials: [] }, { status: 200 })
+    }
+
     // Get delivered deals with feedback and rating
-    // Now using Prisma's where clause after migration
-    const deals = await prisma.deal.findMany({
+    let deals: any[] = []
+    try {
+      deals = await prisma.deal.findMany({
       where: {
         status: 'delivered',
         feedback: {
@@ -24,8 +33,26 @@ export async function GET() {
           select: {
             title: true,
             slug: true,
-            scooterModel: true,
-            coverImage: true,
+            scooterModel: {
+              select: {
+                slug: true,
+                name: true,
+              },
+            },
+            materials: {
+              where: {
+                format: MaterialFormat.PHOTO,
+              },
+              select: {
+                id: true,
+                format: true,
+                url: true,
+                metadata: true,
+              },
+              orderBy: {
+                createdAt: 'asc',
+              },
+            },
           },
         },
       },
@@ -33,28 +60,45 @@ export async function GET() {
         updatedAt: 'desc',
       },
       take: 10, // Limit to 10 most recent
-    })
+      })
+    } catch (dbError: any) {
+      console.warn('Testimonials API: Database query failed:', dbError.message)
+      return NextResponse.json({ testimonials: [] }, { status: 200 })
+    }
 
-    // Transform deals into testimonials format
-    const testimonials = deals.map((deal) => ({
-      id: deal.id,
-      name: deal.buyerName || 'Anonymous',
-      location: 'Vietnam', // Could be added to Deal model if needed
-      rating: deal.rating || 5,
-      text: deal.feedback || '',
-      design: deal.design.title,
-      model: deal.design.scooterModel,
-      image: deal.design.coverImage || null,
-      verified: true,
-      date: formatDate(deal.updatedAt || deal.createdAt),
-      designSlug: deal.design.slug,
-    }))
+    // Transform deals into testimonials format using Materials
+    const testimonials = deals.map((deal) => {
+      try {
+        // Get cover image from materials
+        const coverMaterial = deal.design?.materials && Array.isArray(deal.design.materials)
+          ? findMaterialByRole(deal.design.materials, 'cover')
+          : null
+        const imageUrl = coverMaterial ? getMaterialDisplayUrl(coverMaterial) : null
 
-    return NextResponse.json({ testimonials })
+        return {
+          id: deal.id,
+          name: deal.buyerName || 'Anonymous',
+          location: 'Vietnam', // Could be added to Deal model if needed
+          rating: deal.rating || 5,
+          text: deal.feedback || '',
+          design: deal.design?.title || 'Unknown Design',
+          model: deal.design?.scooterModel?.name || deal.design?.scooterModel?.slug || 'Unknown',
+          image: imageUrl,
+          verified: true,
+          date: formatDate(deal.updatedAt || deal.createdAt),
+          designSlug: deal.design?.slug || '',
+        }
+      } catch (dealError) {
+        console.warn('Testimonials API: Error processing deal:', dealError)
+        return null
+      }
+    }).filter(Boolean)
+
+    return NextResponse.json({ testimonials }, { status: 200 })
   } catch (error: any) {
     console.error('Testimonials API error:', error)
-    // Return empty array if database is not configured
-    return NextResponse.json({ testimonials: [] })
+    // Return empty array with 200 status to prevent frontend errors
+    return NextResponse.json({ testimonials: [] }, { status: 200 })
   }
 }
 

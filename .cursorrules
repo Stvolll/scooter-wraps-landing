@@ -1,4 +1,17 @@
-# Cursor Rules for Automatic Error Fixing
+# Cursor Rules for TXD Scooter Wraps Landing
+
+> **⚠️ ВАЖНО**: Перед началом работы ОБЯЗАТЕЛЬНО прочитай `CURSOR_AI_PROMPT.md` - там основные правила проекта!
+
+## 📚 Ссылки на документацию
+
+- **Основной промпт**: `CURSOR_AI_PROMPT.md` - критичные правила и структура проекта
+- **Готовые промпты**: `docs/CURSOR_QUICK_ACTIONS.md` - типичные задачи
+- **Архитектура**: `docs/ARCHITECTURE_PRINCIPLES.md` - архитектурные решения
+- **Дизайн-система**: `docs/DESIGN_SYSTEM.md` - iOS 26 стиль
+- **Безопасность**: `docs/SECURITY.md` - требования безопасности
+- **3D позиционирование**: `docs/3D_MODEL_POSITIONING_RULES.md` - **ОБЯЗАТЕЛЬНО**: правила координат и масштаба для всех моделей
+
+---
 
 ## Common Errors and Auto-Fixes
 
@@ -65,6 +78,15 @@ Run `./scripts/fix-common-errors.sh` to automatically:
    ```bash
    rm -rf .next && npm run dev
    ```
+
+5. **3D Model Positioning - ОБЯЗАТЕЛЬНОЕ ПРАВИЛО**
+   - **ВСЕ новые модели должны использовать те же координаты и масштаб, что и Yamaha NVX / Honda PCX / Honda Vision**
+   - Позиция: `(0, 0, 0)`, Rotation: `(0, 0, 0)`, Scale: `(1, 1, 1)`
+   - Камера: Orbit `-90deg 90deg 2.5m`, Target `0m 0.5m 0m`, FOV `30deg`
+   - Система автоматически центрирует модели при загрузке
+   - См. `docs/3D_MODEL_POSITIONING_RULES.md` для деталей
+
+
 
 
 

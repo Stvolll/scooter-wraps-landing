@@ -14,13 +14,19 @@ import { createZaloPayPayment } from '@/lib/payment/zalopay'
 
 export const dynamic = 'force-dynamic'
 
+function getClientIp(request: NextRequest): string | undefined {
+  const forwarded = request.headers.get('x-forwarded-for')
+  const realIp = request.headers.get('x-real-ip')
+  return forwarded?.split(',')[0]?.trim() ?? realIp ?? undefined
+}
+
 export async function POST(request: NextRequest) {
   try {
     // CSRF protection
     const csrfValid = await validateCSRFRequest(request)
     if (!csrfValid) {
       logSecurityEvent('csrf_failed', {
-        ip: request.ip,
+        ip: getClientIp(request),
         userAgent: request.headers.get('user-agent'),
         path: request.url,
       })
@@ -35,7 +41,7 @@ export async function POST(request: NextRequest) {
     if (!rateLimitResult.success) {
       logSecurityEvent('rate_limit_exceeded', {
         identifier,
-        ip: request.ip,
+        ip: getClientIp(request),
         path: request.url,
       })
       return securityErrorResponse('Too many requests. Please try again later.', 429, {

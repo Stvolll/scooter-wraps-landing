@@ -11,8 +11,8 @@
  */
 
 import { Suspense, useRef, useEffect, useState } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { OrbitControls, Environment, useGLTF, PerspectiveCamera } from '@react-three/drei'
+import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber'
+import { OrbitControls, useGLTF, PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
 
 interface ScooterViewer3DProps {
@@ -81,60 +81,22 @@ function ScooterModel({
 
           texture.needsUpdate = true
 
-          let materialsFound = 0
-          let materialsUpdated = 0
-
           scene.traverse(node => {
             if (node instanceof THREE.Mesh && node.material) {
+              const name = node.name || ''
+              // Apply design texture only to UV/Z-places mesh
+              if (!name.includes('Z-places') && !name.includes('UV') && !name.includes('uv')) {
+                return // Skip - keep original texture
+              }
               const materials = Array.isArray(node.material) ? node.material : [node.material]
-              materialsFound += materials.length
-
               materials.forEach(material => {
-                // Apply to ANY material type, not just MeshStandardMaterial
                 if (material && typeof material === 'object') {
-                  // Store original properties
-                  const originalMap = material.map
-
-                  // Apply texture
                   material.map = texture
-
-                  // Ensure material properties are correct
-                  if (material.metalness !== undefined && material.metalness > 0.8) {
-                    material.metalness = 0.2
-                  }
-                  if (material.roughness !== undefined && material.roughness > 0.8) {
-                    material.roughness = 0.6
-                  }
-
-                  // Force updates
                   material.needsUpdate = true
-                  if (material.map) {
-                    material.map.needsUpdate = true
-                  }
-
-                  // Update geometry UVs
-                  if (node.geometry) {
-                    node.geometry.uvsNeedUpdate = true
-                    if (node.geometry.attributes && node.geometry.attributes.uv) {
-                      node.geometry.attributes.uv.needsUpdate = true
-                    }
-                  }
-
-                  materialsUpdated++
-                  console.log('✅ [ScooterViewer3D] Texture applied to material:', {
-                    type: material.type,
-                    name: material.name || 'unnamed',
-                    hadMap: !!originalMap,
-                    hasMap: !!material.map,
-                  })
                 }
               })
             }
           })
-
-          console.log(
-            `📊 [ScooterViewer3D] Texture application: ${materialsUpdated}/${materialsFound} materials updated`
-          )
 
           // Force all materials to update again
           scene.traverse(obj => {
@@ -160,6 +122,14 @@ function ScooterModel({
       )
     }
   }, [selectedDesign, scene])
+
+  // Compute bbox and lower model so bottom sits on floor (y=0)
+  useEffect(() => {
+    if (scene) {
+      const box = new THREE.Box3().setFromObject(scene)
+      scene.position.y = -box.min.y
+    }
+  }, [scene])
 
   // Track rotation
   useFrame(() => {
@@ -287,6 +257,17 @@ function DynamicLighting({ rotationY }: { rotationY: number }) {
   )
 }
 
+function PanoramaBg({ url }: { url: string }) {
+  const texture = useLoader(THREE.TextureLoader, url)
+  texture.mapping = THREE.EquirectangularReflectionMapping
+  const { scene } = useThree()
+  useEffect(() => {
+    scene.background = texture
+    return () => { scene.background = null }
+  }, [texture, scene])
+  return null
+}
+
 // Main scene component
 function Scene({
   modelPath,
@@ -324,13 +305,9 @@ function Scene({
       {/* Lighting */}
       <DynamicLighting rotationY={rotationY} />
 
-      {/* Environment - HDRI для правильного освещения PBR материалов */}
-      {/* Если panoramaUrl указан, используем его как HDRI, иначе используем preset */}
-      {panoramaUrl ? (
-        <Environment files={panoramaUrl} background />
-      ) : (
-        <Environment preset="sunset" background />
-      )}
+      <PanoramaBg url={panoramaUrl || '/hdr/panoramic_3.webp'} />
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[5, 5, 5]} intensity={1} />
 
       {/* Model */}
       <Suspense fallback={null}>
@@ -345,15 +322,14 @@ function Scene({
       <OrbitControls
         enableZoom={true}
         enablePan={false}
-        minDistance={1.5} // Minimum zoom distance
-        maxDistance={5} // Maximum zoom distance
-        zoomSpeed={0.8} // Zoom sensitivity
-        minPolarAngle={Math.PI / 2.4} // ~75 degrees
-        maxPolarAngle={Math.PI / 2.4} // Lock vertical angle
-        minAzimuthAngle={-Infinity}
-        maxAzimuthAngle={Infinity}
+        minDistance={1.5}
+        maxDistance={5}
+        zoomSpeed={0.8}
+        minPolarAngle={Math.PI / 4}
+        maxPolarAngle={Math.PI / 2.1}
         autoRotate
-        autoRotateSpeed={0.5} // Slower rotation
+        autoRotateSpeed={0.5}
+        target={[0, 0.4, 0]}
       />
     </>
   )

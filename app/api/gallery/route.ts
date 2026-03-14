@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { MaterialFormat } from '@prisma/client'
+import { findMaterialsByFormat, findMaterialByRole, getMaterialDisplayUrl } from '@/lib/materials/registry'
 
 /**
  * GET /api/gallery
@@ -7,59 +9,108 @@ import { prisma } from '@/lib/prisma'
  */
 export async function GET() {
   try {
-    const designs = await prisma.design.findMany({
+    // Check if Prisma is available
+    if (!prisma) {
+      console.warn('Gallery API: Prisma not available')
+      return NextResponse.json({ items: [] }, { status: 200 })
+    }
+
+    let designs: any[] = []
+    try {
+      designs = await prisma.design.findMany({
       where: {
         published: true,
-        // Only include designs with gallery images
-        galleryImages: {
-          isEmpty: false,
+        materials: {
+          some: {
+            format: MaterialFormat.PHOTO,
+          },
         },
       },
       select: {
         id: true,
         title: true,
         slug: true,
-        scooterModel: true,
-        coverImage: true,
-        galleryImages: true,
+        scooterModel: {
+          select: {
+            slug: true,
+            name: true,
+          },
+        },
         price: true,
+        materials: {
+          where: {
+            format: MaterialFormat.PHOTO,
+          },
+          select: {
+            id: true,
+            format: true,
+            url: true,
+            metadata: true,
+          },
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
       },
-    })
+      take: 50, // Limit to prevent large responses
+      })
+    } catch (dbError: any) {
+      console.warn('Gallery API: Database query failed:', dbError.message)
+      return NextResponse.json({ items: [] }, { status: 200 })
+    }
 
-    // Transform designs into gallery items
-    // Each design can have multiple gallery images, so we create one item per image
+    // Transform designs into gallery items using Materials
     const galleryItems = designs.flatMap(design => {
-      // Use galleryImages if available, otherwise use coverImage as fallback
-      const images = design.galleryImages.length > 0 
-        ? design.galleryImages 
-        : design.coverImage 
-          ? [design.coverImage] 
+      try {
+        // Get photo materials
+        const photoMaterials = design.materials && Array.isArray(design.materials) 
+          ? findMaterialsByFormat(design.materials, MaterialFormat.PHOTO)
           : []
+        
+        if (photoMaterials.length === 0) {
+          return []
+        }
 
-      return images.map((image, index) => ({
-        id: `${design.id}-${index}`,
-        designId: design.id,
-        designSlug: design.slug,
-        title: design.title,
-        model: design.scooterModel,
-        image: image,
-        // Normalize category from scooterModel
-        category: design.scooterModel.toLowerCase().replace(/\s+/g, '-'),
-        price: design.price,
-        isPrimary: index === 0, // First image is primary
-      }))
+        return photoMaterials.map((material, index) => {
+          try {
+            const imageUrl = getMaterialDisplayUrl(material)
+            if (!imageUrl) return null
+
+            return {
+              id: `${design.id}-${index}`,
+              designId: design.id,
+              designSlug: design.slug,
+              title: design.title,
+              model: design.scooterModel?.name || design.scooterModel?.slug || 'Unknown',
+              image: imageUrl,
+              // Normalize category from scooterModel
+              category: (design.scooterModel?.slug || 'unknown').toLowerCase().replace(/\s+/g, '-'),
+              price: design.price,
+              isPrimary: material.metadata && typeof material.metadata === 'object' && material.metadata.role === 'cover',
+            }
+          } catch (materialError) {
+            console.warn('Gallery API: Error processing material:', materialError)
+            return null
+          }
+        }).filter(Boolean)
+      } catch (designError) {
+        console.warn('Gallery API: Error processing design:', designError)
+        return []
+      }
     })
 
-    return NextResponse.json({ items: galleryItems })
+    return NextResponse.json({ items: galleryItems }, { status: 200 })
   } catch (error: any) {
     console.error('Gallery API error:', error)
-    // Return empty array if database is not configured
-    return NextResponse.json({ items: [] })
+    // Return empty array with 200 status to prevent frontend errors
+    return NextResponse.json({ items: [] }, { status: 200 })
   }
 }
+
+
 
 
 

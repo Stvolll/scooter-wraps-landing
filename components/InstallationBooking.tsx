@@ -72,7 +72,7 @@ export default function InstallationBooking({ onClose }: InstallationBookingProp
   const phonePlaceholder = lang === 'vi' ? 'Số điện thoại *' : 'Phone number *'
   const emailPlaceholder = lang === 'vi' ? 'Email' : 'Email'
   const modelPlaceholder =
-    lang === 'vi' ? 'Mẫu xe (VD: Honda Lead) *' : 'Scooter model (e.g. Honda Lead) *'
+    lang === 'vi' ? 'Mẫu xe (VD: Yamaha NVX) *' : 'Scooter model (e.g. Yamaha NVX) *'
   const notesPlaceholder = lang === 'vi' ? 'Ghi chú thêm (tùy chọn)' : 'Additional notes (optional)'
   const confirmButton = lang === 'vi' ? 'Xác nhận đặt lịch' : 'Confirm booking'
   const submittingText = lang === 'vi' ? 'Đang xử lý...' : 'Processing...'

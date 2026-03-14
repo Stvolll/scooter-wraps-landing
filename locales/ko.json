@@ -150,11 +150,9 @@
     "sold": "판매 완료",
     "inDevelopment": "개발 중",
     "models": {
-      "vision": "혼다 비전",
-      "lead": "혼다 리드",
-      "sh": "혼다 SH",
-      "pcx": "혼다 PCX",
-      "nvx": "야마하 NVX"
+      "nvx": "야마하 NVX",
+      "sh160": "혼다 SH160i",
+      "a-vision": "A-Vision"
     }
   },
   "menu": {

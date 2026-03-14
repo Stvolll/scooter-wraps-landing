@@ -13,11 +13,30 @@ export default function UploadGuide() {
       }}
     >
       <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-        <span>📋</span> Content Upload Guidelines
+        <span>📋</span> Инструкция по загрузке файлов
       </h3>
       <p className="mb-4 text-white/70">
-        Please follow these guidelines for optimal display and performance of your designs.
+        Следуйте этим рекомендациям для оптимального отображения и производительности ваших дизайнов.
       </p>
+      
+      {/* Диаграмма иерархии */}
+      <div className="mb-6 p-4 rounded-xl bg-black/30">
+        <h4 className="text-lg font-semibold text-[#00FFA9] mb-3">🏗️ Структура файлов</h4>
+        <div className="font-mono text-sm text-white/80 space-y-1">
+          <div className="text-purple-400">📁 Модель скутера (Honda SH160i)</div>
+          <div className="ml-4">├─ 🎯 model.glb <span className="text-gray-500">(3D-модель, загружается 1 раз)</span></div>
+          <div className="ml-4">├─ 🖼️ panorama.webp <span className="text-gray-500">(фон по умолчанию)</span></div>
+          <div className="ml-4">└─ <span className="text-blue-400">📁 Дизайны</span></div>
+          <div className="ml-8">├─ <span className="text-yellow-400">🎨 UV Текстуры</span> <span className="text-gray-500">(накладываются на модель)</span></div>
+          <div className="ml-12">└─ D1_UV_SH160_Z-parts.webp</div>
+          <div className="ml-8">├─ 🖼️ panorama.webp <span className="text-gray-500">(фон для дизайна)</span></div>
+          <div className="ml-8">├─ 🎬 video.mp4 <span className="text-gray-500">(промо-видео)</span></div>
+          <div className="ml-8">└─ <span className="text-cyan-400">📁 Галерея</span></div>
+          <div className="ml-12">├─ PHOTO-D1_SH160_1.png</div>
+          <div className="ml-12">├─ PHOTO-D1_SH160_2.png</div>
+          <div className="ml-12">└─ PHOTO-D1_SH160_3.png</div>
+        </div>
+      </div>
 
       <div className="space-y-6">
         <div>
@@ -71,7 +90,7 @@ export default function UploadGuide() {
             <li>
               <strong>Naming:</strong>{' '}
               <code className="text-[#00D4FF]">[scooter-model-slug]-[design-slug].glb</code> (e.g.,{' '}
-              <code className="text-[#00D4FF]">honda-vision-neon-blade.glb</code>).
+              <code className="text-[#00D4FF]">yamaha-nvx-neon-blade.glb</code>).
             </li>
             <li>
               <strong>Upload Location:</strong> S3 bucket →{' '}
@@ -100,7 +119,7 @@ export default function UploadGuide() {
             <li>
               <strong>Naming:</strong>{' '}
               <code className="text-[#B77EFF]">[scooter-model-slug]-[design-slug]-texture.png</code>{' '}
-              (e.g., <code className="text-[#B77EFF]">honda-vision-neon-blade-texture.png</code>).
+              (e.g., <code className="text-[#B77EFF]">yamaha-nvx-neon-blade-texture.png</code>).
             </li>
             <li>
               <strong>Upload Location:</strong> S3 bucket →{' '}

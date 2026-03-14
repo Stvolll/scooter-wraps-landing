@@ -4,9 +4,9 @@ import { prisma } from '@/lib/prisma'
 import { DesignStatus } from '@prisma/client'
 import { updateDesignStatus } from '@/app/admin/designs/actions'
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = params.id
+    const { id } = await params
     const body = await req.json()
     const { status, note } = body
 

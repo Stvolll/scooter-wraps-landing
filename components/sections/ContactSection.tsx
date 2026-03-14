@@ -289,11 +289,8 @@ export default function ContactSection() {
                   required
                 >
                   <option value="">{t('contactSection.selectModel')}</option>
-                  <option value="lead">Honda Lead</option>
-                  <option value="vision">Honda Vision</option>
-                  <option value="sh">Honda SH</option>
-                  <option value="pcx">Honda PCX</option>
                   <option value="nvx">Yamaha NVX</option>
+                  <option value="a-vision">A-Vision</option>
                 </select>
               </div>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -14,6 +14,12 @@ export default function Header() {
   const { t } = useLanguage()
   const [isLogoHovered, setIsLogoHovered] = useState(false)
   const [cartItemsCount] = useState(0) // TODO: Подключить реальную корзину
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Предотвращаем hydration mismatch
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
@@ -29,15 +35,19 @@ export default function Header() {
               className="relative flex items-center gap-3"
             >
               <div className="relative h-[53px] w-auto flex items-center">
-                <img
-                  src="/hdr/TXD_logo.svg"
-                  alt="TXD Logo"
-                  className="h-[53px] w-auto object-contain logo-animated"
-                  style={{
-                    filter:
-                      'brightness(0) saturate(100%) invert(45%) sepia(85%) saturate(2500%) hue-rotate(160deg) brightness(95%) contrast(105%)',
-                  }}
-                />
+                {isMounted ? (
+                  <img
+                    src="/SVG/Logotype_TXD.svg"
+                    alt="TXD Logo"
+                    className="h-[53px] w-auto object-contain logo-animated"
+                    style={{
+                      filter:
+                        'brightness(0) saturate(100%) invert(45%) sepia(85%) saturate(2500%) hue-rotate(160deg) brightness(95%) contrast(105%)',
+                    }}
+                  />
+                ) : (
+                  <div className="h-[53px] w-[120px] bg-transparent" />
+                )}
               </div>
               <AnimatePresence>
                 {isLogoHovered && (
@@ -71,14 +81,18 @@ export default function Header() {
                 whileTap={{ scale: 0.9 }}
                 className="relative w-6 h-6"
               >
-                <img
-                  src="/paper-roll.svg"
-                  alt="Paper Roll"
-                  className="w-6 h-6 object-contain opacity-90 group-hover:opacity-100 transition-opacity"
-                  style={{
-                    filter: 'brightness(0) saturate(100%) invert(1)',
-                  }}
-                />
+                {isMounted ? (
+                  <img
+                    src="/SVG/paper-roll.svg"
+                    alt="Paper Roll"
+                    className="w-6 h-6 object-contain opacity-90 group-hover:opacity-100 transition-opacity"
+                    style={{
+                      filter: 'brightness(0) saturate(100%) invert(1)',
+                    }}
+                  />
+                ) : (
+                  <div className="w-6 h-6 bg-transparent" />
+                )}
               </motion.div>
               {cartItemsCount > 0 && (
                 <motion.span

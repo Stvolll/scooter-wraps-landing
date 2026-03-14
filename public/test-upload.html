@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test File Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #000;
+            color: #fff;
+        }
+        .upload-area {
+            border: 2px dashed #00FFA9;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        button {
+            background: #00FFA9;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #00D489;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background: #1a1a1a;
+        }
+        .success {
+            border-left: 4px solid #00FFA9;
+        }
+        .error {
+            border-left: 4px solid #ff3b30;
+        }
+        .log {
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test File Upload API</h1>
+    <p>This page tests the local file upload endpoint: <code>/api/uploads/local</code></p>
+    
+    <div class="upload-area">
+        <input type="file" id="fileInput" accept=".glb,.webp,.png,.jpg,.jpeg,.mp4">
+        <button onclick="uploadFile()">Upload File</button>
+    </div>
+    
+    <div id="logs"></div>
+    
+    <script>
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const logEntry = document.createElement('div');
+            logEntry.className = `result ${type === 'error' ? 'error' : type === 'success' ? 'success' : ''}`;
+            logEntry.innerHTML = `<div class="log">${new Date().toLocaleTimeString()}: ${message}</div>`;
+            logsDiv.appendChild(logEntry);
+            console.log(message);
+        }
+        
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                log('❌ Please select a file first', 'error');
+                return;
+            }
+            
+            log(`📦 Selected file: ${file.name}, size: ${file.size} bytes, type: ${file.type}`);
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            log('📤 Sending request to /api/uploads/local...');
+            
+            try {
+                const response = await fetch('/api/uploads/local', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                log(`📬 Response status: ${response.status} ${response.statusText}`);
+                
+                const responseText = await response.text();
+                log(`📄 Response body: ${responseText}`);
+                
+                if (response.ok) {
+                    const data = JSON.parse(responseText);
+                    log(`✅ Upload successful!`, 'success');
+                    log(`🔗 File URL: ${data.url}`, 'success');
+                    log(`🔑 File key: ${data.key}`, 'success');
+                } else {
+                    try {
+                        const errorData = JSON.parse(responseText);
+                        log(`❌ Upload failed: ${errorData.error}`, 'error');
+                        if (errorData.details) {
+                            log(`Details: ${errorData.details}`, 'error');
+                        }
+                    } catch (e) {
+                        log(`❌ Upload failed: ${responseText}`, 'error');
+                    }
+                }
+            } catch (error) {
+                log(`❌ Network error: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+

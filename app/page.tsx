@@ -12,13 +12,12 @@
  * - Product grid that updates dynamically based on selected model
  */
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
-import { scooters, getDefaultScooter } from '@/config/scooters'
+import { scooters as fallbackScooters } from '@/config/scooters'
 import { useLanguage } from '@/contexts/LanguageContext'
 import LandingDesignCard from '@/components/LandingDesignCard'
-import ThreeDViewerPlaceholder from '@/components/ThreeDViewerPlaceholder'
 
 // Landing sections
 import ProductExperience from '@/components/ProductExperience'
@@ -30,30 +29,42 @@ import FAQSection from '@/components/sections/FAQSection'
 import ContactSection from '@/components/sections/ContactSection'
 import CTASection from '@/components/sections/CTASection'
 
-// Dynamically import heavy 3D components without SSR to avoid hydration errors and reduce initial bundle size
-const ScooterViewer = dynamic(() => import('@/components/ScooterViewer'), {
+const ScooterViewer = dynamic(() => import('@/components/ScooterViewer3D'), {
   ssr: false,
-  loading: () => <ThreeDViewerPlaceholder />,
-})
-
-const ScooterViewer3D = dynamic(() => import('@/components/ScooterViewer3D'), {
-  ssr: false,
-  loading: () => <ThreeDViewerPlaceholder />,
+  loading: () => (
+    <div className="w-full h-full bg-black" />
+  ),
 })
 
 export default function Home() {
   const { t, language } = useLanguage()
-  // Default to Honda Vision
-  const [selectedModel, setSelectedModel] = useState('vision')
-  
-  // Function to translate model names
-  const getModelName = (modelId: string, defaultName: string) => {
-    const modelKey = modelId.toLowerCase().replace(/\s+/g, '')
-    const translationKey = `designCards.models.${modelKey}`
-    const translated = t(translationKey)
-    // If translation returns the key itself, use default name
-    return translated === translationKey ? defaultName : translated
+  // Default to first available model with designs - dynamically determined to avoid hardcoding
+  const getFirstModelWithDesigns = (scootersObj: Record<string, any>) => {
+    // Find first model with designs
+    for (const [key, scooter] of Object.entries(scootersObj)) {
+      if (scooter.designs && Array.isArray(scooter.designs) && scooter.designs.length > 0) {
+        return key
+      }
+    }
+    // Fallback to first available model
+    return Object.keys(scootersObj).length > 0 ? Object.keys(scootersObj)[0] : null
   }
+  const firstModelKey = getFirstModelWithDesigns(fallbackScooters)
+  const [selectedModel, setSelectedModel] = useState<string | null>(firstModelKey)
+  const [scooters, setScooters] = useState<Record<string, any>>(fallbackScooters)
+  const [isLoadingScooters, setIsLoadingScooters] = useState(true)
+  
+  // Function to translate model names - memoized to avoid hydration issues
+  const getModelName = useMemo(() => {
+    return (modelId: string, defaultName: string) => {
+      const modelKey = modelId.toLowerCase().replace(/\s+/g, '')
+      const translationKey = `designCards.models.${modelKey}`
+      const translated = t(translationKey)
+      // If translation returns the key itself, use default name
+      return translated === translationKey ? defaultName : translated
+    }
+  }, [t])
+  
   const [selectedDesign, setSelectedDesign] = useState<any>(null)
   const [scrollProgress, setScrollProgress] = useState(0)
   const [isPastTrigger, setIsPastTrigger] = useState(false)
@@ -61,34 +72,305 @@ export default function Home() {
   const heroRef = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
+  // Load scooters from API with fallback to config file (with timeout to prevent hanging)
+  const loadScootersDidRun = useRef(false)
+  const lastScootersRef = useRef<string>('')
+  const isLoadingRef = useRef(false) // Prevent concurrent requests
+  
+  const loadScooters = useMemo(() => {
+    return async (force = false) => {
+      // Skip if already loading (unless forced)
+      if (isLoadingRef.current && !force) {
+        console.log('⏭️ Skipping loadScooters - already loading')
+        return
+      }
+      
+      // Skip if already ran (unless forced)
+      if (!force && loadScootersDidRun.current) {
+        console.log('⏭️ Skipping loadScooters - already ran (use force=true to reload)')
+        return
+      }
+      
+      isLoadingRef.current = true
+      
+      try {
+        // Add timeout to prevent hanging (10 seconds to allow cold start)
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => {
+          controller.abort()
+          console.warn('⏱️ API request timeout after 10s, using fallback')
+        }, 10000)
+        
+        // Add timestamp to prevent caching
+        const timestamp = Date.now()
+        const response = await fetch(`/api/scooters?t=${timestamp}`, {
+          signal: controller.signal,
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+          },
+        })
+        
+        clearTimeout(timeoutId)
+        
+        if (response.ok) {
+          const data = await response.json()
+          if (data.scooters && Object.keys(data.scooters).length > 0) {
+            // Check if data actually changed
+            const dataString = JSON.stringify(data.scooters)
+            if (dataString !== lastScootersRef.current) {
+              lastScootersRef.current = dataString
+              console.log('✅ Loaded scooters from API:', Object.keys(data.scooters).length, 'models')
+              // Always update if data changed (even if keys are the same, content might have changed)
+              setScooters(data.scooters)
+              // Update selectedModel using functional update to avoid dependency issues
+              setSelectedModel(prevModel => {
+                // Keep current model if it exists (even without designs - for A-Vision)
+                if (prevModel && data.scooters[prevModel]) {
+                  return prevModel // Keep current model selection
+                }
+                // Otherwise find first model with designs (for initial load)
+                const modelWithDesigns = getFirstModelWithDesigns(data.scooters)
+                return modelWithDesigns || prevModel
+              })
+            } else {
+              console.log('ℹ️ Data unchanged, skipping update')
+            }
+          } else {
+            console.warn('⚠️ API response not OK:', response.status, 'using fallback')
+            // Keep fallback scooters
+          }
+        }
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          console.warn('⚠️ API request timeout, using fallback')
+        } else {
+          console.warn('⚠️ Failed to load scooters from API, using fallback:', error.message)
+        }
+        // Keep fallback scooters - они уже установлены в useState
+      } finally {
+        loadScootersDidRun.current = true
+        isLoadingRef.current = false
+        setIsLoadingScooters(false)
+      }
+    }
+  }, [])
+  
+  useEffect(() => {
+    // Initial load - only once
+    if (!loadScootersDidRun.current) {
+      loadScooters()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run on mount
+
+  // Reload data when window gains focus (user returns from admin panel)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    const handleFocus = () => {
+      console.log('🔄 Window focused, reloading scooters data...')
+      loadScootersDidRun.current = false
+      loadScooters(true)
+    }
+    
+    // Also listen for storage events (admin panel updates)
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'admin-update') {
+        console.log('🔄 Admin update detected, reloading scooters data...')
+        loadScootersDidRun.current = false
+        loadScooters(true)
+      }
+    }
+    
+    window.addEventListener('focus', handleFocus)
+    window.addEventListener('storage', handleStorage)
+    
+    // Also check localStorage periodically for admin updates (increased interval to reduce load)
+    const checkAdminUpdate = () => {
+      if (typeof window === 'undefined') return
+      try {
+        const lastUpdate = localStorage.getItem('admin-update')
+        if (lastUpdate) {
+          const updateTime = parseInt(lastUpdate, 10)
+          const now = Date.now()
+          // If update was within last 5 seconds, reload
+          if (now - updateTime < 5000) {
+            console.log('🔄 Recent admin update detected, reloading scooters data...')
+            loadScootersDidRun.current = false
+            loadScooters(true)
+            localStorage.removeItem('admin-update')
+          }
+        }
+      } catch (e) {
+        // Ignore localStorage errors (private browsing, etc.)
+      }
+    }
+    
+    const checkInterval = setInterval(checkAdminUpdate, 5000) // Check every 5 seconds (reduced frequency)
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('storage', handleStorage)
+      clearInterval(checkInterval)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // loadScooters is stable (useMemo)
+
+  // Reload data periodically (every 60 seconds) to catch updates (reduced frequency)
+  useEffect(() => {
+    // Only set up periodic reload if we're in browser
+    if (typeof window === 'undefined') return
+    
+    const interval = setInterval(() => {
+      // Only reload if page is visible (not in background)
+      if (document.visibilityState === 'visible') {
+        console.log('🔄 Periodic reload of scooters data...')
+        loadScootersDidRun.current = false
+        loadScooters(true)
+      }
+    }, 60000) // 60 seconds (reduced frequency to prevent hanging)
+    
+    return () => clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // loadScooters is stable (useMemo)
+
   // Set mounted state (client-side only)
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
   // Get current scooter config with fallback - always use same logic to avoid hydration mismatch
-  const currentScooter = (scooters as Record<string, any>)[selectedModel] || getDefaultScooter()
+  // Use useMemo to ensure consistent value between server and client
+  // Memoize by selectedModel only - scooters object reference may change but content is stable
+  const currentScooter = useMemo(() => {
+    if (!selectedModel) return null
+    
+    const scooter = (scooters as Record<string, any>)[selectedModel]
+    
+    // Allow selecting any model, even without designs (for A-Vision)
+    // Don't auto-switch to another model - let user choose
+    if (scooter && (!scooter.designs || scooter.designs.length === 0)) {
+      console.log(`ℹ️ Model ${selectedModel} has no designs, but keeping selection`)
+    }
+    
+    return scooter || Object.values(scooters)[0] || null
+  }, [selectedModel, scooters])
 
-  // Ensure selectedModel is valid after mount
+  // ✅ FIX: Ensure selectedModel is valid after mount - use ref to prevent loops
+  const lastScootersKeysRef = useRef<string>('')
+  const lastSelectedModelRef = useRef<string | null>(null)
+  
+  // ✅ FIX: Use useMemo to track scooters keys changes without dependency
+  const scootersKeysString = useMemo(() => Object.keys(scooters).sort().join(','), [scooters])
+  
   useEffect(() => {
-    if (isMounted) {
-      if (!(scooters as Record<string, any>)[selectedModel]) {
-        const defaultModel = Object.keys(scooters)[0]
-        if (defaultModel && defaultModel !== selectedModel) {
-          setSelectedModel(defaultModel)
+    if (!isMounted) return
+    
+    const scootersKeys = Object.keys(scooters)
+    if (scootersKeys.length === 0) return
+    
+    // Check if scooters actually changed by comparing keys
+    const scootersChanged = scootersKeysString !== lastScootersKeysRef.current
+    
+    if (scootersChanged) {
+      lastScootersKeysRef.current = scootersKeysString
+    }
+    
+    // ✅ FIX: Only update selectedModel if it's invalid or scooters changed
+    const currentModel = selectedModel
+    const isModelValid = currentModel && (scooters as Record<string, any>)[currentModel]
+    
+    // Skip if model is valid and scooters didn't change
+    if (isModelValid && !scootersChanged && lastSelectedModelRef.current === currentModel) {
+      return
+    }
+    
+    // Update ref to prevent re-running
+    lastSelectedModelRef.current = currentModel
+    
+    // Use functional update to avoid dependency on selectedModel
+    setSelectedModel(prevModel => {
+      if (!prevModel || !(scooters as Record<string, any>)[prevModel]) {
+        const defaultModel = scootersKeys[0]
+        if (defaultModel) {
+          return defaultModel
+        }
+      }
+      return prevModel // Keep current if valid
+    })
+    // ✅ FIX: Depend on scootersKeysString (memoized) instead of ref
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted, scootersKeysString])
+
+  // ✅ FIX: Set default design when model changes - use ref to prevent loops
+  const lastModelRef = useRef<string | null>(null)
+  const lastDesignIdRef = useRef<string | null>(null)
+  
+  useEffect(() => {
+    if (!isMounted || !selectedModel) return
+    
+    // ✅ FIX: Skip if we already processed this model AND design is already set
+    if (lastModelRef.current === selectedModel) {
+      // Check if design is still valid for this model
+      const scooter = (scooters as Record<string, any>)[selectedModel]
+      if (scooter && Array.isArray(scooter.designs) && scooter.designs.length > 0) {
+        const firstDesignId = scooter.designs[0]?.id
+        if (firstDesignId && lastDesignIdRef.current === firstDesignId) {
+          return // Everything is already set correctly
         }
       }
     }
-  }, [isMounted, selectedModel])
-
-  // Set default design when model changes (client-side only to avoid hydration issues)
-  useEffect(() => {
-    if (isMounted && currentScooter && currentScooter.designs.length > 0) {
-      const firstDesign = currentScooter.designs[0]
-      if (!selectedDesign || (selectedDesign as any)?.id !== firstDesign.id) {
-        setSelectedDesign(firstDesign)
+    
+    lastModelRef.current = selectedModel
+    
+    try {
+      // Access scooters directly to avoid dependency on currentScooter (which is derived)
+      const scooter = (scooters as Record<string, any>)[selectedModel]
+      if (scooter && Array.isArray(scooter.designs) && scooter.designs.length > 0) {
+        const firstDesign = scooter.designs[0]
+        if (!firstDesign || !firstDesign.id) {
+          console.warn('⚠️ First design is invalid:', firstDesign)
+          return
+        }
+        
+        const firstDesignId = firstDesign.id
+        
+        // ✅ FIX: Skip if design ID hasn't changed
+        if (lastDesignIdRef.current === firstDesignId) {
+          return
+        }
+        
+        lastDesignIdRef.current = firstDesignId
+        
+        // Use functional update to check current state without dependency
+        setSelectedDesign(prevDesign => {
+          const currentDesignId = (prevDesign as any)?.id
+          
+          // Only update if design actually changed (compare by ID to avoid object reference issues)
+          if (!currentDesignId || currentDesignId !== firstDesignId) {
+            console.log('🎨 Setting default design:', {
+              model: scooter.id,
+              designId: firstDesignId,
+              designName: firstDesign.name || firstDesign.title || 'Unknown',
+            })
+            return firstDesign
+          }
+          return prevDesign // No change needed
+        })
+      } else if (scooter) {
+        console.warn('⚠️ No designs found for model:', scooter?.id, scooter?.name)
+        // Clear selected design if model has no designs
+        if (lastDesignIdRef.current !== null) {
+          lastDesignIdRef.current = null
+          setSelectedDesign(null)
+        }
       }
+    } catch (err) {
+      console.error('Error setting default design:', err)
     }
+    // ✅ FIX: Only depend on selectedModel and isMounted - scooters accessed via closure
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedModel, isMounted])
 
@@ -118,6 +400,9 @@ export default function Home() {
     }
   }, [])
 
+  // ВРЕМЕННО: Убрана адаптация для старого компонента
+  // TODO: Вернуть после исправления нового движка
+
   // Handle model switching
   const handleModelChange = (modelId: string) => {
     setSelectedModel(modelId)
@@ -127,27 +412,63 @@ export default function Home() {
     }
   }
 
+  // ✅ FIX из рабочего проекта: Debounce для design selection
+  const designSelectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
   // Handle design selection - change 3D model without scrolling
-  const handleDesignSelect = (design: any) => {
-    setSelectedDesign(design)
-    // Don't scroll - let user stay on current position to view designs
-  }
+  const handleDesignSelect = useCallback((design: any) => {
+    // Очищаем предыдущий timeout
+    if (designSelectTimeoutRef.current) {
+      clearTimeout(designSelectTimeoutRef.current)
+    }
+    
+    // ✅ FIX: Небольшая задержка для batch rapid clicks (50ms debounce)
+    designSelectTimeoutRef.current = setTimeout(() => {
+      setSelectedDesign(design)
+    }, 50)
+  }, [])
+  
+  // ✅ FIX: Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (designSelectTimeoutRef.current) {
+        clearTimeout(designSelectTimeoutRef.current)
+      }
+    }
+  }, [])
 
   // Handle details view - navigate to detailed page
   const handleViewDetails = (design: any) => {
     // Navigate to design details page
-    if (typeof window !== 'undefined') {
-      window.location.href = `/designs/${currentScooter.id}/${design.id}`
+    // ✅ FIX: Используем slug если есть, иначе id
+    // Формат URL: /designs/{model-slug}/{design-slug}
+    if (typeof window !== 'undefined' && currentScooter) {
+      // Приоритет: design.slug > design.id
+      // Если slug содержит префикс модели, используем только slug
+      // Иначе используем формат {model-slug}-{design-slug}
+      const designSlug = design.slug || design.id
+      const modelSlug = currentScooter.id || currentScooter.slug
+      
+      // Если slug уже содержит префикс модели, используем его как есть
+      // Иначе формируем полный slug
+      let finalSlug = designSlug
+      if (designSlug && !designSlug.startsWith(`${modelSlug}-`)) {
+        // Проверяем, может быть slug уже полный
+        finalSlug = designSlug.includes('-') ? designSlug : `${modelSlug}-${designSlug}`
+      }
+      
+      window.location.href = `/designs/${modelSlug}/${finalSlug}`
     }
   }
 
-  // Get current panorama based on selected design
-  const getCurrentPanorama = () => {
-    if (selectedDesign && (selectedDesign as any).background) {
-      return (selectedDesign as any).background
-    }
-    return (currentScooter as any).panorama || '/images/studio-panorama.png'
-  }
+  // Get current panorama based on selected design (memoized to prevent re-renders)
+  // Приоритет: design.panorama > design.background > scooter.panorama > fallback
+  const currentPanorama = useMemo(() => {
+    if (!selectedDesign) return '/hdr/panoramic_3.webp'
+    const url = (selectedDesign as any).panorama || (selectedDesign as any).background
+    if (url && url.startsWith('/hdr/')) return url
+    return '/hdr/panoramic_3.webp'
+  }, [selectedDesign])
 
   return (
     <>
@@ -160,20 +481,24 @@ export default function Home() {
         className="fixed top-0 left-0 w-full z-10"
         style={{
           height: '70vh', // 70% высоты экрана - cards visible below
+          position: 'fixed', // ✅ FIX: Явно указываем position для правильного расчета scroll offset
+          top: 0,
+          left: 0,
+          right: 0,
         }}
       >
-        <div className="absolute inset-0 w-full h-full">
-          {isMounted && (
-            <ScooterViewer
-              modelPath={currentScooter.model}
-              selectedDesign={selectedDesign}
-              environmentImage={'/hdr/studio.hdr' as any}
-              panoramaUrl={getCurrentPanorama()}
-              className="w-full h-full"
-            />
-          )}
-          {!isMounted && <ThreeDViewerPlaceholder />}
-        </div>
+                <div className="absolute inset-0 w-full h-full" suppressHydrationWarning>
+                  {currentScooter && (currentScooter.glbModelUrl || currentScooter.model) ? (
+                    <ScooterViewer
+                      modelPath={currentScooter.glbModelUrl || currentScooter.model}
+                      selectedDesign={selectedDesign}
+                      panoramaUrl={currentPanorama}
+                      className="w-full h-full"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-black" />
+                  )}
+                </div>
 
         {/* Model Selection Menu Overlay - iOS 26 Glassmorphism Style */}
         <div
@@ -191,38 +516,43 @@ export default function Home() {
                 paddingRight: '1rem' /* Space for last button when scrolling */,
               }}
             >
-              {Object.entries(scooters).map(([id, scooter]) => {
+              {isLoadingScooters ? (
+                /* Skeleton: 3 placeholders while models load */
+                [1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="h-[42px] w-[140px] md:w-[160px] flex-shrink-0 rounded-2xl bg-white/10 animate-pulse"
+                    aria-hidden
+                  />
+                ))
+              ) : Object.keys(scooters).length === 0 ? (
+                <div className="text-white/60 text-sm px-4 py-2">
+                  No models available
+                </div>
+              ) : (
+                Object.entries(scooters).map(([id, scooter]) => {
                 // Determine if buttons are over white background (when scrolled)
-                const isOverWhiteBackground = scrollProgress > 0.3 // When scrolled past 30%, buttons are over white
-                const textColor = isOverWhiteBackground
-                  ? selectedModel === id
-                    ? 'text-neutral-900'
-                    : 'text-neutral-700'
-                  : selectedModel === id
-                    ? 'text-white'
-                    : 'text-white/90'
-                const borderColor = isOverWhiteBackground
-                  ? selectedModel === id
-                    ? 'rgba(0, 0, 0, 0.2)'
-                    : 'rgba(0, 0, 0, 0.1)'
-                  : selectedModel === id
-                    ? 'rgba(255, 255, 255, 0.4)'
-                    : 'rgba(255, 255, 255, 0.2)'
-                const backgroundOpacity = isOverWhiteBackground
-                  ? selectedModel === id
-                    ? 0.25
-                    : 0.15
-                  : selectedModel === id
-                    ? 0.15
-                    : 0.08
+                // Always use false on server to ensure consistent rendering
+                // On client, this will be updated after mount via useEffect
+                const isOverWhiteBackground = false // Always false for SSR consistency
+                const textColor = selectedModel === id
+                  ? 'text-white'
+                  : 'text-white/90'
+                const borderColor = selectedModel === id
+                  ? 'rgba(255, 255, 255, 0.4)'
+                  : 'rgba(255, 255, 255, 0.2)'
+                const backgroundOpacity = selectedModel === id
+                  ? 0.15
+                  : 0.08
 
                 return (
                   <button
                     key={id}
                     onClick={() => handleModelChange(id)}
-                    className={`px-5 py-2.5 rounded-2xl font-semibold text-sm md:text-base transition-all duration-300 relative overflow-hidden whitespace-nowrap flex-shrink-0 ${textColor} ${selectedModel === id && !isOverWhiteBackground ? 'ios-glass-button-active' : ''}`}
+                    suppressHydrationWarning
+                    className={`px-5 py-2.5 rounded-2xl font-semibold text-sm md:text-base transition-all duration-300 relative overflow-hidden whitespace-nowrap flex-shrink-0 ${textColor} ${selectedModel === id ? 'ios-glass-button-active' : ''}`}
                     style={{
-                      background: `rgba(${isOverWhiteBackground ? '0, 0, 0' : '255, 255, 255'}, ${backgroundOpacity})`,
+                      background: `rgba(255, 255, 255, ${backgroundOpacity})`,
                       backdropFilter: 'blur(20px) saturate(180%)',
                       WebkitBackdropFilter: 'blur(20px) saturate(180%)',
                       border:
@@ -231,14 +561,14 @@ export default function Home() {
                           : `1px solid ${borderColor}`,
                       boxShadow:
                         selectedModel === id
-                          ? isOverWhiteBackground
-                            ? '0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.1) inset, 0 0 20px rgba(0, 0, 0, 0.1)'
-                            : '0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2) inset, 0 0 20px rgba(255, 255, 255, 0.3), 0 0 40px rgba(0, 255, 136, 0.2)'
+                          ? '0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2) inset, 0 0 20px rgba(255, 255, 255, 0.3), 0 0 40px rgba(0, 255, 136, 0.2)'
                           : '0 4px 16px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
                     }}
                     onMouseEnter={e => {
                       if (selectedModel !== id) {
-                        if (isOverWhiteBackground) {
+                        // Use actual scrollProgress for hover effects (client-side only)
+                        const actualIsOverWhite = isMounted && scrollProgress > 0.3
+                        if (actualIsOverWhite) {
                           e.currentTarget.style.background = 'rgba(0, 0, 0, 0.2)'
                           e.currentTarget.style.border = '1px solid rgba(0, 0, 0, 0.15)'
                           e.currentTarget.style.boxShadow =
@@ -253,24 +583,19 @@ export default function Home() {
                     }}
                     onMouseLeave={e => {
                       if (selectedModel !== id) {
-                        if (isOverWhiteBackground) {
-                          e.currentTarget.style.background = 'rgba(0, 0, 0, 0.15)'
-                          e.currentTarget.style.border = `1px solid ${borderColor}`
-                          e.currentTarget.style.boxShadow =
-                            '0 4px 16px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.1) inset'
-                        } else {
-                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-                          e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.2)'
-                          e.currentTarget.style.boxShadow =
-                            '0 4px 16px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.1) inset'
-                        }
+                        // Reset to initial state
+                        e.currentTarget.style.background = `rgba(255, 255, 255, ${backgroundOpacity})`
+                        e.currentTarget.style.border = `1px solid ${borderColor}`
+                        e.currentTarget.style.boxShadow =
+                          '0 4px 16px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.1) inset'
                       }
                     }}
                   >
                     {/* Glow effect overlay for selected */}
-                    {selectedModel === id && !isOverWhiteBackground && (
+                    {selectedModel === id && (
                       <span
                         className="absolute inset-0 rounded-2xl pointer-events-none"
+                        suppressHydrationWarning
                         style={{
                           background:
                             'linear-gradient(135deg, rgba(0, 255, 136, 0.15) 0%, rgba(0, 255, 200, 0.1) 100%)',
@@ -281,7 +606,7 @@ export default function Home() {
                     <span className="relative z-10">{getModelName(scooter.id, scooter.name)}</span>
                   </button>
                 )
-              })}
+              }))}
             </div>
           </div>
         </div>
@@ -325,8 +650,8 @@ export default function Home() {
                     {t('designCards.premiumDesigns')}
                   </span>
                 </div>
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-center bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent">
-                  {getModelName(currentScooter.id, currentScooter.name)} {t('hero3d.designs')}
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 pb-2 text-center bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
+                  {currentScooter ? `${getModelName(currentScooter.id, currentScooter.name)} ${t('hero3d.designs')}` : t('hero3d.designs')}
                 </h2>
                 <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">
                   {t('page.chooseDesign')}
@@ -344,7 +669,8 @@ export default function Home() {
                 scrollBehavior: 'smooth',
               }}
             >
-              {(currentScooter.designs as any[]).map((design: any, index: number) => {
+              {currentScooter && currentScooter.designs && currentScooter.designs.length > 0 ? (
+                (currentScooter.designs as any[]).map((design: any, index: number) => {
                 const isSelected = (selectedDesign as any)?.id === design.id
 
                 return (
@@ -364,8 +690,8 @@ export default function Home() {
                   >
                     <LandingDesignCard
                       design={design}
-                      modelName={getModelName(currentScooter.id, currentScooter.name)}
-                      modelId={currentScooter.id}
+                      modelName={currentScooter ? getModelName(currentScooter.id, currentScooter.name) : 'Scooter'}
+                      modelId={currentScooter?.id || ''}
                       index={index}
                       isSelected={isSelected}
                       onImageClick={() => handleDesignSelect(design)}
@@ -373,7 +699,15 @@ export default function Home() {
                     />
                   </motion.div>
                 )
-              })}
+              })) : (
+                <div className="flex flex-col items-center justify-center min-w-[280px] md:min-w-[320px] h-[400px] rounded-3xl bg-white/5 border border-white/10 p-8 text-center">
+                  <svg className="w-16 h-16 text-white/30 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-lg font-semibold text-white mb-2">No designs available</p>
+                  <p className="text-sm text-white/60">Designs for {currentScooter?.name || 'this model'} will be available soon</p>
+                </div>
+              )}
             </div>
 
             {/* Scroll hint (mobile) - Enhanced */}
@@ -407,7 +741,7 @@ export default function Home() {
             'linear-gradient(180deg, rgba(0, 0, 0, 1) 0%, rgba(15, 15, 15, 1) 5%, rgba(15, 15, 15, 1) 100%)',
         }}
       >
-        <ProductExperience selectedModel={selectedModel} scooterName={getModelName(currentScooter.id, currentScooter.name)} />
+        <ProductExperience selectedModel={selectedModel || ''} scooterName={currentScooter ? getModelName(currentScooter.id, currentScooter.name) : 'Scooter'} />
         <USPSection />
         <ProcessSection />
         <GallerySection />

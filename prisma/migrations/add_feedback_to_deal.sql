@@ -20,3 +20,5 @@ UPDATE "Deal" SET "updatedAt" = "createdAt" WHERE "updatedAt" IS NULL;
 
 
 
+
+

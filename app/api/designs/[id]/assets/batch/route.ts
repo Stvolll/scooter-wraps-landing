@@ -39,14 +39,17 @@ const ALLOWED_TYPES = {
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const designId = params.id
+    const { id: designId } = await params
 
     // Проверка существования дизайна
     const design = await prisma.design.findUnique({
       where: { id: designId },
+      include: {
+        scooterModel: true, // Need scooterModel to update glbModelUrl
+      },
     })
 
     if (!design) {
@@ -171,13 +174,13 @@ export async function POST(
           updateData.galleryImages = [...currentGallery, result.url]
           break
         case 'glb':
-          updateData.glbModelUrl = result.url
+          scooterModelUpdateData.glbModelUrl = result.url
           break
         case 'glb-compressed':
-          updateData.glbModelCompressed = result.url
+          scooterModelUpdateData.glbModelCompressed = result.url
           break
         case 'glb-mobile':
-          updateData.glbModelMobile = result.url
+          scooterModelUpdateData.glbModelMobile = result.url
           break
         case 'texture':
           texturesToCreate.push({
@@ -214,6 +217,14 @@ export async function POST(
 
     // Сохранение в БД
     await prisma.$transaction(async (tx) => {
+      // Phase 2: Обновление ScooterModel для GLB файлов
+      if (Object.keys(scooterModelUpdateData).length > 0 && design?.scooterModelId) {
+        await tx.scooterModel.update({
+          where: { id: design.scooterModelId },
+          data: scooterModelUpdateData,
+        })
+      }
+      
       // Обновление дизайна
       if (Object.keys(updateData).length > 0) {
         await tx.design.update({
@@ -263,6 +274,8 @@ export async function POST(
     )
   }
 }
+
+
 
 
 

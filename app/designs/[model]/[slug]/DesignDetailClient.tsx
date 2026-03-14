@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import DesignTimeline from '@/components/DesignTimeline'
 import { DesignStatus } from '@prisma/client'
 import {
   Shield,
@@ -42,6 +41,8 @@ export default function DesignDetailClient({
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null)
   const [showContactOptions, setShowContactOptions] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+  const [images, setImages] = useState<string[]>(['/images/studio-panorama.png'])
 
   // Mock data for conversion elements
   const rating = 4.8
@@ -51,20 +52,59 @@ export default function DesignDetailClient({
   const totalCount = design.editionTotal ?? 100
   const urgencyPercent = Math.round(((totalCount - availableCount) / totalCount) * 100)
 
-  // Get images array - handle all possible image sources
-  // Ensure this is always an array to avoid hydration mismatches
-  const images = useMemo(() => {
+  // Normalize image path - try to find file in uploads if original path fails
+  const normalizeImagePath = (path: string): string => {
+    if (!path) return '/images/studio-panorama.png'
+    
+    // If path already starts with /uploads/, use it as is
+    if (path.startsWith('/uploads/')) {
+      return path
+    }
+    
+    // If path starts with /images/ or /textures/, try to find in uploads
+    if (path.startsWith('/images/') || path.startsWith('/textures/')) {
+      // Extract filename from path
+      const filename = path.split('/').pop() || ''
+      // Try uploads path
+      const uploadsPath = `/uploads/images/${filename}`
+      return uploadsPath
+    }
+    
+    return path
+  }
+
+  // Set mounted state and calculate images only on client
+  useEffect(() => {
+    setIsMounted(true)
+    
+    // Calculate images array on client side only
+    const imageList: string[] = []
+    
+    // Add all images from design.images array (with path normalization)
     if (design.images && Array.isArray(design.images) && design.images.length > 0) {
-      return [...design.images]
+      imageList.push(...design.images.map(normalizeImagePath))
     }
-    if (design.preview) {
-      return [design.preview]
+    
+    // Add textures if they exist (for sh160 designs)
+    if (design.textures) {
+      if (design.textures.body) imageList.push(normalizeImagePath(design.textures.body))
+      if (design.textures.plastic) imageList.push(normalizeImagePath(design.textures.plastic))
+      if (design.textures.accents) imageList.push(normalizeImagePath(design.textures.accents))
     }
-    if (design.texture) {
-      return [design.texture]
+    
+    // Add preview if not already in list
+    if (design.preview && !imageList.includes(design.preview)) {
+      imageList.unshift(normalizeImagePath(design.preview)) // Add preview first
     }
-    return ['/images/studio-panorama.png'] // Fallback image
-  }, [design.images, design.preview, design.texture])
+    
+    // Add legacy texture if exists
+    if (design.texture && !imageList.includes(design.texture)) {
+      imageList.push(normalizeImagePath(design.texture))
+    }
+    
+    // Set images or fallback
+    setImages(imageList.length > 0 ? imageList : ['/images/studio-panorama.png'])
+  }, [design.images, design.preview, design.texture, design.textures])
 
   // Ensure currentImageIndex is always valid
   useEffect(() => {
@@ -120,23 +160,31 @@ export default function DesignDetailClient({
           <div className="space-y-4">
             {/* Main Image */}
             <div className="relative aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-neutral-800 to-neutral-900">
-              {images.length > 0 && (
-                <Image
-                  src={images[currentImageIndex] || '/images/studio-panorama.png'}
-                  alt={`${design.name} - View ${currentImageIndex + 1}`}
-                  fill
-                  className="object-cover transition-opacity duration-300"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
-                  priority={currentImageIndex === 0}
-                  onError={e => {
-                    const target = e.target as HTMLImageElement
+              <Image
+                src={isMounted && images.length > 0 ? images[currentImageIndex] || '/images/studio-panorama.png' : '/images/studio-panorama.png'}
+                alt={`${design.name} - View ${currentImageIndex + 1}`}
+                fill
+                className="object-cover transition-opacity duration-300"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                priority={true}
+                unoptimized={true}
+                onError={e => {
+                  const target = e.target as HTMLImageElement
+                  // Try to find alternative path or use fallback
+                  const currentSrc = target.src
+                  if (currentSrc.includes('/images/sh160/') || currentSrc.includes('/textures/sh160/')) {
+                    // Try uploads path
+                    const filename = currentSrc.split('/').pop() || ''
+                    const uploadsPath = `/uploads/images/${filename}`
+                    target.src = uploadsPath
+                  } else {
                     target.src = '/images/studio-panorama.png'
-                  }}
-                />
-              )}
+                  }
+                }}
+              />
 
               {/* Navigation Arrows */}
-              {images.length > 1 && (
+              {isMounted && images.length > 1 && (
                 <>
                   <button
                     onClick={handlePrevImage}
@@ -169,7 +217,7 @@ export default function DesignDetailClient({
             </div>
 
             {/* Thumbnail Grid */}
-            {images.length > 1 && (
+            {isMounted && images.length > 1 && (
               <div className="grid grid-cols-4 gap-3">
                 {images.map((img: string, idx: number) => (
                   <button
@@ -194,6 +242,23 @@ export default function DesignDetailClient({
                     />
                   </button>
                 ))}
+              </div>
+            )}
+
+            {/* Video Section */}
+            {design.video && (
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-white mb-3">Design Video</h3>
+                <div className="relative aspect-video rounded-3xl overflow-hidden bg-neutral-900">
+                  <video
+                    src={design.video}
+                    controls
+                    className="w-full h-full object-cover"
+                    preload="metadata"
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
               </div>
             )}
           </div>
@@ -547,47 +612,6 @@ export default function DesignDetailClient({
           </div>
         )}
 
-        {/* Design Story - Compact version for interested customers */}
-        {design.status !== 'FOR_SALE' && (
-          <div className="mt-16 pt-8 border-t border-white/10">
-            <div className="max-w-7xl mx-auto">
-              <details className="group">
-                <summary className="cursor-pointer list-none">
-                  <div className="flex items-center justify-between p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl hover:bg-white/10 transition-all">
-                    <div>
-                      <h2 className="text-xl font-bold text-white mb-1">Design Story</h2>
-                      <p className="text-sm text-white/60">
-                        See how this design was created (for design enthusiasts)
-                      </p>
-                    </div>
-                    <ChevronDown className="w-5 h-5 text-white/40 group-open:rotate-180 transition-transform" />
-                  </div>
-                </summary>
-                <div className="mt-4 p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl">
-                  <DesignTimeline
-                    currentStatus={design.status || DesignStatus.CREATIVE}
-                    statusHistory={
-                      design.statusHistory && Array.isArray(design.statusHistory) && design.statusHistory.length > 0
-                        ? design.statusHistory.map((h: any) => ({
-                            status: h.status,
-                            at: h.at instanceof Date ? h.at : new Date(h.at),
-                            note: h.note || null,
-                          }))
-                        : [
-                            {
-                              status: design.status || DesignStatus.CREATIVE,
-                              at: new Date(),
-                              note: null,
-                            },
-                          ]
-                    }
-                    orientation="vertical"
-                  />
-                </div>
-              </details>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )

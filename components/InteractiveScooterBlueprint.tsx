@@ -114,7 +114,7 @@ interface InteractiveScooterBlueprintProps {
   selectedModel?: string
 }
 
-export default function InteractiveScooterBlueprint({ selectedModel = 'vision' }: InteractiveScooterBlueprintProps) {
+export default function InteractiveScooterBlueprint({ selectedModel = 'nvx' }: InteractiveScooterBlueprintProps) {
   const { t, language } = useLanguage()
   const [activeZone, setActiveZone] = useState<string | null>(null)
   const [hoveredZone, setHoveredZone] = useState<string | null>(null)
@@ -223,13 +223,11 @@ export default function InteractiveScooterBlueprint({ selectedModel = 'vision' }
   // Get SVG path based on model
   const getSvgPath = () => {
     const svgMap: Record<string, string> = {
-      vision: '/honda-vision-map.svg',
-      lead: '/honda-lead-map.svg',
-      sh: '/honda-sh-map.svg',
-      pcx: '/honda-pcx-map.svg',
-      nvx: '/yamaha-nvx-map.svg',
+      nvx: '/SVG/yamaha-nvx-map.svg',
+      sh160: '/SVG/honda-sh-map.svg',
+      'a-vision': '/SVG/honda-vision-map.svg',
     }
-    return svgMap[selectedModel] || '/honda-vision-map.svg'
+    return svgMap[selectedModel] || '/SVG/yamaha-nvx-map.svg'
   }
 
   const getDifficultyColor = (difficulty: string) => {

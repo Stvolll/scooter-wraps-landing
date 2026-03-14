@@ -1,5 +1,3 @@
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -19,15 +17,10 @@ export const metadata: Metadata = {
   },
 }
 
+import AdminShell from '@/components/admin/AdminShell'
+
+// Layout doesn't check auth to prevent redirect loops
+// Individual pages (except login) will check auth themselves
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies()
-  const authCookie = cookieStore.get('admin_auth')?.value
-
-  // Check if user is authenticated
-  // Login page has its own layout that bypasses this check
-  if (!authCookie || authCookie !== 'authenticated') {
-    redirect('/admin/login')
-  }
-
-  return <>{children}</>
+  return <AdminShell>{children}</AdminShell>
 }

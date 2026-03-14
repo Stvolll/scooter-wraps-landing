@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import ClientWrapper from '@/components/ClientWrapper'
 import Header from '@/components/Header'
@@ -7,11 +8,12 @@ import Footer from '@/components/Footer'
 import ConditionalLayout from '@/components/ConditionalLayout'
 
 const inter = Inter({
-  subsets: ['latin'],
+  subsets: ['latin', 'latin-ext'],
   variable: '--font-inter',
   display: 'swap',
   preload: true,
-  adjustFontFallback: true,
+  adjustFontFallback: false,
+  fallback: ['system-ui', 'arial'],
 })
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://txd.bike'
@@ -29,11 +31,9 @@ export const metadata: Metadata = {
     'scooter wraps',
     'custom scooter design',
     'premium vinyl',
-    'Honda Lead',
-    'Honda Vision',
-    'Honda PCX',
-    'Honda SH',
     'Yamaha NVX',
+    'Honda SH160i',
+    'A-Vision',
     'scooter customization',
     '3M vinyl',
     'scooter wrap installation',
@@ -48,9 +48,9 @@ export const metadata: Metadata = {
     telephone: false,
   },
   icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
+    icon: '/SVG/favicon.svg',
+    shortcut: '/SVG/favicon.svg',
+    apple: '/SVG/favicon.svg',
   },
   manifest: '/manifest.json',
   openGraph: {
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
       'Premium vinyl wrap cover-sets for multiple scooter models. Explore ready-made styles or create your own custom design. Professional installation, 5-year warranty.',
     images: [
       {
-        url: '/images/designs/honda lead/honda-lead-0.jpg',
+        url: '/images/designs/yamaha-nvx/yamaha-nvx-0.jpg',
         width: 1200,
         height: 630,
         alt: 'TXD Premium Vinyl Wraps for Scooters',
@@ -95,7 +95,6 @@ export const metadata: Metadata = {
     languages: {
       'en-US': siteUrl,
       'vi-VN': `${siteUrl}?lang=vi`,
-      'ko-KR': `${siteUrl}?lang=ko`,
     },
   },
   category: 'Automotive',
@@ -110,7 +109,7 @@ export const viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={inter.variable} data-scroll-behavior="smooth">
       <head>
         <meta name="theme-color" content="#00ff88" />
         {/* Structured Data (JSON-LD) for SEO */}
@@ -122,7 +121,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               '@type': 'Organization',
               name: 'TXD',
               url: siteUrl,
-              logo: `${siteUrl}/favicon.svg`,
+              logo: `${siteUrl}/SVG/favicon.svg`,
               description:
                 'Premium vinyl wrap cover-sets for multiple scooter models. Professional installation, 5-year warranty.',
               sameAs: [],
@@ -153,11 +152,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }),
           }}
         />
-        {/* Load model-viewer web component - must load before React hydration */}
-        <script
-          type="module"
+        {/* Model Viewer Web Component — lazyOnload чтобы не блокировать первый рендер */}
+        <Script
           src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"
-          async
+          strategy="lazyOnload"
         />
         {/* Google Analytics GA4 */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>

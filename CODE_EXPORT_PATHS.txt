@@ -1,0 +1,104 @@
+# Пути к файлам кода проекта
+
+## Основной путь проекта
+/Users/anatolii/scooter-wraps-landing/
+
+## Ключевые файлы и директории
+
+### Конфигурация
+/Users/anatolii/scooter-wraps-landing/package.json
+/Users/anatolii/scooter-wraps-landing/next.config.js
+/Users/anatolii/scooter-wraps-landing/tsconfig.json
+/Users/anatolii/scooter-wraps-landing/tailwind.config.ts
+/Users/anatolii/scooter-wraps-landing/middleware.ts
+/Users/anatolii/scooter-wraps-landing/pyrightconfig.json
+/Users/anatolii/scooter-wraps-landing/exclude.json
+/Users/anatolii/scooter-wraps-landing/.vscode/settings.json
+
+### Приложение (App Router)
+/Users/anatolii/scooter-wraps-landing/app/
+/Users/anatolii/scooter-wraps-landing/app/page.tsx
+/Users/anatolii/scooter-wraps-landing/app/layout.tsx
+/Users/anatolii/scooter-wraps-landing/app/api/
+/Users/anatolii/scooter-wraps-landing/app/admin/
+/Users/anatolii/scooter-wraps-landing/app/designs/
+
+### Компоненты
+/Users/anatolii/scooter-wraps-landing/components/
+/Users/anatolii/scooter-wraps-landing/components/ScooterViewer.jsx
+/Users/anatolii/scooter-wraps-landing/components/LandingDesignCard.tsx
+/Users/anatolii/scooter-wraps-landing/components/FileUpload.tsx
+
+### Библиотеки и утилиты
+/Users/anatolii/scooter-wraps-landing/lib/
+/Users/anatolii/scooter-wraps-landing/lib/prisma.ts
+/Users/anatolii/scooter-wraps-landing/lib/i18n.ts
+/Users/anatolii/scooter-wraps-landing/lib/materials/
+/Users/anatolii/scooter-wraps-landing/lib/materials/registry.ts
+
+### База данных
+/Users/anatolii/scooter-wraps-landing/prisma/
+/Users/anatolii/scooter-wraps-landing/prisma/schema.prisma
+/Users/anatolii/scooter-wraps-landing/prisma/seed.ts
+
+### Конфигурация данных
+/Users/anatolii/scooter-wraps-landing/config/
+/Users/anatolii/scooter-wraps-landing/config/scooters.js
+
+### Контексты и хуки
+/Users/anatolii/scooter-wraps-landing/contexts/
+/Users/anatolii/scooter-wraps-landing/hooks/
+/Users/anatolii/scooter-wraps-landing/hooks/useTranslations.ts
+
+### Локализация
+/Users/anatolii/scooter-wraps-landing/locales/
+/Users/anatolii/scooter-wraps-landing/locales/en.json
+/Users/anatolii/scooter-wraps-landing/locales/vi.json
+
+### Типы
+/Users/anatolii/scooter-wraps-landing/types/
+/Users/anatolii/scooter-wraps-landing/types/model-viewer.d.ts
+
+### Скрипты
+/Users/anatolii/scooter-wraps-landing/scripts/
+/Users/anatolii/scooter-wraps-landing/scripts/export-code.sh
+/Users/anatolii/scooter-wraps-landing/scripts/check-and-fix.sh
+/Users/anatolii/scooter-wraps-landing/scripts/start-dev.sh
+
+## Команда для создания архива
+
+Выполните в терминале:
+
+```bash
+cd /Users/anatolii/scooter-wraps-landing
+
+tar -czf scooter-wraps-code.tar.gz \
+  app/ \
+  components/ \
+  lib/ \
+  prisma/ \
+  config/ \
+  hooks/ \
+  contexts/ \
+  types/ \
+  locales/ \
+  scripts/ \
+  middleware.ts \
+  next.config.js \
+  package.json \
+  tsconfig.json \
+  tailwind.config.ts \
+  .vscode/ \
+  pyrightconfig.json \
+  exclude.json \
+  --exclude='node_modules' \
+  --exclude='.next' \
+  --exclude='*.log'
+```
+
+Результат будет в:
+/Users/anatolii/scooter-wraps-landing/scooter-wraps-code.tar.gz
+
+
+
+

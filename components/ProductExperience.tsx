@@ -50,7 +50,7 @@ interface ProductExperienceProps {
   scooterName?: string
 }
 
-export default function ProductExperience({ selectedModel = 'vision', scooterName }: ProductExperienceProps) {
+export default function ProductExperience({ selectedModel = 'nvx', scooterName }: ProductExperienceProps) {
   const { t, language } = useLanguage()
   const [isMounted, setIsMounted] = useState(false)
   const [hoveredTool, setHoveredTool] = useState<string | null>(null)
@@ -85,9 +85,11 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
   ]
   
   // Scroll progress for protocol section
+  // Only initialize useScroll after component is mounted to avoid hydration issues
   const { scrollYProgress } = useScroll({
-    target: protocolRef,
+    target: isMounted ? protocolRef : undefined,
     offset: ['start end', 'end start'],
+    layoutEffect: false, // Use layoutEffect: false to prevent SSR issues
   })
 
   // Pre-calculate transforms for all steps (hooks must be called at top level)
@@ -448,7 +450,7 @@ export default function ProductExperience({ selectedModel = 'vision', scooterNam
       </section>
 
       {/* SECTION 2: Production Protocol */}
-      <section ref={protocolRef} className="relative py-24 md:py-32">
+      <section ref={protocolRef} className="relative py-24 md:py-32" style={{ position: 'relative' }} suppressHydrationWarning>
         <div className="container mx-auto px-4 md:px-8 lg:px-16">
           {/* Section Header */}
           <motion.div

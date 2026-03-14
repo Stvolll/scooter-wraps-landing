@@ -21,7 +21,7 @@ interface Design {
 const MOCK_DESIGNS: Design[] = [
   {
     id: '1',
-    modelId: 'honda-lead',
+    modelId: 'nvx',
     name: 'Carbon Fiber Black',
     image: '/designs/carbon-black.jpg',
     price: 500000,
@@ -30,7 +30,7 @@ const MOCK_DESIGNS: Design[] = [
   },
   {
     id: '2',
-    modelId: 'honda-lead',
+    modelId: 'nvx',
     name: 'Racing Stripes Red',
     image: '/designs/racing-red.jpg',
     price: 600000,
@@ -39,7 +39,7 @@ const MOCK_DESIGNS: Design[] = [
   },
   {
     id: '3',
-    modelId: 'honda-vision',
+    modelId: 'sh160',
     name: 'Matte Blue',
     image: '/designs/matte-blue.jpg',
     price: 550000,
@@ -91,21 +91,15 @@ export default function DesignCatalog() {
     lang === 'vi'
       ? [
           { value: 'all', label: 'Tất cả mẫu xe' },
-          { value: 'honda-lead', label: 'Honda Lead' },
-          { value: 'honda-vision', label: 'Honda Vision' },
-          { value: 'honda-airblade', label: 'Honda Air Blade' },
-          { value: 'yamaha-nvx', label: 'Yamaha NVX' },
-          { value: 'vinfast', label: 'VinFast' },
-          { value: 'vespa', label: 'Vespa' },
+          { value: 'nvx', label: 'Yamaha NVX' },
+          { value: 'sh160', label: 'Honda SH160i' },
+          { value: 'a-vision', label: 'A-Vision' },
         ]
       : [
           { value: 'all', label: 'All models' },
-          { value: 'honda-lead', label: 'Honda Lead' },
-          { value: 'honda-vision', label: 'Honda Vision' },
-          { value: 'honda-airblade', label: 'Honda Air Blade' },
-          { value: 'yamaha-nvx', label: 'Yamaha NVX' },
-          { value: 'vinfast', label: 'VinFast' },
-          { value: 'vespa', label: 'Vespa' },
+          { value: 'nvx', label: 'Yamaha NVX' },
+          { value: 'sh160', label: 'Honda SH160i' },
+          { value: 'a-vision', label: 'A-Vision' },
         ]
 
   const styleOptions =

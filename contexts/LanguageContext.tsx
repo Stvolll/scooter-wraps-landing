@@ -31,15 +31,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     if (typeof window === 'undefined') return
 
     const saved = localStorage.getItem('txd-language') as Language | null
-    if (saved === 'en' || saved === 'vi' || saved === 'ko') {
+    if (saved === 'en' || saved === 'vi') {
       setLanguageState(saved)
     } else {
       // Try to detect browser language
       const browserLang = navigator.language.split('-')[0]
       if (browserLang === 'vi') {
         setLanguageState('vi')
-      } else if (browserLang === 'ko') {
-        setLanguageState('ko')
+      } else {
+        setLanguageState('en') // Default to English
       }
     }
   }, [])
@@ -52,20 +52,20 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // Get translation function (hooks must be called at top level)
+  // Get translation function (must be called at top level, not in useMemo)
   const translationFn = useTranslations(language)
 
-  // Memoize translation wrapper function
+  // Memoize translation wrapper function to prevent infinite loops
   const t = useMemo(() => {
     return (key: string): string => {
       try {
         return translationFn(key)
       } catch (error) {
-        console.error('Translation error:', error, 'for key:', key)
+        // Silently return key to prevent error spam
         return key
       }
     }
-  }, [translationFn])
+  }, [translationFn]) // Only recreate when translationFn changes
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

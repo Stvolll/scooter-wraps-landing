@@ -95,7 +95,7 @@ export function getClientIdentifier(request: NextRequest): string {
   // Try to get IP from various headers (for proxies/load balancers)
   const forwarded = request.headers.get('x-forwarded-for')
   const realIp = request.headers.get('x-real-ip')
-  const ip = forwarded?.split(',')[0] || realIp || request.ip || 'unknown'
+  const ip = forwarded?.split(',')[0]?.trim() || realIp || 'unknown'
 
   // Also use user agent for additional identification
   const userAgent = request.headers.get('user-agent') || 'unknown'
@@ -228,7 +228,7 @@ export function verifyHMACSignatureSync(
   algorithm: string = 'sha256'
 ): boolean {
   // Only import Node.js crypto if not in Edge Runtime
-  if (typeof process !== 'undefined' && process.versions?.node) {
+  if (typeof process !== 'undefined' && typeof process.versions !== 'undefined') {
     try {
       // Dynamic import to avoid Edge Runtime issues
       const nodeCrypto = require('crypto')

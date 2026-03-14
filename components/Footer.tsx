@@ -24,7 +24,7 @@ import {
   MessageCircle,
   ArrowUpRight,
 } from 'lucide-react'
-import { motion } from 'framer-motion'
+// import { motion } from 'framer-motion' // Removed - not needed
 
 export default function Footer() {
   const { t } = useLanguage()
@@ -216,15 +216,13 @@ export default function Footer() {
             </div>
 
             {/* Back to Top */}
-            <motion.button
+            <button
               onClick={scrollToTop}
-              className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-[#00FFA9]/10 hover:border-[#00FFA9]/30 flex items-center justify-center text-white/60 hover:text-[#00FFA9] transition-all"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-[#00FFA9]/10 hover:border-[#00FFA9]/30 flex items-center justify-center text-white/60 hover:text-[#00FFA9] transition-all hover:scale-105 active:scale-95"
               aria-label="Back to top"
             >
               <ArrowUpRight className="w-5 h-5 rotate-[-45deg]" />
-            </motion.button>
+            </button>
           </div>
         </div>
       </div>

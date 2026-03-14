@@ -14,10 +14,10 @@ export const dynamic = 'force-dynamic'
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const designId = params.id
+    const { id: designId } = await params
     const body = await request.json()
 
     // Проверка существования дизайна
@@ -68,10 +68,10 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const designId = params.id
+    const { id: designId } = await params
 
     const modelProperties = await prisma.designModelProperties.findUnique({
       where: { designId },
@@ -89,6 +89,8 @@ export async function GET(
     )
   }
 }
+
+
 
 
 

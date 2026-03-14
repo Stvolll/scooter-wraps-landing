@@ -151,3 +151,5 @@ psql $DATABASE_URL -f prisma/migrations/add_feedback_to_deal.sql
 
 
 
+
+

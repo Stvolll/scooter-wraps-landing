@@ -1,0 +1,24 @@
+{
+  "exclude": [
+    "**/node_modules",
+    "**/.next",
+    "**/dist",
+    "**/build",
+    "**/.cache",
+    "**/.turbo",
+    "**/coverage",
+    "**/assets",
+    "**/textures",
+    "**/renders",
+    "**/exports",
+    "**/print",
+    "**/mockups",
+    "**/source_images"
+  ],
+  "reportMissingTypeStubs": false,
+  "typeCheckingMode": "off"
+}
+
+
+
+

@@ -7,73 +7,91 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum DesignStatus {
-  CREATIVE
-  MODELING_3D
-  UV_TEMPLATE
-  PRINTING
-  FOR_SALE
-  SOLD
-  DELIVERY
-  FEEDBACK
+model ScooterModel {
+  id                String   @id @default(cuid())
+  slug              String   @unique
+  name              String
+  model             String
+  panorama          String?
+  glbModelUrl       String?  // Phase 2: Moved from Design to Model (20-30MB baked texture + UV)
+  glbModelCompressed String?
+  glbModelMobile    String?
+  // SEO fields
+  seoTitle          String?  // SEO заголовок модели
+  seoDescription    String?  // SEO описание модели
+  active            Boolean  @default(true)
+  order             Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  designs           Design[]
+
+  @@index([slug])
+  @@index([active])
 }
 
 model Design {
   id                 String                 @id @default(cuid())
   title              String
   slug               String                 @unique
-  scooterModel       String
+  scooterModelId     String
   description        String?
-  price              Int                    @default(0) // price in smallest currency unit
+  price              Int                    @default(0)
   editionTotal       Int                    @default(5)
   editionAvailable   Int                    @default(5)
-  coverImage         String? // S3 URL
+  coverImage         String?
   galleryImages      String[]               @default([])
+  panorama           String?
   videoPreview       String?
-  videoFull          String? // Full video URL
-  videoTutorial      String? // Tutorial video URL
-  glbModelUrl        String?
-  glbModelCompressed String? // Draco compressed version
-  glbModelMobile     String? // Simplified mobile version
-  textureUrl         String? // Legacy: single texture (deprecated, use textures relation)
-  blueprintSvg       String? // SVG схема для "How to Apply"
-  blueprintPdf       String? // PDF инструкция
-  blueprintHotspots  Json? // Интерактивные точки { points: [{ x, y, label, description }] }
-  thumbnail          String? // Миниатюра
-  socialPreview      String? // Preview для соцсетей
+  videoFull          String?
+  videoTutorial      String?
+  // Phase 2: glbModelUrl, glbModelCompressed, glbModelMobile moved to ScooterModel
+  textureUrl         String?
+  // WebP optimization fields
+  textureWebp        String?  // WebP текстура для 3D (512x512, <1MB)
+  bgWebp             String?  // WebP фон 3D сцены (1920x1080, <1MB)
+  // Design info for SEO
+  filmType           String?  // Тип пленки для SEO (например: "Carbon Fiber", "Matte Black")
+  seoTitle           String?  // SEO заголовок дизайна
+  blueprintSvg       String?
+  blueprintPdf       String?
+  blueprintHotspots  Json?
+  thumbnail          String?
+  socialPreview      String?
   status             DesignStatus           @default(CREATIVE)
   published          Boolean                @default(false)
-  statusHistory      DesignStatusHistory[]
-  textures           DesignTexture[]
-  modelProperties    DesignModelProperties?
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
   deals              Deal[]
+  scooterModel       ScooterModel           @relation(fields: [scooterModelId], references: [id], onDelete: Cascade)
+  modelProperties    DesignModelProperties?
+  statusHistory      DesignStatusHistory[]
+  materials          Material[]             // Phase 1: New Material model (optional, for future migration)
+  textures           DesignTexture[]         // Legacy
   orders             Order[]
 }
 
 model DesignStatusHistory {
   id       String       @id @default(cuid())
-  design   Design       @relation(fields: [designId], references: [id], onDelete: Cascade)
   designId String
   status   DesignStatus
   note     String?
   at       DateTime     @default(now())
+  design   Design       @relation(fields: [designId], references: [id], onDelete: Cascade)
 
   @@index([designId])
 }
 
 model Deal {
   id         String   @id @default(cuid())
-  design     Design   @relation(fields: [designId], references: [id], onDelete: Cascade)
   designId   String
   buyerName  String?
   buyerEmail String?
-  status     String   @default("open") // open | paid | delivered
-  feedback   String? // Customer feedback/review
-  rating     Int? // Rating 1-5
+  status     String   @default("open")
+  feedback   String?
+  rating     Int?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  design     Design   @relation(fields: [designId], references: [id], onDelete: Cascade)
 
   @@index([designId])
   @@index([status])
@@ -83,9 +101,9 @@ model User {
   id               String          @id @default(cuid())
   email            String          @unique
   username         String          @unique
-  passwordHash     String // bcrypt hashed password
+  passwordHash     String
   twoFactorEnabled Boolean         @default(false)
-  twoFactorSecret  String? // For 2FA token generation
+  twoFactorSecret  String?
   emailVerified    Boolean         @default(false)
   isActive         Boolean         @default(true)
   lastLoginAt      DateTime?
@@ -100,11 +118,11 @@ model User {
 model TwoFactorCode {
   id        String   @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   code      String
   expiresAt DateTime
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([code])
@@ -112,39 +130,31 @@ model TwoFactorCode {
 
 model DesignTexture {
   id         String   @id @default(cuid())
-  design     Design   @relation(fields: [designId], references: [id], onDelete: Cascade)
   designId   String
-  url        String // S3 URL
-  type       String // "diffuse" | "normal" | "roughness" | "metallic" | "ao" | "emissive"
-  format     String // "png" | "jpg" | "ktx2" | "basis"
-  resolution String? // "2048x2048"
-  layer      Int      @default(0) // Слой текстуры (0 = основной)
+  url        String
+  type       String
+  format     String
+  resolution String?
+  layer      Int      @default(0)
   createdAt  DateTime @default(now())
+  design     Design   @relation(fields: [designId], references: [id], onDelete: Cascade)
 
+  @@unique([designId, type, layer], name: "designId_type_layer")
   @@index([designId])
   @@index([type])
 }
 
 model DesignModelProperties {
-  id       String @id @default(cuid())
-  design   Design @relation(fields: [designId], references: [id], onDelete: Cascade)
-  designId String @unique
-
-  // Camera
-  cameraPosition Json? // { x: number, y: number, z: number, rotation?: { x, y, z } }
-  cameraTarget   Json? // { x: number, y: number, z: number }
-
-  // Lighting
-  lighting Json? // { ambient: number, directional: { color, intensity }, shadows: boolean }
-
-  // Materials
-  materials Json? // { metalness: number, roughness: number, emissive?: { color, intensity } }
-
-  // Environment
-  environmentMap String? // HDRI URL
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(cuid())
+  designId       String   @unique
+  cameraPosition Json?
+  cameraTarget   Json?
+  lighting       Json?
+  materials      Json?
+  environmentMap String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  design         Design   @relation(fields: [designId], references: [id], onDelete: Cascade)
 }
 
 model NewsletterSubscriber {
@@ -154,7 +164,7 @@ model NewsletterSubscriber {
   subscribed        Boolean  @default(true)
   verified          Boolean  @default(false)
   verificationToken String?  @unique
-  preferences       String[] @default([]) // e.g., ["new_designs", "promotions", "tips"]
+  preferences       String[] @default([])
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -166,11 +176,11 @@ model PromoCode {
   id            String   @id @default(cuid())
   code          String   @unique
   description   String?
-  discountType  String // "percentage" | "fixed"
-  discountValue Int // percentage (0-100) or fixed amount in VND
-  minPurchase   Int? // Minimum purchase amount in VND
-  maxDiscount   Int? // Maximum discount amount in VND
-  usageLimit    Int? // Total usage limit (null = unlimited)
+  discountType  String
+  discountValue Int
+  minPurchase   Int?
+  maxDiscount   Int?
+  usageLimit    Int?
   usedCount     Int      @default(0)
   validFrom     DateTime
   validUntil    DateTime
@@ -186,29 +196,62 @@ model PromoCode {
 
 model Order {
   id                 String     @id @default(cuid())
-  orderId            String     @unique // Human-readable order ID (ORD-xxx)
-  design             Design     @relation(fields: [designId], references: [id], onDelete: Cascade)
+  orderId            String     @unique
   designId           String
   buyerName          String
   buyerEmail         String?
   buyerPhone         String
   address            String
-  paymentMethod      String // momo | zalopay | cod | bank_transfer | card
-  totalPrice         Int // Price in smallest currency unit (VND)
-  discountAmount     Int        @default(0) // Discount applied
-  promoCode          PromoCode? @relation(fields: [promoCodeId], references: [id])
+  paymentMethod      String
+  totalPrice         Int
+  discountAmount     Int        @default(0)
   promoCodeId        String?
-  status             String     @default("pending") // pending | payment_pending | paid | processing | shipped | delivered | cancelled
-  paymentUrl         String? // For e-wallets
-  paymentId          String? // Payment gateway transaction ID
+  status             String     @default("pending")
+  paymentUrl         String?
+  paymentId          String?
   paymentConfirmedAt DateTime?
   notes              String?
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
+  design             Design     @relation(fields: [designId], references: [id], onDelete: Cascade)
+  promoCode          PromoCode? @relation(fields: [promoCodeId], references: [id])
 
   @@index([designId])
   @@index([status])
   @@index([orderId])
   @@index([paymentMethod])
   @@index([promoCodeId])
+}
+
+model Material {
+  id        String         @id @default(cuid())
+  designId  String
+  format    MaterialFormat
+  url       String
+  metadata  Json? // Role, order, resolution, etc.
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  design    Design         @relation(fields: [designId], references: [id], onDelete: Cascade)
+
+  @@index([designId])
+  @@index([format])
+  @@index([designId, format])
+}
+
+enum MaterialFormat {
+  TEXTURE // UV texture for 3D model
+  PANORAMA // 360 panorama for background
+  VIDEO // Video preview/full/tutorial
+  PHOTO // Gallery images, cover image
+}
+
+enum DesignStatus {
+  CREATIVE
+  MODELING_3D
+  UV_TEMPLATE
+  PRINTING
+  FOR_SALE
+  SOLD
+  DELIVERY
+  FEEDBACK
 }

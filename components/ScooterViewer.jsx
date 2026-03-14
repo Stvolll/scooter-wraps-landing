@@ -13,6 +13,30 @@
 
 import { useEffect, useRef, useState, useMemo } from 'react'
 import dynamic from 'next/dynamic'
+import { MaterialFormat } from '@/lib/materials/types'
+import {
+  findMaterialByFormat,
+  applyMaterial,
+  getMaterialDisplayUrl,
+} from '@/lib/materials/registry'
+// Новая архитектура
+import { useScooterViewerIntegration } from '@/src/presentation/integrations/ScooterViewerIntegration'
+
+// Global error handler for RangeError (Float32Array issues) - only on client
+if (typeof window !== 'undefined') {
+  // Add unhandled error listener for RangeError
+  window.addEventListener('error', (event) => {
+    if (event.message && (
+      event.message.includes('Invalid typed array length') || 
+      event.message.includes('Float32Array') ||
+      event.message.includes('RangeError')
+    )) {
+      console.error('❌ GLB file RangeError detected:', event.message)
+      console.warn('💡 This usually indicates a corrupted or too large GLB file')
+      // Don't prevent default - let it handle normally, just log it
+    }
+  }, true) // Use capture phase to catch early
+}
 
 // Dynamically import PanoramaBackground (client-side only)
 const PanoramaBackground = dynamic(() => import('./PanoramaBackground'), {
@@ -77,17 +101,8 @@ function createGetCameraFunction() {
 
         // Получаем путь к модели для информации
         const modelPath = viewer.src || 'неизвестно'
-        const modelName = modelPath.includes('yamaha-nvx')
-          ? 'Yamaha NVX'
-          : modelPath.includes('honda-lead')
-            ? 'Honda Lead'
-            : modelPath.includes('honda-vision')
-              ? 'Honda Vision'
-              : modelPath.includes('honda-sh')
-                ? 'Honda SH'
-                : modelPath.includes('honda-pcx')
-                  ? 'Honda PCX'
-                  : 'Unknown'
+        // Extract model name dynamically from path (no hardcoded names)
+        const modelName = modelPath.split('/').pop()?.replace('.glb', '').replace(/[-_]/g, ' ') || '3D Model'
 
         console.log('')
         console.log('═══════════════════════════════════════════════════════')
@@ -141,38 +156,27 @@ export default function ScooterViewer({
   panoramaUrl = '/images/studio-panorama.png',
   className = '',
 }) {
+  // Новая архитектура - интеграция
+  const scooterViewerIntegration = useScooterViewerIntegration()
+  
   const containerRef = useRef(null)
   const modelViewerRef = useRef(null)
+  const textureRetryCountRef = useRef(0) // Track retry count across recursive calls
+  const textureApplicationStoppedRef = useRef(false) // Flag to stop all texture application attempts
+  const modelLoadErrorRef = useRef(false) // Use ref instead of state to prevent effect loops
   const [scriptLoaded, setScriptLoaded] = useState(false)
   const [isModelLoaded, setIsModelLoaded] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const [modelRotation, setModelRotation] = useState(0) // Track model rotation for panorama sync
+  const [modelLoadError, setModelLoadError] = useState(false) // Keep for display, but use ref for logic
 
-  // Check if this is Honda Lead model - проверяем modelPath динамически
-  const isHondaLead = useMemo(() => {
-    if (!modelPath) {
-      return false
-    }
-    const pathLower = modelPath.toLowerCase()
-    // Точная проверка для Honda Lead
-    const result =
-      pathLower.includes('honda-lead') ||
-      pathLower.includes('honda_lead') ||
-      pathLower === '/models/honda-lead.glb' ||
-      pathLower.includes('/models/honda-lead.glb')
-    return result
-  }, [modelPath])
-
-
-  // Логируем isHondaLead только на клиенте
-  useEffect(() => {
-    if (typeof window !== 'undefined' && modelPath) {
-      console.log('🔍 [Placeholder] Checking Honda Lead:', {
-        modelPath,
-        isHondaLead,
-      })
-    }
-  }, [modelPath, isHondaLead])
+  // Check if model needs placeholder (based on model metadata or error state)
+  // This is now dynamic - no hardcoded model checks
+  const needsPlaceholder = useMemo(() => {
+    // Placeholder is only used if model fails to load
+    // No hardcoded model-specific logic
+    return false
+  }, [])
 
   // Hook 1: Set mounted state and initialize getCamera function
   useEffect(() => {
@@ -217,10 +221,21 @@ export default function ScooterViewer({
       }
     }, 50)
 
-    // Timeout after 10 seconds
+    // Timeout after 10 seconds - but don't treat as critical error
     const timeout = setTimeout(() => {
       clearInterval(checkInterval)
-      console.error('model-viewer script failed to load after 10 seconds')
+      // Check one more time before logging error
+      if (typeof window !== 'undefined' && window.customElements) {
+        if (window.customElements.get('model-viewer')) {
+          // Script loaded, just took longer than expected
+          setScriptLoaded(true)
+          return
+        }
+      }
+      // Only log if script really didn't load
+      console.warn('⚠️ model-viewer script may not have loaded after 10 seconds')
+      console.warn('💡 Tip: Check network connection and CDN availability')
+      console.warn('💡 Tip: Script may still load, model-viewer will work when ready')
     }, 10000)
 
     return () => {
@@ -233,23 +248,152 @@ export default function ScooterViewer({
   useEffect(() => {
     if (!isMounted || !scriptLoaded || !containerRef.current || !modelPath) return
 
-    const container = containerRef.current
-    // Capture selectedDesign in closure for diagnostics
-    const currentSelectedDesign = selectedDesign
+    // Wrap in async IIFE to use await
+    ;(async () => {
+      // Define variables outside try-catch for cleanup function
+      let container = null
+      let modelViewer = null
+      let handleLoad = null
+      let handleModelLoad = null
+      let handleProgress = null
+      let handleError = null
+      let handleCameraChange = null
 
-    // Clear any existing content
-    container.innerHTML = ''
+      try {
+      container = containerRef.current
+      if (!container) return
+      
+      // Capture selectedDesign in closure for diagnostics
+      const currentSelectedDesign = selectedDesign
 
-    // Ensure model path is absolute
-    const fullModelPath = modelPath.startsWith('/') ? modelPath : `/${modelPath}`
+      // Clear any existing content
+      container.innerHTML = ''
+
+    // Normalize and auto-fix model path
+    // In Next.js, files in public/ are served from root, so /uploads/ should work if file is in public/uploads/
+    let fullModelPath = modelPath.startsWith('/') ? modelPath : `/${modelPath}`
+    
+    // Auto-fix common path issues
+    // If path starts with /public/, remove it (Next.js serves from public/ root)
+    if (fullModelPath.startsWith('/public/')) {
+      fullModelPath = fullModelPath.replace('/public/', '/')
+      console.log('🔧 Auto-fixed path (removed /public/):', fullModelPath)
+    }
+    
+    // If path doesn't start with /uploads/ but contains uploads, ensure it starts with /
+    if (fullModelPath.includes('uploads/') && !fullModelPath.startsWith('/uploads/')) {
+      const uploadsIndex = fullModelPath.indexOf('uploads/')
+      fullModelPath = '/' + fullModelPath.substring(uploadsIndex)
+      console.log('🔧 Auto-fixed path (normalized uploads/):', fullModelPath)
+    }
+    
+    // Store original path for reference
+    const originalPath = fullModelPath
     console.log('🔍 Loading 3D model from:', fullModelPath)
 
+    // Extract filename for path resolution
+    const fileName = fullModelPath.split('/').pop() || ''
+
+    // Pre-check file availability and try alternative paths if needed
+    const checkFileAvailability = async () => {
+      // List of possible paths to try
+      const pathsToTry = [
+        fullModelPath, // Original path
+        fullModelPath.replace('/uploads/', '/public/uploads/'), // If /public/ was removed
+        fullModelPath.replace('/public/uploads/', '/uploads/'), // If /public/ was added
+      ]
+      
+      // Extract model name from path for fallback search
+      const modelNameMatch = fileName.match(/MODEL-([^-]+)/i)
+      const modelName = modelNameMatch ? modelNameMatch[1].toLowerCase() : null
+      
+      // Try paths based on extracted model name (generic, not model-specific)
+      // This allows any model name to work without hardcoding
+      if (modelName) {
+        const fallbackPaths = [
+          `/uploads/models/${modelName}.glb`,
+          `/models/${modelName}.glb`,
+          `/uploads/models/MODEL-${modelName}.glb`,
+          `/models/optimized/${modelName}.glb`
+        ]
+        pathsToTry.push(...fallbackPaths.filter(p => !p.includes('*'))) // Remove pattern paths
+      }
+      
+      // Remove duplicates
+      const uniquePaths = [...new Set(pathsToTry)]
+      
+      for (const testPath of uniquePaths) {
+        try {
+          // Add timeout to prevent hanging
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 2000) // 2 second timeout
+          
+          const response = await fetch(testPath, { 
+            method: 'HEAD',
+            signal: controller.signal,
+          })
+          
+          clearTimeout(timeoutId)
+          
+          if (response.ok) {
+            // File found!
+            const contentLength = response.headers.get('content-length')
+            if (contentLength) {
+              const sizeMB = parseInt(contentLength) / (1024 * 1024)
+              console.log(`📦 Model file size: ${sizeMB.toFixed(2)} MB`)
+              if (sizeMB > 20) {
+                console.warn(`⚠️ Large model file (${sizeMB.toFixed(2)} MB) - may take longer to load`)
+              }
+            }
+            // Return path info for auto-correction
+            if (testPath !== fullModelPath) {
+              console.log(`✅ Found alternative model file: ${testPath}`)
+            }
+            return { found: true, path: testPath }
+          }
+        } catch (error) {
+          // Continue to next path
+          if (error.name !== 'AbortError') {
+            console.debug(`Path ${testPath} not accessible:`, error.message)
+          }
+          continue
+        }
+      }
+      
+      // If we get here, none of the paths worked
+      // Model file not found - log warning but don't block loading
+      console.warn(`⚠️ Model file not found at any of the tried paths:`, uniquePaths)
+      console.warn('💡 Will try to load anyway - model-viewer may handle it')
+      return { found: false, path: fullModelPath } // But don't block - let model-viewer try
+    }
+
+    // Check file availability BEFORE creating model-viewer
+    // Check file availability before creating model-viewer
+    const fileCheck = await checkFileAvailability()
+    
+    // If file not found, skip 3D viewer (no special cases for specific models)
+    if (fileCheck && typeof fileCheck === 'object' && fileCheck.path === null) {
+      console.log('ℹ️ Model file not found, skipping 3D viewer')
+      return
+    }
+    
     // Create model-viewer element
-    const modelViewer = document.createElement('model-viewer')
+    modelViewer = document.createElement('model-viewer')
+
+    // Use corrected path if found, otherwise use original
+    const finalModelPath = (fileCheck && typeof fileCheck === 'object' && fileCheck.path) 
+      ? fileCheck.path 
+      : fullModelPath
 
     // Set src using direct property (more reliable than setAttribute)
-    modelViewer.src = fullModelPath
+    modelViewer.src = finalModelPath
     modelViewer.alt = '3D Scooter Model'
+    
+    if (fileCheck && typeof fileCheck === 'object' && fileCheck.path && fileCheck.path !== fullModelPath) {
+      console.log('✅ Using corrected model path:', fileCheck.path)
+    } else if (fileCheck && typeof fileCheck === 'object' && fileCheck.found) {
+      console.log('✅ Model file verified at path:', finalModelPath)
+    }
 
     // Basic controls
     modelViewer.setAttribute('camera-controls', '')
@@ -290,21 +434,44 @@ export default function ScooterViewer({
     console.log('💡 Studio 3-point lighting configured')
 
     // Use panorama as skybox (встроенная поддержка model-viewer)
-    if (panoramaUrl) {
-      const skyboxPath = panoramaUrl.startsWith('/') ? panoramaUrl : `/${panoramaUrl}`
+    // Priority: bg_webp → Material PANORAMA → panorama prop → legacy panorama
+    let finalPanoramaUrl = panoramaUrl // Fallback to prop
+    
+    try {
+      // Prefer WebP background (optimized)
+      if (selectedDesign?.bg_webp || selectedDesign?.bgWebp) {
+        finalPanoramaUrl = selectedDesign.bg_webp || selectedDesign.bgWebp
+      }
+      // Then try Material registry
+      else if (selectedDesign?.materials && Array.isArray(selectedDesign.materials)) {
+        const panoramaMaterial = findMaterialByFormat(selectedDesign.materials, MaterialFormat.PANORAMA)
+        if (panoramaMaterial) {
+          const panoramaUrlFromMaterial = getMaterialDisplayUrl(panoramaMaterial)
+          if (panoramaUrlFromMaterial) {
+            finalPanoramaUrl = panoramaUrlFromMaterial
+          }
+        }
+      }
+      // Legacy fallback
+      else if (selectedDesign?.panorama) {
+        finalPanoramaUrl = selectedDesign.panorama
+      }
+    } catch (err) {
+      console.warn('Error getting panorama from materials:', err)
+    }
+    
+    if (finalPanoramaUrl) {
+      const skyboxPath = finalPanoramaUrl.startsWith('/') ? finalPanoramaUrl : `/${finalPanoramaUrl}`
       modelViewer.setAttribute('skybox-image', skyboxPath)
       modelViewer.setAttribute('skybox-height', '2m') // Высота skybox
-      console.log('🎨 Setting skybox-image:', skyboxPath)
+      console.log('🎨 Setting skybox-image via MaterialHandler:', skyboxPath)
     } else {
       // Если нет панорамы, используем градиентный фон
       modelViewer.style.background = 'linear-gradient(to bottom, #e5e7eb 0%, #f9fafb 100%)'
     }
 
-    // Fix orientation for honda-lead model (rotate 90deg around Y-axis to fix "on side" issue)
-    if (fullModelPath.includes('honda-lead')) {
-      modelViewer.style.transform = 'rotateY(90deg)'
-      console.log('🔄 Applied orientation fix for honda-lead model (90deg Y-axis rotation)')
-    }
+    // Model-specific orientation fixes can be added via model metadata in the future
+    // No hardcoded model checks - all models are treated equally
 
     // Loading settings
     modelViewer.setAttribute('loading', 'auto')
@@ -341,14 +508,18 @@ export default function ScooterViewer({
     `
     modelViewer.appendChild(poster)
 
-    // Handle model load events
-    const handleLoad = e => {
+      // Handle model load events
+      handleLoad = (e) => {
       setIsModelLoaded(true)
+      modelLoadErrorRef.current = false // Reset ref first
+      setModelLoadError(false) // Reset error flag on successful load
       console.log('✅ 3D model loaded successfully:', fullModelPath)
     }
 
-    const handleModelLoad = e => {
+      handleModelLoad = (e) => {
       setIsModelLoaded(true)
+      modelLoadErrorRef.current = false // Reset ref first
+      setModelLoadError(false) // Reset error flag on successful load
       console.log('✅ Model-viewer model-loaded event')
 
       // DIAGNOSTIC: Check if model has materials and textures
@@ -408,10 +579,12 @@ export default function ScooterViewer({
                   '⚠️ WARNING: Model has materials but NO textures! This will cause gray mesh.'
                 )
                 console.warn('💡 Solution: Apply external texture via selectedDesign.texture')
-                console.warn(
-                  '💡 Expected texture path:',
-                  currentSelectedDesign?.texture || 'not set yet'
-                )
+                const expectedTexture = currentSelectedDesign?.texture || 
+                                       currentSelectedDesign?.textures?.body || 
+                                       currentSelectedDesign?.textures?.plastic || 
+                                       currentSelectedDesign?.textures?.accents || 
+                                       'not set yet'
+                console.warn('💡 Expected texture path:', expectedTexture)
                 console.warn(
                   '💡 Current selectedDesign:',
                   currentSelectedDesign
@@ -478,7 +651,7 @@ export default function ScooterViewer({
       }, 200)
     }
 
-    const handleProgress = e => {
+      handleProgress = (e) => {
       const progress = e.detail?.totalProgress || 0
       if (progress === 1) {
         console.log('✅ Model loading progress: 100%')
@@ -488,30 +661,216 @@ export default function ScooterViewer({
       }
     }
 
-    const handleError = error => {
-      // Для Honda Lead ошибка ожидаема - используется placeholder
-      if (isHondaLead) {
-        console.log('ℹ️ Honda Lead model not available, using placeholder image')
-        setIsModelLoaded(false)
-        return
+      handleError = async (error) => {
+      // Handle errors generically - no special cases for specific models
+      
+      // Extract error details - try multiple ways to get error message
+      const errorDetail = error?.detail || error
+      
+      // Additional diagnostics: Check if file actually exists and is accessible
+      try {
+        const response = await fetch(fullModelPath, { method: 'HEAD' })
+        if (!response.ok) {
+          console.error(`❌ File not accessible: ${fullModelPath} (Status: ${response.status})`)
+        } else {
+          const contentType = response.headers.get('content-type')
+          const contentLength = response.headers.get('content-length')
+          console.warn(`⚠️ File exists but failed to decode:`, {
+            path: fullModelPath,
+            contentType: contentType || 'unknown',
+            size: contentLength ? `${(parseInt(contentLength) / 1024 / 1024).toFixed(2)} MB` : 'unknown',
+            status: response.status
+          })
+          if (contentType && !contentType.includes('model/gltf') && !contentType.includes('application/octet-stream') && !contentType.includes('binary')) {
+            console.error(`❌ Wrong content-type: ${contentType}. Expected: model/gltf-binary or application/octet-stream`)
+            console.warn(`💡 Tip: Server may need to be configured to serve .glb files with correct MIME type`)
+          }
+        }
+      } catch (fetchError) {
+        console.error('❌ Could not verify file:', fetchError)
       }
-
-      console.error('❌ Error loading 3D model:', error)
-      console.error('Model path:', fullModelPath)
+      
+      // Try to extract error message from various sources
+      let errorMessage = ''
+      if (errorDetail?.message) {
+        errorMessage = String(errorDetail.message)
+      } else if (errorDetail?.error?.message) {
+        errorMessage = String(errorDetail.error.message)
+      } else if (errorDetail?.toString && typeof errorDetail.toString === 'function') {
+        const str = errorDetail.toString()
+        if (str !== '[object Object]') {
+          errorMessage = str
+        }
+      } else if (typeof errorDetail === 'string') {
+        errorMessage = errorDetail
+      } else if (error?.message) {
+        errorMessage = String(error.message)
+      }
+      
+      // Try to get error from JSON if it's an object
+      if (!errorMessage || errorMessage === '[object Object]') {
+        try {
+          const errorJson = JSON.stringify(errorDetail, null, 2)
+          if (errorJson && errorJson !== '{}' && errorJson !== 'null') {
+            errorMessage = `Error details: ${errorJson}`
+          }
+        } catch (e) {
+          // Ignore JSON stringify errors
+        }
+      }
+      
+      // Check if error has actual content
+      const hasErrorMessage = errorMessage && errorMessage !== 'Unknown error' && errorMessage !== '[object Object]'
+      const hasErrorKeys = error && Object.keys(error).length > 0
+      const hasErrorDetailKeys = errorDetail && Object.keys(errorDetail).length > 0 && 
+                                 JSON.stringify(errorDetail) !== '{}'
+      
+      // Only process if we have real error information
+      if (!hasErrorMessage && !hasErrorKeys && !hasErrorDetailKeys) {
+        // Empty error object - likely a false positive, use debug level
+        console.debug('⚠️ Model load event triggered (may be false positive):', fullModelPath)
+        return // Don't set error state for false positives
+      }
+      
+      // Check for specific error types
+      const isRangeError = errorMessage.includes('Invalid typed array length') || 
+                          errorMessage.includes('Float32Array') ||
+                          errorMessage.includes('RangeError')
+      const isGLTFError = errorMessage.includes('GLTF') || 
+                          errorMessage.includes('glTF')
+      const isNetworkError = errorMessage.includes('Failed to fetch') ||
+                            errorMessage.includes('NetworkError') ||
+                            errorMessage.includes('404') ||
+                            errorMessage.includes('Not Found')
+      const isDecodeError = errorMessage.includes('could not be decoded') ||
+                           errorMessage.includes('InvalidStateError') ||
+                           errorMessage.includes('source image') ||
+                           (errorDetail?.type === 'loadfailure' && errorDetail?.sourceError)
+      
+      // Determine display message for UI
+      let displayMessage = errorMessage || 'Unknown error occurred'
+      if (isDecodeError) {
+        displayMessage = 'GLB file decode error - file may be corrupted or invalid format'
+      } else if (isRangeError) {
+        displayMessage = 'GLB file error (possibly corrupted or too large)'
+      } else if (isGLTFError) {
+        displayMessage = 'GLTF parsing error - invalid file format'
+      } else if (isNetworkError) {
+        displayMessage = 'File not found or network error'
+      }
+      
+      if (isDecodeError) {
+        // Handle missing model files generically - no special cases
+        
+        console.error('❌ GLB file decode error (file may be corrupted):', fullModelPath)
+        if (hasErrorMessage) {
+          console.error('   Error:', errorMessage)
+        }
+        if (errorDetail?.sourceError) {
+          console.error('   Source error:', errorDetail.sourceError)
+        }
+        
+        // Additional diagnostics for decode errors
+        ;(async () => {
+          try {
+            const response = await fetch(fullModelPath, { method: 'HEAD' })
+            if (response.ok) {
+              const contentType = response.headers.get('content-type')
+              const contentLength = response.headers.get('content-length')
+              console.warn('📊 File diagnostics:', {
+                path: fullModelPath,
+                contentType: contentType || 'unknown',
+                size: contentLength ? `${(parseInt(contentLength) / 1024 / 1024).toFixed(2)} MB` : 'unknown',
+                status: response.status
+              })
+              if (contentType && !contentType.includes('model/gltf') && !contentType.includes('application/octet-stream') && !contentType.includes('binary')) {
+                console.error(`❌ Wrong content-type: ${contentType}`)
+                console.warn(`💡 Expected: model/gltf-binary or application/octet-stream`)
+                console.warn(`💡 Server may need to be configured to serve .glb files with correct MIME type`)
+              }
+              if (contentLength && parseInt(contentLength) > 30 * 1024 * 1024) {
+                console.warn(`⚠️ Large file detected (${(parseInt(contentLength) / 1024 / 1024).toFixed(2)} MB) - may cause memory issues`)
+              }
+            }
+          } catch (fetchError) {
+            console.error('❌ Could not verify file:', fetchError)
+          }
+        })()
+        
+        console.warn('💡 Tip: GLB file may be corrupted or in unsupported format')
+        console.warn('💡 Tip: Try re-exporting the GLB file from Blender or other 3D software')
+        console.warn('💡 Tip: Ensure file is valid glTF 2.0 Binary format')
+      } else if (isRangeError) {
+        console.error('❌ GLB file error (possibly corrupted or too large):', fullModelPath)
+        if (hasErrorMessage) {
+          console.error('   Error:', errorMessage)
+        }
+        console.warn('💡 Tip: Check if GLB file is valid and not corrupted')
+        console.warn('💡 Tip: Large files (>30MB) may cause memory issues')
+      } else if (isGLTFError) {
+        console.error('❌ GLTF parsing error:', fullModelPath)
+        if (hasErrorMessage) {
+          console.error('   Error:', errorMessage)
+        }
+        console.warn('💡 Tip: Check if GLB file is valid glTF 2.0 format')
+      } else if (isNetworkError) {
+        console.error('❌ Network error loading model:', fullModelPath)
+        if (hasErrorMessage) {
+          console.error('   Error:', errorMessage)
+        }
+        console.warn('💡 Tip: Check if file exists and is accessible')
+      } else {
+        // Only log if we have actual error information
+        if (hasErrorMessage || hasErrorKeys) {
+          console.error('❌ Error loading 3D model:', hasErrorMessage ? errorMessage : error)
+          console.error('Model path:', fullModelPath)
+          if (hasErrorDetailKeys) {
+            console.error('Error details:', errorDetail)
+          }
+        }
+      }
+      
+      // Only show tip if we have a real error
+      if (hasErrorMessage || hasErrorKeys || hasErrorDetailKeys) {
+        // Check if path is in uploads, suggest correct location
+        const correctPath = fullModelPath.replace('/uploads/', '/public/uploads/')
+        console.warn('💡 Tip: Check if file exists:', correctPath)
+        if (fullModelPath.includes('/uploads/')) {
+          console.warn('💡 Tip: Files in /uploads/ should be accessible from /public/uploads/')
+        }
+      }
+      
       setIsModelLoaded(false)
+      modelLoadErrorRef.current = true // Set ref first
+      setModelLoadError(true) // Only for display
+      
+      // Don't try to apply texture if model failed to load
+      // This prevents "Failed to apply texture after 5 attempts" errors
 
-      // Show user-friendly error message only for non-Honda Lead models
-      if (container && !isHondaLead) {
+      // Show user-friendly error message
+      if (container) {
+        // Check if file might be too large or corrupted
+        const isLargeFile = fullModelPath.includes('MODEL-') && fullModelPath.includes('.glb')
+        const sizeWarning = isLargeFile ? '<p class="text-sm text-amber-600 mb-2">⚠️ Large model file detected. This may take longer to load.</p>' : ''
+        
+        // Determine correct file path for display
+        const correctFilePath = fullModelPath.startsWith('/uploads/') 
+          ? `/public${fullModelPath}` 
+          : `/public${fullModelPath}`
+        
         container.innerHTML = `
           <div class="flex flex-col items-center justify-center h-full bg-gradient-to-b from-neutral-100 to-neutral-50 p-8">
             <div class="text-center">
               <div class="text-6xl mb-4">⚠️</div>
               <h3 class="text-xl font-semibold text-neutral-900 mb-2">Failed to load 3D model</h3>
               <p class="text-neutral-600 mb-4">Model file: ${fullModelPath}</p>
+              ${sizeWarning}
+              <p class="text-sm text-neutral-500 mb-2">Error: ${displayMessage}</p>
               <p class="text-sm text-neutral-500 mb-2">Please check:</p>
               <ul class="text-sm text-neutral-500 text-left list-disc list-inside">
-                <li>File exists in /public/models/</li>
+                <li>File exists: ${correctFilePath}</li>
                 <li>File is a valid GLB format</li>
+                <li>File size is reasonable (&lt;30MB recommended)</li>
                 <li>Browser console for detailed error</li>
               </ul>
             </div>
@@ -520,8 +879,8 @@ export default function ScooterViewer({
       }
     }
 
-    // Track camera orbit changes to sync panorama rotation
-    const handleCameraChange = () => {
+      // Track camera orbit changes to sync panorama rotation
+      handleCameraChange = () => {
       if (!modelViewer) return
 
       try {
@@ -620,49 +979,119 @@ export default function ScooterViewer({
 
     console.log('✅ model-viewer element created and appended to DOM')
 
-    // Verify src was set correctly
-    setTimeout(() => {
-      if (modelViewer.src !== fullModelPath) {
-        console.warn('⚠️ Model path mismatch, correcting...')
-        modelViewer.src = fullModelPath
-      }
-    }, 100)
+      // Verify src was set correctly
+      setTimeout(() => {
+        if (modelViewer && modelViewer.src !== finalModelPath) {
+          console.warn('⚠️ Model path mismatch, correcting...')
+          modelViewer.src = finalModelPath
+        }
+      }, 100)
 
-    // Cleanup function
+      } catch (error) {
+        console.error('❌ Error in model-viewer setup:', error)
+        modelLoadErrorRef.current = true // Set ref first
+        setModelLoadError(true) // Only for display
+      }
+    })() // Close async IIFE
+    
+    // Cleanup function (outside async IIFE)
     return () => {
-      modelViewer.removeEventListener('load', handleLoad)
-      modelViewer.removeEventListener('model-loaded', handleModelLoad)
-      modelViewer.removeEventListener('progress', handleProgress)
-      modelViewer.removeEventListener('error', handleError)
-      if (container && container.contains(modelViewer)) {
-        container.removeChild(modelViewer)
+      try {
+        const currentContainer = containerRef.current
+        if (currentContainer) {
+          const currentModelViewer = currentContainer.querySelector('model-viewer')
+          if (currentModelViewer) {
+            // Remove from DOM (event listeners will be cleaned up automatically)
+            if (currentContainer.contains(currentModelViewer)) {
+              currentContainer.removeChild(currentModelViewer)
+            }
+          }
+        }
+      } catch (cleanupError) {
+        // Ignore cleanup errors
+        console.debug('Cleanup error (non-critical):', cleanupError)
       }
     }
-  }, [isMounted, scriptLoaded, modelPath, environmentImage, panoramaUrl, selectedDesign])
+  }, [isMounted, scriptLoaded, modelPath, environmentImage, panoramaUrl, selectedDesign?.id, selectedDesign?.slug])
+
+  // Reset model load error when model path changes
+  useEffect(() => {
+    modelLoadErrorRef.current = false // Reset ref first
+    setModelLoadError(false)
+    setIsModelLoaded(false)
+    textureRetryCountRef.current = 0 // Reset retry counter when model changes
+    textureApplicationStoppedRef.current = false // Reset stop flag when model changes
+  }, [modelPath])
 
   // Hook 4: Apply design texture/variant when it changes
+  const applyTextureDidRun = useRef(null)
   useEffect(() => {
+    // Предохранитель от повторов
+    const designKey = `${selectedDesign?.id}-${selectedDesign?.slug}-${isModelLoaded}`
+    if (applyTextureDidRun.current === designKey) return
+    applyTextureDidRun.current = designKey
+    
+    // Обертка в async IIFE для использования await
+    ;(async () => {
+    
+    console.log('🔍 [3D DEBUG] useEffect triggered:', {
+      hasContainer: !!containerRef.current,
+      hasDesign: !!selectedDesign,
+      isModelLoaded,
+      selectedDesignId: selectedDesign?.id,
+      selectedDesignName: selectedDesign?.name,
+      modelPath,
+    })
+    
     // Get model-viewer element from container
-    if (!containerRef.current || !selectedDesign || !isModelLoaded) {
-      console.log('⏳ Waiting for conditions:', {
-        hasContainer: !!containerRef.current,
-        hasDesign: !!selectedDesign,
-        isModelLoaded,
-      })
+    if (!containerRef.current || !selectedDesign || !isModelLoaded || modelLoadErrorRef.current || textureApplicationStoppedRef.current) {
+      if (textureApplicationStoppedRef.current) {
+        // Silently skip if already stopped
+        return
+      }
+      if (modelLoadErrorRef.current) {
+        console.warn('⚠️ Model failed to load, skipping texture application')
+        console.warn('💡 To fix this issue:')
+        console.warn('   1. Check if GLB file exists and is accessible:', modelPath)
+        console.warn('   2. Verify file is valid GLB format (not corrupted)')
+        console.warn('   3. Check browser console for detailed error messages')
+        console.warn('   4. Ensure file size is reasonable (<30MB recommended)')
+        console.warn('   5. Check server MIME type configuration for .glb files')
+      } else {
+        console.log('⏳ Waiting for conditions:', {
+          hasContainer: !!containerRef.current,
+          hasDesign: !!selectedDesign,
+          isModelLoaded,
+          modelLoadError: modelLoadErrorRef.current,
+          stopped: textureApplicationStoppedRef.current,
+        })
+      }
       return
     }
-
+    
     // Find model-viewer element in container
     const container = containerRef.current
+    if (!container) {
+      console.warn('⚠️ Container not found')
+      return
+    }
+    
     const modelViewer = container.querySelector('model-viewer')
-
     if (!modelViewer) {
       console.warn('⚠️ model-viewer element not found in container')
       return
     }
+    
+    // Check model-viewer element for error state
+    if (modelViewer.hasAttribute('error') || !modelViewer.src) {
+      console.warn('⚠️ Model-viewer has error or no source, skipping texture application')
+      modelLoadErrorRef.current = true
+      setModelLoadError(true) // Only for display, ref prevents loop
+      return
+    }
 
     // Method 1: Apply material variant if specified
-    if (selectedDesign.variant) {
+    if (selectedDesign?.variant) {
       try {
         modelViewer.setAttribute('variant-name', selectedDesign.variant)
         console.log('✅ Applied variant:', selectedDesign.variant)
@@ -670,79 +1099,220 @@ export default function ScooterViewer({
         console.warn('Failed to apply variant:', error)
       }
     }
-
-    // Method 2: Apply texture if specified (requires accessing Three.js scene)
-    if (selectedDesign.texture && !selectedDesign.variant) {
-      console.log('🎨 Attempting to apply texture:', selectedDesign.texture)
-      // Retry counter to prevent infinite loops (declared outside function to persist between calls)
-      let retryCount = 0
-      const MAX_RETRIES = 10
+    
+    // Early return if no selectedDesign
+    if (!selectedDesign) {
+      console.warn('⚠️ No selectedDesign provided')
+      return
+    }
+    
+    let textureMaterial = null
+    
+    try {
+      // 1. Приоритетный поиск текстуры
+      if (selectedDesign.materials && Array.isArray(selectedDesign.materials)) {
+        textureMaterial = findMaterialByFormat(selectedDesign.materials, MaterialFormat.TEXTURE)
+      }
       
+      if (!textureMaterial) {
+        const webpTextureUrl = selectedDesign.texture_webp || selectedDesign.textureWebp
+        if (webpTextureUrl) {
+          textureMaterial = {
+            format: MaterialFormat.TEXTURE,
+            url: webpTextureUrl,
+            metadata: {},
+          }
+        }
+      }
+      
+      if (!textureMaterial) {
+        const legacyTextureUrl = selectedDesign.textureUrl || 
+                                 selectedDesign.texture || 
+                                 selectedDesign.textures?.body || 
+                                 selectedDesign.textures?.plastic || 
+                                 selectedDesign.textures?.accents
+        
+        if (legacyTextureUrl) {
+          textureMaterial = {
+            format: MaterialFormat.TEXTURE,
+            url: legacyTextureUrl,
+            metadata: {},
+          }
+        }
+      }
+      
+      if (!textureMaterial) {
+        console.warn('No texture material found for design:', selectedDesign.id)
+        return
+      }
+    } catch (err) {
+      console.error('Error finding texture material:', err)
+      return
+    }
+    
+    // Log which textures will be used (for debugging)
+    console.log('🔍 [3D DEBUG] Selected design:', {
+      id: selectedDesign?.id,
+      name: selectedDesign?.name,
+      hasMaterials: !!(selectedDesign?.materials && Array.isArray(selectedDesign.materials) && selectedDesign.materials.length > 0),
+      textureMaterial: textureMaterial ? getMaterialDisplayUrl(textureMaterial) : null,
+      hasVariant: !!selectedDesign?.variant,
+    })
+    
+    if (!textureMaterial && !selectedDesign?.variant) {
+      console.warn('⚠️ No texture material or variant found in selectedDesign. Skipping texture application.')
+      return
+    }
+    
+    // Check if model is actually loaded before trying to apply texture
+    if (!isModelLoaded) {
+      console.warn('⚠️ Model not loaded yet, skipping texture application. Will retry when model loads.')
+      return
+    }
+    
+    if (textureMaterial && !selectedDesign?.variant) {
       try {
+        // Пробуем использовать новую архитектуру
+        const tryNewArchitecture = async () => {
+          try {
+            const currentContainer = containerRef.current
+            if (!currentContainer) return false
+            
+            const currentModelViewer = currentContainer.querySelector('model-viewer')
+            if (!currentModelViewer || !currentModelViewer.loaded) return false
+            
+            // Получаем scene
+            let scene = null
+            if (currentModelViewer.model?.scene && typeof currentModelViewer.model.scene.traverse === 'function') {
+              scene = currentModelViewer.model.scene
+            } else if (currentModelViewer.model?.scenes?.[0] && typeof currentModelViewer.model.scenes[0].traverse === 'function') {
+              scene = currentModelViewer.model.scenes[0]
+            }
+            
+            if (!scene) return false
+            
+            // Используем новую архитектуру
+            await scooterViewerIntegration.applyTextureWithNewArchitecture(
+              selectedDesign,
+              scene,
+              scene // model = scene для Three.js
+            )
+            
+            console.log('✅ Texture applied using new architecture')
+            return true
+          } catch (error) {
+            console.warn('⚠️ New architecture failed, falling back to legacy:', error)
+            return false
+          }
+        }
+        
+        // Пробуем новую архитектуру
+        const newArchitectureWorked = await tryNewArchitecture()
+        if (newArchitectureWorked) {
+          return // Новая архитектура сработала
+        }
+        
+        // Fallback на старую логику
+        const textureUrl = getMaterialDisplayUrl(textureMaterial)
+        if (!textureUrl) {
+          console.warn('⚠️ No texture URL found in texture material')
+          return
+        }
+        console.log('🎨 Attempting to apply texture (legacy):', textureUrl)
+        console.log('🔍 [3D DEBUG] Full texture path:', window.location.origin + textureUrl)
+        if (selectedDesign.textures) {
+          console.log('🎨 Using textures format (one texture for all materials):', selectedDesign.textures)
+        }
+        
+        // Reset retry count when starting new texture application
+        textureRetryCountRef.current = 0
+        textureApplicationStoppedRef.current = false // Reset stop flag
+        const MAX_RETRIES = 10
+        
         // Wait for model to be fully loaded before accessing scene
         const applyTexture = () => {
-          // Re-get model-viewer element (it might have changed)
-          const currentContainer = containerRef.current
-          if (!currentContainer) {
-            console.warn('⚠️ Container not available in applyTexture')
-            return
-          }
-
-          const currentModelViewer = currentContainer.querySelector('model-viewer')
-          if (!currentModelViewer) {
-            console.warn('⚠️ model-viewer not found in applyTexture')
-            return
-          }
-
-          console.log('🔄 applyTexture called, modelViewer.loaded:', currentModelViewer.loaded)
-
-          // Access the model's scene via model-viewer's internal API
-          // Try multiple ways to access the scene
-          let scene = null
-
-          /**
-           * КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Получение сцены из GLTF объекта
-           *
-           * ПРИЧИНА ПРОПАДАНИЯ ТЕКСТУР:
-           * 1. modelViewer.model - это GLTF объект, а не сцена Three.js
-           * 2. Попытка вызвать scene.traverse() на GLTF объекте вызывала ошибку "traverse is not a function"
-           * 3. Из-за ошибки текстуры не применялись к материалам
-           *
-           * РЕШЕНИЕ:
-           * - Правильно получаем сцену через modelViewer.model.scene или modelViewer.model.scenes[0]
-           * - Проверяем наличие метода traverse перед использованием
-           * - Добавлена диагностика структуры GLTF объекта для отладки
-           *
-           * ДОПОЛНИТЕЛЬНО:
-           * - Окружной свет (environment-image="neutral") настроен в model-viewer
-           * - Skybox-image используется для визуального окружения
-           * - Для PBR материалов важно наличие environment map для правильного отображения
-           */
-          // Method 1: Try direct scene property (most reliable for model-viewer)
-          if (currentModelViewer.scene && typeof currentModelViewer.scene.traverse === 'function') {
-            scene = currentModelViewer.scene
-            console.log('✅ Got scene from modelViewer.scene')
-          }
-          // Method 2: Try to get from renderer
-          else if (currentModelViewer.renderer) {
-            // Try renderer.scene first
-            if (
-              currentModelViewer.renderer.scene &&
-              typeof currentModelViewer.renderer.scene.traverse === 'function'
-            ) {
-              scene = currentModelViewer.renderer.scene
-              console.log('✅ Got scene from renderer.scene')
+            // Early exit if texture application was stopped
+            if (textureApplicationStoppedRef.current) {
+              return
             }
-            // Try renderer.getScene() if available
-            else if (typeof currentModelViewer.renderer.getScene === 'function') {
-              try {
-                scene = currentModelViewer.renderer.getScene()
-                if (scene && typeof scene.traverse === 'function') {
-                  console.log('✅ Got scene from renderer.getScene()')
-                } else {
-                  scene = null
-                }
-              } catch (e) {
+            
+            // Early exit if model failed to load
+            if (modelLoadErrorRef.current) {
+              console.warn('⚠️ Model failed to load, stopping texture application')
+              textureApplicationStoppedRef.current = true
+              return
+            }
+            
+            // Re-get model-viewer element (it might have changed)
+            const currentContainer = containerRef.current
+            if (!currentContainer) {
+              console.warn('⚠️ Container not available in applyTexture')
+              return
+            }
+
+            const currentModelViewer = currentContainer.querySelector('model-viewer')
+            if (!currentModelViewer) {
+              console.warn('⚠️ model-viewer not found in applyTexture')
+              return
+            }
+            
+            // Check if model has error attribute
+            if (currentModelViewer.hasAttribute('error')) {
+              console.warn('⚠️ Model has error attribute, stopping texture application')
+              modelLoadErrorRef.current = true // Set ref first
+              setModelLoadError(true) // Only for display
+              return
+            }
+
+            console.log('🔄 applyTexture called, modelViewer.loaded:', currentModelViewer.loaded)
+
+            // Access the model's scene via model-viewer's internal API
+            // Try multiple ways to access the scene
+            let scene = null
+
+            /**
+             * КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Получение сцены из GLTF объекта
+             *
+             * ПРИЧИНА ПРОПАДАНИЯ ТЕКСТУР:
+             * 1. modelViewer.model - это GLTF объект, а не сцена Three.js
+             * 2. Попытка вызвать scene.traverse() на GLTF объекте вызывала ошибку "traverse is not a function"
+             * 3. Из-за ошибки текстуры не применялись к материалам
+             *
+             * РЕШЕНИЕ:
+             * - Правильно получаем сцену через modelViewer.model.scene или modelViewer.model.scenes[0]
+             * - Проверяем наличие метода traverse перед использованием
+             * - Добавлена диагностика структуры GLTF объекта для отладки
+             *
+             * ДОПОЛНИТЕЛЬНО:
+             * - Окружной свет (environment-image="neutral") настроен в model-viewer
+             * - Skybox-image используется для визуального окружения
+             * - Для PBR материалов важно наличие environment map для правильного отображения
+             */
+            // Method 1: Try direct scene property (most reliable for model-viewer)
+            if (currentModelViewer.scene && typeof currentModelViewer.scene.traverse === 'function') {
+              scene = currentModelViewer.scene
+              console.log('✅ Got scene from modelViewer.scene')
+            }
+            // Method 2: Try to get from renderer
+            else if (currentModelViewer.renderer) {
+              // Try renderer.scene first
+              if (
+                currentModelViewer.renderer.scene &&
+                typeof currentModelViewer.renderer.scene.traverse === 'function'
+              ) {
+                scene = currentModelViewer.renderer.scene
+                console.log('✅ Got scene from renderer.scene')
+              }
+              // Try renderer.getScene() if available
+              else if (typeof currentModelViewer.renderer.getScene === 'function') {
+                try {
+                  scene = currentModelViewer.renderer.getScene()
+                  if (scene && typeof scene.traverse === 'function') {
+                    console.log('✅ Got scene from renderer.getScene()')
+                  } else {
+                    scene = null
+                  }
+                } catch (e) {
                 console.warn('⚠️ renderer.getScene() failed:', e)
               }
             }
@@ -750,6 +1320,9 @@ export default function ScooterViewer({
           // Method 3: Try to get scene from model-viewer's model property
           else if (currentModelViewer.model) {
             console.log('📦 modelViewer.model found:', typeof currentModelViewer.model)
+            console.log('🔍 [3D DEBUG] modelViewer.model keys:', Object.keys(currentModelViewer.model))
+            console.log('🔍 [3D DEBUG] modelViewer.model.scene:', currentModelViewer.model.scene)
+            console.log('🔍 [3D DEBUG] modelViewer.model.scenes:', currentModelViewer.model.scenes)
 
             // Try to access scene property (may be non-enumerable)
             try {
@@ -789,23 +1362,111 @@ export default function ScooterViewer({
               console.log('✅ Got scene from shadowRoot canvas')
             }
           }
+          
+          // Method 5: Try to access via renderer's scene property directly
+          if (!scene && currentModelViewer.renderer) {
+            try {
+              // Try renderer.scene
+              if (currentModelViewer.renderer.scene && typeof currentModelViewer.renderer.scene.traverse === 'function') {
+                scene = currentModelViewer.renderer.scene
+                console.log('✅ Got scene from renderer.scene (direct)')
+              }
+              // Try renderer.getScene() method
+              else if (typeof currentModelViewer.renderer.getScene === 'function') {
+                const rendererScene = currentModelViewer.renderer.getScene()
+                if (rendererScene && typeof rendererScene.traverse === 'function') {
+                  scene = rendererScene
+                  console.log('✅ Got scene from renderer.getScene()')
+                }
+              }
+            } catch (e) {
+              console.warn('⚠️ Error accessing renderer scene:', e)
+            }
+          }
+          
+          // Method 6: Try additional synchronous access methods
+          if (!scene && currentModelViewer.loaded) {
+            // Try multiple synchronous access patterns
+            const sceneAccessMethods = [
+              () => currentModelViewer.model?.scene,
+              () => currentModelViewer.model?.scenes?.[0],
+              () => currentModelViewer.scene,
+              () => currentModelViewer.renderer?.scene,
+              () => {
+                try {
+                  return typeof currentModelViewer.renderer?.getScene === 'function' 
+                    ? currentModelViewer.renderer.getScene() 
+                    : null
+                } catch {
+                  return null
+                }
+              },
+            ]
+            
+            for (const getScene of sceneAccessMethods) {
+              try {
+                const potentialScene = getScene()
+                if (potentialScene && typeof potentialScene.traverse === 'function') {
+                  scene = potentialScene
+                  console.log('✅ Got scene via additional access method')
+                  break
+                }
+              } catch (e) {
+                // Continue to next method
+              }
+            }
+          }
 
-            // If scene not found, wait and retry with better diagnostics
+            // 2. Получение сцены из model-viewer (упрощенная версия)
+            // Если scene еще не получена, попробуем упрощенный способ
+            if (!scene && currentModelViewer.model) {
+              // Упрощенный способ получения сцены
+              scene = currentModelViewer.model.scene || currentModelViewer.model.scenes?.[0]
+              if (scene && typeof scene.traverse === 'function') {
+                console.log('✅ Got scene using simplified method')
+              } else {
+                scene = null
+              }
+            }
+            
+            // Если сцена все еще не найдена, используем старую логику с retry
             if (!scene) {
-              retryCount++
+              // Check if already stopped
+              if (textureApplicationStoppedRef.current) {
+                return
+              }
+              
+              textureRetryCountRef.current++
               
               // Stop retrying after max attempts
-              if (retryCount > MAX_RETRIES) {
-                console.error('❌ Failed to access scene after', MAX_RETRIES, 'attempts')
-                console.error('💡 Texture application skipped. Model may not support dynamic texture swapping.')
-                console.error('💡 Consider using material variants in the GLB file instead.')
+              if (textureRetryCountRef.current > MAX_RETRIES) {
+                console.warn('⚠️ Could not access scene after', MAX_RETRIES, 'attempts')
+                console.warn('💡 This may be normal for some models. Texture will be applied when scene becomes available.')
+                console.warn('💡 If texture does not appear, the model may need material variants in the GLB file.')
+                // Don't stop completely - allow retry on model-loaded event
+                textureApplicationStoppedRef.current = false // Allow retry
+                textureRetryCountRef.current = 0 // Reset for next attempt
+                // Set up listener for when scene becomes available
+                if (currentModelViewer && !currentModelViewer.hasAttribute('error')) {
+                  const onSceneAvailable = () => {
+                    setTimeout(() => {
+                      if (!textureApplicationStoppedRef.current && !modelLoadError) {
+                        console.log('🔄 Retrying texture application after scene became available...')
+                        textureRetryCountRef.current = 0
+                        applyTexture()
+                      }
+                    }, 500)
+                    currentModelViewer.removeEventListener('model-loaded', onSceneAvailable)
+                  }
+                  currentModelViewer.addEventListener('model-loaded', onSceneAvailable)
+                }
                 return
               }
               
               // Enhanced diagnostics (only log on first attempt and last attempt)
-              if (retryCount === 1 || retryCount === MAX_RETRIES) {
+              if (textureRetryCountRef.current === 1 || textureRetryCountRef.current === MAX_RETRIES) {
                 const diagnostics = {
-                  attempt: retryCount,
+                  attempt: textureRetryCountRef.current,
                   hasModel: !!currentModelViewer.model,
                   modelType: currentModelViewer.model?.constructor?.name || 'unknown',
                   hasModelScene: !!currentModelViewer.model?.scene,
@@ -827,16 +1488,29 @@ export default function ScooterViewer({
                   }, {})).slice(0, 500) : 'no model',
                 }
                 
-                console.warn(`⚠️ Scene not available (attempt ${retryCount}/${MAX_RETRIES}), diagnostics:`, diagnostics)
+                console.warn(`⚠️ Scene not available (attempt ${textureRetryCountRef.current}/${MAX_RETRIES}), diagnostics:`, diagnostics)
               }
               
               // Wait for model-loaded event if not loaded yet
               if (!currentModelViewer.loaded) {
                 console.log('⏳ Waiting for model to load...')
                 const onModelLoaded = () => {
+                  // Check if stopped before retrying
+                  if (textureApplicationStoppedRef.current) {
+                    return
+                  }
+                  
+                  // Check again before retrying
+                  if (modelLoadError || currentModelViewer.hasAttribute('error')) {
+                    console.warn('⚠️ Model error detected, canceling texture application')
+                    textureApplicationStoppedRef.current = true
+                    return
+                  }
                   console.log('✅ Model loaded event fired, retrying...')
                   setTimeout(() => {
-                    applyTexture()
+                    if (!modelLoadError && !textureApplicationStoppedRef.current) {
+                      applyTexture()
+                    }
                   }, 300)
                   currentModelViewer.removeEventListener('model-loaded', onModelLoaded)
                 }
@@ -846,20 +1520,39 @@ export default function ScooterViewer({
               
               // If loaded but scene still not found, wait a bit more for internal initialization
               // Use exponential backoff: 500ms, 1000ms, 1500ms, etc.
-              const delay = Math.min(500 * retryCount, 3000)
-              console.log(`⏳ Model is loaded but scene not ready (attempt ${retryCount}), waiting ${delay}ms...`)
+              const delay = Math.min(500 * textureRetryCountRef.current, 3000)
+              console.log(`⏳ Model is loaded but scene not ready (attempt ${textureRetryCountRef.current}), waiting ${delay}ms...`)
               setTimeout(() => {
+                // Check if stopped or error occurred during wait
+                if (textureApplicationStoppedRef.current || modelLoadError) {
+                  if (modelLoadError) {
+                    console.warn('⚠️ Model error detected during wait, canceling texture application')
+                  }
+                  return
+                }
+                
                 const retryContainer = containerRef.current
                 if (retryContainer) {
                   const retryModelViewer = retryContainer.querySelector('model-viewer')
-                  if (retryModelViewer && retryModelViewer.loaded) {
-                    console.log(`🔄 Retrying texture application (attempt ${retryCount + 1})...`)
-                    applyTexture()
+                  if (retryModelViewer && retryModelViewer.loaded && !retryModelViewer.hasAttribute('error')) {
+                    // Double check before retrying
+                    if (!textureApplicationStoppedRef.current) {
+                      console.log(`🔄 Retrying texture application (attempt ${textureRetryCountRef.current + 1})...`)
+                      applyTexture()
+                    }
+                  } else if (retryModelViewer && retryModelViewer.hasAttribute('error')) {
+                    console.warn('⚠️ Model has error attribute, stopping texture application')
+                    modelLoadErrorRef.current = true // Set ref first
+                    setModelLoadError(true) // Only for display
+                    textureApplicationStoppedRef.current = true
                   }
                 }
               }, delay)
               return
             }
+            
+            // Reset retry count on success
+            textureRetryCountRef.current = 0
 
           // Get Three.js from model-viewer's internal context
           // model-viewer uses its own Three.js instance, need to access it correctly
@@ -1021,448 +1714,109 @@ export default function ScooterViewer({
           })
 
           const textureLoader = new THREE.TextureLoader()
+          
+          // Set crossOrigin for texture loading to prevent CORS issues
+          textureLoader.setCrossOrigin('anonymous')
 
-          console.log('🖼️ Loading texture:', selectedDesign.texture)
+          // Use MaterialHandler to get texture URL (no format conditionals)
+          if (!textureMaterial) {
+            console.warn('⚠️ No texture material found')
+            return
+          }
+          
+          const textureSource = getMaterialDisplayUrl(textureMaterial)
+          
+          if (!textureSource) {
+            console.warn('⚠️ No texture URL found in texture material:', textureMaterial)
+            return
+          }
+          
+          console.log('🖼️ Loading texture via MaterialHandler:', textureSource)
 
           // Ensure texture path is absolute
-          const texturePath = selectedDesign.texture.startsWith('/')
-            ? selectedDesign.texture
-            : `/${selectedDesign.texture}`
+          const texturePath = textureSource.startsWith('/')
+            ? textureSource
+            : `/${textureSource}`
 
           console.log('🖼️ Loading texture from:', texturePath)
 
-          // First, verify texture file exists by trying to load it as Image
-          const verifyTexture = new Image()
-          verifyTexture.crossOrigin = 'anonymous'
-          verifyTexture.onload = () => {
-            console.log('✅ Texture file verified, exists and is loadable:', texturePath)
-            // Now load via Three.js TextureLoader
-            textureLoader.load(
+          // 3. Загрузка текстуры
+          textureLoader.load(
               texturePath,
+              
+              // Success callback
               texture => {
-                console.log('✅ Texture loaded successfully via Three.js:', texturePath)
+                // Настройка текстуры
                 texture.flipY = false
-                // Use modern encoding if available, fallback to old
-                if (THREE.sRGBEncoding !== undefined) {
-                  texture.encoding = THREE.sRGBEncoding
-                } else if (THREE.SRGBColorSpace !== undefined) {
-                  texture.colorSpace = THREE.SRGBColorSpace
-                }
-
-                // Ensure texture is ready and properly configured
-                if (texture.image) {
-                  if (texture.image.complete) {
-                    console.log('✅ Texture image is ready:', {
-                      width: texture.image.width,
-                      height: texture.image.height,
-                      naturalWidth: texture.image.naturalWidth,
-                      naturalHeight: texture.image.naturalHeight,
-                      src: texture.image.src,
-                    })
-                  } else {
-                    console.warn('⚠️ Texture image may not be ready yet, waiting...')
-                    texture.image.onload = () => {
-                      console.log('✅ Texture image loaded after wait')
-                      texture.needsUpdate = true
-                    }
-                  }
-
-                  // Set crossOrigin for CORS
-                  texture.image.crossOrigin = 'anonymous'
-                } else {
-                  console.warn('⚠️ Texture has no image property')
-                }
-
-                // Ensure texture is properly configured
+                texture.colorSpace = THREE.SRGBColorSpace // Обновленный API
+                texture.wrapS = THREE.RepeatWrapping // Опционально
+                texture.wrapT = THREE.RepeatWrapping
                 texture.needsUpdate = true
-                texture.flipY = false
-
-                // Set wrapping mode if available
-                if (THREE.RepeatWrapping !== undefined) {
-                  texture.wrapS = THREE.RepeatWrapping
-                  texture.wrapT = THREE.RepeatWrapping
-                } else if (THREE && typeof THREE.RepeatWrapping !== 'undefined') {
-                  texture.wrapS = THREE.RepeatWrapping
-                  texture.wrapT = THREE.RepeatWrapping
-                }
-
-                // Store original materials to preserve layers and lighting
-                const materialMap = new Map()
-
-                // Traverse scene and apply texture to materials
-                let materialsFound = 0
-                let materialsUpdated = 0
-
-                // Safety check: ensure traverse is a function
+                
+                let textureAppliedCount = 0
+                
+                // Обход сцены и применение текстуры
                 if (!scene || typeof scene.traverse !== 'function') {
-                  console.error('❌ Scene.traverse is not a function:', {
-                    hasScene: !!scene,
-                    traverseType: scene ? typeof scene.traverse : 'no scene',
-                  })
+                  console.error('❌ Scene not available or traverse method not found')
                   return
                 }
-
-                try {
-                  scene.traverse(node => {
-                    // Check if node is a mesh (multiple ways to check)
-                    const isMesh =
-                      node.isMesh ||
-                      (node.type && (node.type.includes('Mesh') || node.type === 'Mesh'))
-
-                    if (isMesh && node.material) {
-                      const materials = Array.isArray(node.material)
-                        ? node.material
-                        : [node.material]
-                      materialsFound += materials.length
-
-                      materials.forEach((material, index) => {
-                        // Store original material properties if not already stored
-                        const materialKey = `${node.uuid}-${index}`
-                        if (!materialMap.has(materialKey)) {
-                          materialMap.set(materialKey, {
-                            originalMap: material.map,
-                            originalNormalMap: material.normalMap,
-                            originalRoughnessMap: material.roughnessMap,
-                            originalMetalnessMap: material.metalnessMap,
-                            originalEmissiveMap: material.emissiveMap,
-                            originalAoMap: material.aoMap,
-                            // Preserve lighting properties
-                            roughness: material.roughness,
-                            metalness: material.metalness,
-                            emissive: material.emissive,
-                            emissiveIntensity: material.emissiveIntensity,
-                            // Preserve layer properties
-                            layers: material.layers ? material.layers.mask : 0,
-                          })
-                        }
-
-                        // Check material type more broadly (with safety checks)
-                        const isCompatibleMaterial =
-                          material.isMeshStandardMaterial === true ||
-                          material.isMeshPhysicalMaterial === true ||
-                          material.isMeshLambertMaterial === true ||
-                          material.isMeshPhongMaterial === true ||
-                          material.type === 'MeshStandardMaterial' ||
-                          material.type === 'MeshPhysicalMaterial' ||
-                          material.type === 'MeshLambertMaterial' ||
-                          material.type === 'MeshPhongMaterial' ||
-                          (material.type && material.type.includes('Material')) // Fallback: any material with "Material" in type
-
-                        // Try to apply texture to ANY material - model-viewer materials should support map
-                        // Apply to all materials, not just "compatible" ones
-                        const hadMap = !!material.map
-
-                        // Apply texture
+                
+                scene.traverse(node => {
+                  const isMesh = node.isMesh || node.type?.includes('Mesh')
+                  
+                  if (isMesh && node.material) {
+                    const materials = Array.isArray(node.material) ? node.material : [node.material]
+                    
+                    materials.forEach(material => {
+                      // Проверка что материал поддерживает текстуры
+                      if ('map' in material) {
                         material.map = texture
-
-                        // Ensure texture is properly configured
-                        if (material.map) {
-                          material.map.needsUpdate = true
-                          material.map.flipY = false // Ensure correct orientation
-
-                          // Set texture repeat if needed (for tiling)
-                          if (material.map.repeat) {
-                            material.map.repeat.set(1, 1)
-                          }
-
-                          // Ensure texture is loaded
-                          if (material.map.image) {
-                            material.map.image.crossOrigin = 'anonymous'
-                          }
-                        }
-
-                        // Preserve normal maps, roughness, metalness, etc.
-                        // Don't overwrite these - they control lighting and layers
-
-                        // CRITICAL: Force material update - this is essential for texture to appear
                         material.needsUpdate = true
-
-                        // Force texture update
-                        if (material.map) {
-                          material.map.needsUpdate = true
-                        }
-
-                        // Also update geometry if it exists
-                        if (node.geometry) {
-                          node.geometry.uvsNeedUpdate = true
-                          // Force geometry update
-                          if (node.geometry.attributes && node.geometry.attributes.uv) {
-                            node.geometry.attributes.uv.needsUpdate = true
-                          }
-                        }
-
-                        // Ensure material properties are set correctly for PBR
-                        // Fix common issues: metalness=1 and roughness=1 make model gray
-                        if (material.metalness !== undefined) {
-                          // If metalness is too high (close to 1), reduce it
-                          if (material.metalness > 0.8) {
-                            material.metalness = 0.2
-                            console.log('🔧 Adjusted metalness from', material.metalness, 'to 0.2')
-                          }
-                        }
-                        if (material.roughness !== undefined) {
-                          // If roughness is too high (close to 1), reduce it
-                          if (material.roughness > 0.8) {
-                            material.roughness = 0.6
-                            console.log('🔧 Adjusted roughness from', material.roughness, 'to 0.6')
-                          }
-                        }
-
-                        materialsUpdated++
-                        console.log('✅ Texture applied to material:', {
-                          materialType: material.type,
-                          materialName: material.name || 'unnamed',
-                          hadMap,
-                          hasMap: !!material.map,
-                          hasNormalMap: !!material.normalMap,
-                          hasRoughnessMap: !!material.roughnessMap,
-                          roughness: material.roughness,
-                          metalness: material.metalness,
-                          textureUrl: texturePath,
-                          isCompatible: isCompatibleMaterial,
-                          textureWidth: material.map?.image?.width,
-                          textureHeight: material.map?.image?.height,
-                          textureSrc: material.map?.image?.src,
-                        })
-                      })
-                    }
-                  })
-                } catch (traverseError) {
-                  console.error('❌ Error traversing scene:', traverseError)
-                  return
-                }
-
-                console.log(
-                  `📊 Texture application summary: ${materialsUpdated}/${materialsFound} materials updated`
-                )
-
-                // CRITICAL: Force all materials to update - traverse scene again and force update
-                // This is the key fix for "gray mesh" problem
-                try {
-                  scene.traverse(obj => {
-                    if (obj.isMesh && obj.material) {
-                      const materials = Array.isArray(obj.material) ? obj.material : [obj.material]
-                      materials.forEach(mat => {
-                        // Force material update
-                        mat.needsUpdate = true
-                        // Force texture update if exists
-                        if (mat.map) {
-                          mat.map.needsUpdate = true
-                        }
-                        // Force normal map update if exists
-                        if (mat.normalMap) {
-                          mat.normalMap.needsUpdate = true
-                        }
-                      })
-                      // Force geometry update
-                      if (obj.geometry) {
-                        obj.geometry.uvsNeedUpdate = true
-                        if (obj.geometry.attributes && obj.geometry.attributes.uv) {
-                          obj.geometry.attributes.uv.needsUpdate = true
+                        textureAppliedCount++
+                        
+                        // Обновление UV координат
+                        if (node.geometry?.attributes?.uv) {
+                          node.geometry.attributes.uv.needsUpdate = true
+                        } else {
+                          console.warn(`Mesh "${node.name}" missing UV coordinates`)
                         }
                       }
-                    }
-                  })
-                  console.log('✅ Forced all materials and geometries to update')
-                } catch (forceUpdateError) {
-                  console.warn('⚠️ Error forcing material updates:', forceUpdateError)
-                }
-
-                // Force render update - try multiple methods
-                const currentContainer = containerRef.current
-                if (currentContainer) {
-                  const currentModelViewer = currentContainer.querySelector('model-viewer')
-                  if (currentModelViewer) {
-                    // Method 1: requestUpdate (if available) - most reliable for model-viewer
+                    })
+                  }
+                })
+                
+                console.log(`✅ Texture applied to ${textureAppliedCount} materials`)
+                
+                // Принудительный рендер
+                if (currentModelViewer && typeof currentModelViewer.updateComplete !== 'undefined') {
+                  currentModelViewer.updateComplete.then(() => {
                     if (typeof currentModelViewer.requestUpdate === 'function') {
                       currentModelViewer.requestUpdate()
-                      console.log('✅ Called requestUpdate()')
                     }
-
-                    // Method 2: Update model-viewer's renderer directly
-                    try {
-                      if (currentModelViewer.renderer) {
-                        // Force renderer to update
-                        if (currentModelViewer.renderer.render) {
-                          const renderScene = currentModelViewer.scene || scene
-                          const renderCamera =
-                            currentModelViewer.camera || currentModelViewer.getCamera()
-                          if (renderScene && renderCamera) {
-                            currentModelViewer.renderer.render(renderScene, renderCamera)
-                            console.log('✅ Forced render via renderer.render()')
-                          }
-                        }
-
-                        // Also try to trigger render loop
-                        if (currentModelViewer.renderer.setAnimationLoop) {
-                          // This will trigger the next frame
-                          currentModelViewer.renderer.setAnimationLoop(time => {
-                            // Animation loop callback - renderer will update
-                          })
-                        }
-                      }
-                    } catch (e) {
-                      console.warn('⚠️ Could not force render via renderer:', e)
-                    }
-
-                    // Method 3: Trigger custom event
-                    if (currentModelViewer.dispatchEvent) {
-                      currentModelViewer.dispatchEvent(new CustomEvent('needs-update'))
-                      currentModelViewer.dispatchEvent(new CustomEvent('render'))
-                      console.log('✅ Dispatched needs-update and render events')
-                    }
-
-                    // Method 4: Update a property to trigger re-render
-                    try {
-                      // Temporarily change exposure to force update
-                      const originalExposure = currentModelViewer.getAttribute('exposure')
-                      currentModelViewer.setAttribute(
-                        'exposure',
-                        parseFloat(originalExposure || '1.4') + 0.001
-                      )
-                      setTimeout(() => {
-                        currentModelViewer.setAttribute('exposure', originalExposure || '1.4')
-                      }, 10)
-                      console.log('✅ Triggered update via exposure change')
-                    } catch (e) {
-                      console.warn('⚠️ Could not trigger update via exposure:', e)
-                    }
-
-                    // Method 5: Force update via model property change
-                    try {
-                      if (currentModelViewer.model) {
-                        // Trigger model update
-                        currentModelViewer.dispatchEvent(new Event('load'))
-                        console.log('✅ Dispatched load event')
-                      }
-                    } catch (e) {
-                      console.warn('⚠️ Could not dispatch load event:', e)
-                    }
-                  }
+                  })
                 }
-
-                console.log('✅ Texture applied successfully, layers and lighting preserved')
-
-                // Additional check: verify texture is actually on materials
-                setTimeout(() => {
-                  const verifyContainer = containerRef.current
-                  if (verifyContainer) {
-                    const verifyModelViewer = verifyContainer.querySelector('model-viewer')
-                    if (
-                      verifyModelViewer &&
-                      verifyModelViewer.model &&
-                      verifyModelViewer.model.scene
-                    ) {
-                      let verifiedCount = 0
-                      verifyModelViewer.model.scene.traverse(node => {
-                        if (node.isMesh && node.material) {
-                          const materials = Array.isArray(node.material)
-                            ? node.material
-                            : [node.material]
-                          materials.forEach(material => {
-                            if (material.map && material.map.image && material.map.image.src) {
-                              if (material.map.image.src.includes(texturePath.split('/').pop())) {
-                                verifiedCount++
-                              }
-                            }
-                          })
-                        }
-                      })
-                      console.log(
-                        `🔍 Verification: ${verifiedCount} materials have texture applied`
-                      )
-                    }
-                  }
-                }, 500)
               },
+              
+              // Progress callback (опционально)
               undefined,
+              
+              // Error callback
               error => {
-                console.error('❌ Failed to load texture via Three.js:', error)
-                console.error('   Texture path:', texturePath)
-                console.error('   Error details:', error.message || error)
+                console.error('Failed to load texture:', texturePath, error)
+                // Показать пользователю сообщение об ошибке
+                console.warn(`⚠️ Could not load texture: ${texturePath}`)
               }
             )
-          }
-          verifyTexture.onerror = () => {
-            console.error('❌ Texture file NOT FOUND or cannot be loaded:', texturePath)
-            console.error('   Please verify the file exists in /public' + texturePath)
-            console.error('   Expected location:', '/public' + texturePath)
-          }
-          verifyTexture.src = texturePath
+          } // Close applyTexture function
+          
+          // Call applyTexture to start texture application
+          applyTexture()
+        } catch (err) {
+          console.error('❌ Error in texture application:', err)
         }
-
-        // Wait for model to be loaded before applying texture
-        // Try multiple times to ensure model is fully loaded
-        const tryApplyTexture = (attempt = 0) => {
-          // Re-check model-viewer element (it might have been recreated)
-          const currentContainer = containerRef.current
-          if (!currentContainer) {
-            console.warn('⚠️ Container disappeared, retrying...')
-            if (attempt < 3) {
-              setTimeout(() => tryApplyTexture(attempt + 1), 500)
-            }
-            return
-          }
-
-          const currentModelViewer = currentContainer.querySelector('model-viewer')
-          if (!currentModelViewer) {
-            console.warn('⚠️ model-viewer element disappeared, retrying...')
-            if (attempt < 3) {
-              setTimeout(() => tryApplyTexture(attempt + 1), 500)
-            }
-            return
-          }
-
-          if (currentModelViewer.loaded) {
-            console.log(`🔄 Attempt ${attempt + 1}: Model is loaded, applying texture...`)
-            // Update modelViewer reference in applyTexture closure
-            applyTexture()
-          } else {
-            console.log(`⏳ Attempt ${attempt + 1}: Model not loaded yet, waiting...`)
-            if (attempt < 5) {
-              // Wait for model-loaded event or retry after delay
-              const handleModelLoaded = () => {
-                console.log('✅ Model-loaded event fired, applying texture...')
-                setTimeout(() => {
-                  applyTexture()
-                }, 500) // Increased delay to ensure scene is ready
-                currentModelViewer.removeEventListener('model-loaded', handleModelLoaded)
-              }
-
-              // Also set a timeout as fallback
-              const timeout = setTimeout(() => {
-                const checkContainer = containerRef.current
-                if (checkContainer) {
-                  const checkModelViewer = checkContainer.querySelector('model-viewer')
-                  if (checkModelViewer && checkModelViewer.loaded) {
-                    console.log('⏰ Timeout: Model loaded, applying texture...')
-                    applyTexture()
-                  } else {
-                    console.log(
-                      `⏰ Timeout: Model still not loaded, retrying (attempt ${attempt + 1})...`
-                    )
-                    tryApplyTexture(attempt + 1)
-                  }
-                }
-              }, 1500)
-
-              currentModelViewer.addEventListener('model-loaded', () => {
-                clearTimeout(timeout)
-                handleModelLoaded()
-              })
-            } else {
-              console.error('❌ Failed to apply texture after 5 attempts')
-            }
-          }
-        }
-
-        tryApplyTexture()
-      } catch (error) {
-        console.warn('⚠️ Texture swap not available:', error)
-        console.log('💡 Tip: Export your GLB with material variants for each design')
-      }
-    }
-  }, [selectedDesign, isModelLoaded, isHondaLead])
+      } // Close if (textureMaterial && !selectedDesign?.variant)
+    })() // Close async IIFE
+  }, [selectedDesign?.id, selectedDesign?.slug, isModelLoaded]) // Removed modelLoadError to prevent loop
 
   // Show loading state until mounted or script loaded
   const shouldShowLoading = typeof window === 'undefined' || !isMounted || !scriptLoaded
@@ -1482,16 +1836,6 @@ export default function ScooterViewer({
     )
   }
 
-  // Debug: логируем состояние перед рендером
-  if (isHondaLead) {
-    console.log('🎨 [Placeholder] Rendering placeholder for Honda Lead:', {
-      isHondaLead,
-      modelPath,
-      isModelLoaded,
-      src: '/wraps/designs/honda-lead/Cinematic_404.png',
-    })
-  }
-
   return (
     <div
       className={`relative w-full h-full ${className}`}
@@ -1499,56 +1843,15 @@ export default function ScooterViewer({
       data-client-only="true"
       style={{ position: 'relative', overflow: 'hidden' }}
     >
-      {/* Фотозаглушка для Honda Lead - за 3D моделью */}
-      {isHondaLead && (
-        <img
-          src="/wraps/designs/honda-lead/Cinematic_404.png"
-          alt="Honda Lead Background"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 1, // За моделью
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center',
-            opacity: isModelLoaded ? 0.6 : 1, // Видна всегда
-            pointerEvents: 'none', // Не блокируем взаимодействие с 3D моделью
-          }}
-          onError={e => {
-            console.error('❌ [Placeholder] Failed to load:', {
-              src: '/wraps/designs/honda-lead/Cinematic_404.png',
-              error: e,
-              target: e.currentTarget,
-            })
-            // Не скрываем, показываем красный фон для отладки
-            e.currentTarget.style.backgroundColor = 'rgba(255, 0, 0, 0.5)'
-            e.currentTarget.style.border = '3px solid red'
-          }}
-          onLoad={() => {
-            console.log('✅ [Placeholder] Image loaded successfully:', {
-              src: '/wraps/designs/honda-lead/Cinematic_404.png',
-              isModelLoaded,
-              opacity: isModelLoaded ? 0.6 : 1,
-            })
-          }}
-        />
-      )}
-
-      {/* Чистый градиентный фон (если не Honda Lead) */}
-      {!isHondaLead && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            zIndex: 0,
-            background: 'linear-gradient(180deg, #f0f2f5 0%, #e8eaed 100%)',
-          }}
-        />
-      )}
+      {/* Градиентный фон для всех моделей */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 0,
+          background: 'linear-gradient(180deg, #f0f2f5 0%, #e8eaed 100%)',
+        }}
+      />
 
       {/* 3D Model Viewer */}
       <div
@@ -1563,3 +1866,4 @@ export default function ScooterViewer({
     </div>
   )
 }
+

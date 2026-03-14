@@ -1,0 +1,18 @@
+{
+  "exclude": [
+    "**/node_modules",
+    "**/.next",
+    "**/dist",
+    "**/build",
+    "**/venv",
+    "**/.venv",
+    "**/assets",
+    "**/textures",
+    "**/renders",
+    "**/exports"
+  ]
+}
+
+
+
+

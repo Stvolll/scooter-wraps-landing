@@ -1,72 +1,66 @@
-// lib/prisma.ts
 import { PrismaClient } from '@prisma/client'
 
-declare global {
-  // allow global `var` during development to avoid creating multiple instances
-  // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
 }
 
-// Lazy initialization - only create PrismaClient when actually used
-function getPrismaClient(): PrismaClient | null {
-  if (!process.env.DATABASE_URL) {
-    console.warn(
-      '⚠️ Prisma Client is not initialized. Please set DATABASE_URL in your .env.local file.'
-    )
-    return null
-  }
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    // Add connection timeout to prevent hanging
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
+  })
 
-  if (global.prisma) {
-    return global.prisma
-  }
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
+// Graceful shutdown
+if (process.env.NODE_ENV === 'production') {
+  process.on('beforeExit', async () => {
+    await prisma.$disconnect()
+  })
+}
+
+// Helper function to execute Prisma queries with timeout
+export async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number = 1000,
+  fallback: T | null = null
+): Promise<T | null> {
+  let timeoutId: NodeJS.Timeout | null = null
+  let isResolved = false
+  
   try {
-    const client = new PrismaClient()
-    if (process.env.NODE_ENV !== 'production') {
-      global.prisma = client
-    }
-    return client
+    const timeoutPromise = new Promise<T | null>((_, reject) => {
+      timeoutId = setTimeout(() => {
+        if (!isResolved) {
+          isResolved = true
+          reject(new Error('Query timeout'))
+        }
+      }, timeoutMs)
+    })
+    
+    const result = await Promise.race([
+      promise.then(value => {
+        if (!isResolved) {
+          isResolved = true
+          if (timeoutId) clearTimeout(timeoutId)
+          return value
+        }
+        return fallback
+      }),
+      timeoutPromise
+    ])
+    
+    if (timeoutId) clearTimeout(timeoutId)
+    return result
   } catch (error) {
-    console.error('Failed to initialize Prisma Client:', error)
-    return null
+    if (timeoutId) clearTimeout(timeoutId)
+    // Silently return fallback on timeout or error
+    return fallback
   }
 }
-
-// Export a proxy that creates PrismaClient only when accessed
-// Returns null if DATABASE_URL is not set, allowing graceful degradation
-export const prisma = new Proxy({} as PrismaClient, {
-  get(_target, prop) {
-    const client = getPrismaClient()
-    if (!client) {
-      // Return a no-op function for methods, null for properties
-      if (typeof prop === 'string' && prop.startsWith('$')) {
-        // Prisma methods like $transaction, $connect, etc.
-        return async () => {
-          throw new Error(
-            'Prisma Client is not initialized. Please set DATABASE_URL in your .env.local file.'
-          )
-        }
-      }
-      // For model access (design, deal, etc.), return a proxy that throws on access
-      return new Proxy(
-        {},
-        {
-          get() {
-            throw new Error(
-              'Prisma Client is not initialized. Please set DATABASE_URL in your .env.local file.'
-            )
-          },
-        }
-      )
-    }
-
-    const value = (client as any)[prop]
-
-    // If it's a function, bind it to the client
-    if (typeof value === 'function') {
-      return value.bind(client)
-    }
-
-    return value
-  },
-})
