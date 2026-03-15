@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, ChangeEvent, FormEvent, MouseEvent } from 'react'
+import { useState, ChangeEvent, FormEvent, MouseEvent, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Calendar, Clock, MapPin } from 'lucide-react'
 import { format, addDays, isSameDay, isPast } from 'date-fns'
@@ -8,6 +8,10 @@ import { useTranslations } from '@/hooks/useTranslations'
 
 interface InstallationBookingProps {
   onClose: () => void
+  /** Pre-fill scooter model (e.g. from URL ?model=honda-vision) */
+  initialScooterModel?: string
+  /** Pre-fill design in notes (e.g. from URL ?design=honda-vision-dragon) */
+  initialDesign?: string
 }
 
 type Workshop = { id: string; name: string; address: string }
@@ -45,7 +49,11 @@ const TIME_SLOTS = [
   '19:00',
 ]
 
-export default function InstallationBooking({ onClose }: InstallationBookingProps) {
+export default function InstallationBooking({
+  onClose,
+  initialScooterModel = '',
+  initialDesign = '',
+}: InstallationBookingProps) {
   const { lang } = useTranslations()
   const workshopPartners = WORKSHOP_PARTNERS[lang]
   const [selectedDate, setSelectedDate] = useState<Date>(addDays(new Date(), 1))
@@ -55,10 +63,20 @@ export default function InstallationBooking({ onClose }: InstallationBookingProp
     name: '',
     phone: '',
     email: '',
-    scooterModel: '',
-    notes: '',
+    scooterModel: initialScooterModel,
+    notes: initialDesign ? `Design: ${initialDesign}` : '',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (initialScooterModel || initialDesign) {
+      setFormData(prev => ({
+        ...prev,
+        ...(initialScooterModel && { scooterModel: initialScooterModel }),
+        ...(initialDesign && { notes: prev.notes || `Design: ${initialDesign}` }),
+      }))
+    }
+  }, [initialScooterModel, initialDesign])
 
   // Generate available dates (next 30 days)
   const availableDates = Array.from({ length: 30 }, (_, i) => addDays(new Date(), i + 1))
@@ -112,7 +130,7 @@ export default function InstallationBooking({ onClose }: InstallationBookingProp
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          date: selectedDate.toISOString(),
+          date: format(selectedDate, 'yyyy-MM-dd'),
           time: selectedTime,
           workshopId: selectedWorkshop,
           timezone: 'Asia/Ho_Chi_Minh',

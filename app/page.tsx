@@ -461,12 +461,14 @@ export default function Home() {
     }
   }
 
-  // Get current panorama based on selected design (memoized to prevent re-renders)
-  // Приоритет: design.panorama > design.background > scooter.panorama > fallback
+  // Фон 3D-сцены: у каждой карточки свой panorama; при смене карточки меняется фон
   const currentPanorama = useMemo(() => {
     if (!selectedDesign) return '/hdr/panoramic_3.webp'
-    const url = (selectedDesign as any).panorama || (selectedDesign as any).background
-    if (url && url.startsWith('/hdr/')) return url
+    const url =
+      (selectedDesign as any).panorama ||
+      (selectedDesign as any).bg_webp ||
+      (selectedDesign as any).background
+    if (url && typeof url === 'string' && url.trim() !== '') return url
     return '/hdr/panoramic_3.webp'
   }, [selectedDesign])
 

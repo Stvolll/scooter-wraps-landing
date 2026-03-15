@@ -11,8 +11,9 @@
  */
 
 import { Suspense, useRef, useEffect, useState } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { OrbitControls, useGLTF } from '@react-three/drei'
+import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber'
+import { OrbitControls, useGLTF, ContactShadows, Environment } from '@react-three/drei'
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import * as THREE from 'three'
 
 interface ScooterViewer3DProps {
@@ -44,10 +45,12 @@ function ScooterModel({
   modelPath,
   selectedDesign,
   onRotationChange,
+  onGroundLevelChange,
 }: {
   modelPath: string
   selectedDesign?: any
   onRotationChange?: (rotation: number) => void
+  onGroundLevelChange?: (groundY: number) => void
 }) {
   const gltf = useGLTF(modelPath)
   const modelRef = useRef<THREE.Group>(null)
@@ -55,6 +58,17 @@ function ScooterModel({
 
   // Use scene directly (drei handles caching)
   const scene = gltf.scene
+
+  // Enable shadows on all meshes
+  useEffect(() => {
+    if (!scene) return
+    scene.traverse((obj) => {
+      if (obj instanceof THREE.Mesh) {
+        obj.castShadow = true
+        obj.receiveShadow = true
+      }
+    })
+  }, [scene])
 
   // Apply texture if provided
   useEffect(() => {
@@ -123,13 +137,23 @@ function ScooterModel({
     }
   }, [selectedDesign, scene])
 
-  // Compute bbox and lower model so bottom sits on floor (y=0)
+  // Scale and place model so wheels sit on scene floor (FLOOR_Y), опустить на ~30%
+  const FLOOR_Y = -0.35
   useEffect(() => {
     if (scene) {
+      const MODEL_SCALE = 0.8
+      scene.scale.setScalar(MODEL_SCALE)
+      scene.updateMatrixWorld(true)
       const box = new THREE.Box3().setFromObject(scene)
-      scene.position.y = -box.min.y
+      const size = new THREE.Vector3()
+      box.getSize(size)
+      const drop = size.y * 0.3
+      const groundLevel = FLOOR_Y - drop
+      scene.position.y = groundLevel - box.min.y
+      scene.updateMatrixWorld(true)
+      onGroundLevelChange?.(groundLevel)
     }
-  }, [scene])
+  }, [scene, onGroundLevelChange])
 
   // Track rotation
   useFrame(() => {
@@ -257,60 +281,65 @@ function DynamicLighting({ rotationY }: { rotationY: number }) {
   )
 }
 
-const ORBIT_TARGET_Y = 0.4
-// Радиус меньше — заметный параллакс при вращении/зуме (камера 1.5–5 внутри сферы)
-const PANORAMA_SPHERE_RADIUS = 25
+// Уровень «пола» сцены: опускаем модель и пол примерно на 30% высоты
+const FLOOR_Y = -0.35
+const ORBIT_TARGET_Y = FLOOR_Y + 0.28
+const INITIAL_AZIMUTH = -Math.PI / 2 // правый борт к зрителю
+const AUTOROTATE_SPEED = 60 / 35 // ~1.714, 35 сек на оборот (по часовой)
 
-/** Панорама как 3D-сфера: фон в одной сцене со скутером, двигается при орбите и зуме. */
-function PanoramaSphere({ panoramaUrl }: { panoramaUrl?: string }) {
-  const [texture, setTexture] = useState<THREE.Texture | null>(null)
-  const textureRef = useRef<THREE.Texture | null>(null)
-  const url = panoramaUrl || '/hdr/panoramic_3.webp'
+/**
+ * HDR панорама как фон и environment (equirect). Одна загрузка через useLoader.
+ */
+function GroundedEnvironment({ panoramaUrl }: { panoramaUrl?: string }) {
+  const { scene } = useThree()
+  const url = panoramaUrl && panoramaUrl.trim() !== '' ? panoramaUrl : '/hdr/panoramic_3.webp'
+  const normalizedUrl = url.startsWith('/') ? url : `/${url}`
+  const texture = useLoader(THREE.TextureLoader, normalizedUrl)
+  texture.mapping = THREE.EquirectangularReflectionMapping
+  if (THREE.SRGBColorSpace) texture.colorSpace = THREE.SRGBColorSpace
 
   useEffect(() => {
-    if (!url) {
-      if (textureRef.current) {
-        textureRef.current.dispose()
-        textureRef.current = null
-      }
-      setTexture(null)
+    if (!texture) {
+      scene.background = new THREE.Color(0x0a0a0a)
+      scene.environment = null
       return
     }
-    const loader = new THREE.TextureLoader()
-    loader.load(
-      url,
-      tex => {
-        tex.mapping = THREE.EquirectangularReflectionMapping
-        if (THREE.SRGBColorSpace !== undefined) tex.colorSpace = THREE.SRGBColorSpace
-        if (textureRef.current) textureRef.current.dispose()
-        textureRef.current = tex
-        setTexture(tex)
-      },
-      undefined,
-      () => setTexture(null)
-    )
+    scene.background = texture
+    scene.environment = texture
     return () => {
-      if (textureRef.current) {
-        textureRef.current.dispose()
-        textureRef.current = null
-      }
-      setTexture(null)
+      if (scene.background === texture) scene.background = new THREE.Color(0x0a0a0a)
+      if (scene.environment === texture) scene.environment = null
     }
-  }, [url])
+  }, [scene, texture])
 
   if (!texture) return null
-
   return (
-    <mesh position={[0, ORBIT_TARGET_Y, 0]} renderOrder={-1}>
-      <sphereGeometry args={[PANORAMA_SPHERE_RADIUS, 64, 40]} />
-      <meshBasicMaterial
-        map={texture}
-        side={THREE.BackSide}
-        depthWrite={false}
-        fog={false}
-      />
-    </mesh>
+    <Environment
+      map={texture}
+      background
+      backgroundIntensity={0.9}
+      environmentIntensity={0.9}
+      backgroundBlurriness={0.02}
+    />
   )
+}
+
+function FovZoom({ min = 24, max = 38 }: { min?: number; max?: number }) {
+  const { camera, gl } = useThree()
+  useEffect(() => {
+    if (!(camera instanceof THREE.PerspectiveCamera)) return
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      const next = THREE.MathUtils.clamp(camera.fov + e.deltaY * 0.02, min, max)
+      if (next !== camera.fov) {
+        camera.fov = next
+        camera.updateProjectionMatrix()
+      }
+    }
+    gl.domElement.addEventListener('wheel', onWheel, { passive: false })
+    return () => gl.domElement.removeEventListener('wheel', onWheel)
+  }, [camera, gl, min, max])
+  return null
 }
 
 // Main scene component
@@ -326,16 +355,20 @@ function Scene({
   onRotationChange?: (rotation: number) => void
 }) {
   const [rotationY, setRotationY] = useState(0)
+  const [groundY, setGroundY] = useState(FLOOR_Y)
   const { camera } = useThree()
+  const controlsRef = useRef<OrbitControlsImpl | null>(null)
 
-  // Set initial camera position (side view)
+  // Set initial camera position (side view); камера отодвинута, фон кажется дальше
   useEffect(() => {
-    camera.position.set(0, 0.4, 2.5)
-    camera.lookAt(0, 0.4, 0)
+    camera.position.set(0, ORBIT_TARGET_Y + 0.15, 2.8)
+    camera.lookAt(0, ORBIT_TARGET_Y, 0)
     if (camera instanceof THREE.PerspectiveCamera) {
-      camera.fov = 30
+      camera.fov = 34
       camera.updateProjectionMatrix()
     }
+    controlsRef.current?.setAzimuthalAngle(INITIAL_AZIMUTH)
+    controlsRef.current?.update()
   }, [camera])
 
   const handleRotationChange = (rotation: number) => {
@@ -345,12 +378,11 @@ function Scene({
 
   return (
     <>
-      {/* Camera - set via useEffect in Scene component */}
-
+      <FovZoom />
       {/* Lighting */}
       <DynamicLighting rotationY={rotationY} />
 
-      <PanoramaSphere panoramaUrl={panoramaUrl} />
+      <GroundedEnvironment panoramaUrl={panoramaUrl} />
       <ambientLight intensity={0.5} />
       <directionalLight position={[5, 5, 5]} intensity={1} />
 
@@ -360,21 +392,31 @@ function Scene({
           modelPath={modelPath}
           selectedDesign={selectedDesign}
           onRotationChange={handleRotationChange}
+          onGroundLevelChange={setGroundY}
         />
       </Suspense>
 
-      {/* Controls - horizontal rotation and zoom */}
+      {/* Floor and contact shadows привязаны к уровню пола от модели */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, groundY - 0.001, 0]} receiveShadow>
+        <planeGeometry args={[20, 20]} />
+        <shadowMaterial transparent opacity={0.35} />
+      </mesh>
+      <ContactShadows position={[0, groundY + 0.001, 0]} opacity={0.35} blur={2.2} far={5} />
+
+      {/* Controls - rotation only; zoom via FovZoom (FOV) */}
       <OrbitControls
-        enableZoom={true}
+        ref={controlsRef}
+        enableZoom={false}
         enablePan={false}
-        minDistance={1.5}
-        maxDistance={5}
-        zoomSpeed={0.8}
+        minDistance={2.5}
+        maxDistance={2.5}
         minPolarAngle={Math.PI / 4}
         maxPolarAngle={Math.PI / 2.1}
         autoRotate
-        autoRotateSpeed={0.5}
-        target={[0, 0.4, 0]}
+        autoRotateSpeed={AUTOROTATE_SPEED}
+        enableDamping
+        dampingFactor={0.08}
+        target={[0, ORBIT_TARGET_Y, 0]}
       />
     </>
   )

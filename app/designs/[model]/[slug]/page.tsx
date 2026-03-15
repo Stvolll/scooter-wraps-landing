@@ -38,6 +38,8 @@ export async function generateMetadata({ params }: DesignPageProps): Promise<Met
   let scooterName = 'Scooter'
   let imageUrl = '/images/studio-panorama.png'
   
+  const slugStrippedMeta = slug.startsWith(`${model}-`) ? slug.slice(model.length + 1) : slug
+
   if (process.env.DATABASE_URL) {
     try {
       // Use helper function with timeout for metadata (very fast timeout to prevent hanging)
@@ -50,6 +52,8 @@ export async function generateMetadata({ params }: DesignPageProps): Promise<Met
                 { slug: `${model}-${slug}` },
                 { slug: slug },
                 { id: slug },
+                { slug: slugStrippedMeta },
+                { id: slugStrippedMeta },
               ],
             },
             include: {
@@ -86,13 +90,15 @@ export async function generateMetadata({ params }: DesignPageProps): Promise<Met
 
   // Fallback to config
   if (designName === 'Custom Design') {
-    const scooter = (scooters as any)[model]
-    const configDesign = scooter?.designs?.find((d: any) => d.id === slug)
+    const scooterMeta = (scooters as any)[model]
+    const configDesignMeta = scooterMeta?.designs?.find(
+      (d: any) => d.id === slug || d.slug === slug || d.id === slugStrippedMeta || d.slug === slugStrippedMeta
+    )
 
-    if (configDesign && scooter) {
-      designName = configDesign.name || 'Custom Design'
-      scooterName = scooter.name || 'Scooter'
-      imageUrl = configDesign.preview || configDesign.images?.[0] || '/images/designs/yamaha-nvx/yamaha-nvx-0.jpg'
+    if (configDesignMeta && scooterMeta) {
+      designName = configDesignMeta.name || 'Custom Design'
+      scooterName = scooterMeta.name || 'Scooter'
+      imageUrl = configDesignMeta.preview || configDesignMeta.images?.[0] || '/images/designs/yamaha-nvx/yamaha-nvx-0.jpg'
     } else {
       return {
         title: 'Design Not Found',
@@ -155,6 +161,9 @@ export default async function DesignPage({ params }: DesignPageProps) {
   let dbDesign = null
   let dbScooter = null
   
+  // slug может быть "nvx-beer" или "beer" — ищем по обоим вариантам
+  const slugStripped = slug.startsWith(`${model}-`) ? slug.slice(model.length + 1) : slug
+
   // Try to load from database (with quick fallback to config)
   // Use very aggressive timeout to prevent RSC payload fetch failures
   if (process.env.DATABASE_URL) {
@@ -170,6 +179,8 @@ export default async function DesignPage({ params }: DesignPageProps) {
                 { slug: `${model}-${slug}` },
                 { slug: slug },
                 { id: slug },
+                { slug: slugStripped },
+                { id: slugStripped },
               ],
             },
             include: {
@@ -266,9 +277,29 @@ export default async function DesignPage({ params }: DesignPageProps) {
     )
   }
 
-  // Fallback to config (for legacy designs)
-  const scooter = (scooters as any)[model]
-  const configDesign = scooter?.designs?.find((d: any) => d.id === slug)
+  // Fallback to config (for legacy designs) или данные из API
+  let scooter = (scooters as any)[model]
+  let configDesign = scooter?.designs?.find(
+    (d: any) => d.id === slug || d.slug === slug || d.id === slugStripped || d.slug === slugStripped
+  )
+
+  // Если в конфиге нет дизайнов — пробуем API (те же данные, что на главной)
+  if (!configDesign && model) {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+      const res = await fetch(`${baseUrl}/api/scooters`, { cache: 'no-store', next: { revalidate: 0 } })
+      if (res.ok) {
+        const data = await res.json()
+        const apiScooters = data.scooters || data
+        scooter = apiScooters[model]
+        configDesign = scooter?.designs?.find(
+          (d: any) => d.id === slug || d.slug === slug || d.id === slugStripped || d.slug === slugStripped
+        )
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
 
   if (configDesign && scooter) {
     const designName = configDesign.name || 'Custom Design'

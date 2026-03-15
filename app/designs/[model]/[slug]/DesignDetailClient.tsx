@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -23,7 +23,13 @@ import {
   Award,
   Users,
   TrendingUp,
+  Share2,
+  X,
+  Maximize2,
+  Play,
 } from 'lucide-react'
+
+type MediaItem = { type: 'image'; url: string } | { type: 'video'; url: string }
 
 interface DesignDetailClientProps {
   scooter: any
@@ -43,6 +49,8 @@ export default function DesignDetailClient({
   const [showContactOptions, setShowContactOptions] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const [images, setImages] = useState<string[]>(['/images/studio-panorama.png'])
+  const [fullscreenOpen, setFullscreenOpen] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
 
   // Mock data for conversion elements
   const rating = 4.8
@@ -113,14 +121,71 @@ export default function DesignDetailClient({
     }
   }, [images.length, currentImageIndex])
 
+  // Галерея: картинки + видео (для полноэкранного просмотра)
+  const mediaItems: MediaItem[] = useMemo(() => {
+    const list: MediaItem[] = images.map(url => ({ type: 'image' as const, url }))
+    if (design.video && !list.some(m => m.type === 'video' && m.url === design.video)) {
+      list.push({ type: 'video', url: design.video })
+    }
+    return list.length ? list : [{ type: 'image', url: '/images/studio-panorama.png' }]
+  }, [images, design.video])
+
+  const currentMedia = mediaItems[currentImageIndex] ?? mediaItems[0]
+  const goPrev = useCallback(() => {
+    setCurrentImageIndex(prev => (prev - 1 + mediaItems.length) % mediaItems.length)
+  }, [mediaItems.length])
+  const goNext = useCallback(() => {
+    setCurrentImageIndex(prev => (prev + 1) % mediaItems.length)
+  }, [mediaItems.length])
+
+  useEffect(() => {
+    if (!fullscreenOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFullscreenOpen(false)
+      if (e.key === 'ArrowLeft') goPrev()
+      if (e.key === 'ArrowRight') goNext()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      document.body.style.overflow = ''
+    }
+  }, [fullscreenOpen, goPrev, goNext])
+
+  const shareTitle = `${design.name} - ${scooter.name} | TXD`
+  const shareText = design.description
+    ? `${design.name} for ${scooter.name}. ${design.description.slice(0, 120)}...`
+    : `Premium vinyl wrap "${design.name}" for ${scooter.name}. Professional installation, 5-year warranty.`
+
+  const handleShare = useCallback(async () => {
+    if (typeof window === 'undefined') return
+    const url = `${window.location.origin}/designs/${modelId}/${designId}`
+    const title = shareTitle
+    const text = shareText
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text, url })
+        setShareCopied(true)
+        setTimeout(() => setShareCopied(false), 2000)
+      } else {
+        await navigator.clipboard.writeText(url)
+        setShareCopied(true)
+        setTimeout(() => setShareCopied(false), 2000)
+      }
+    } catch (e) {
+      try {
+        await navigator.clipboard.writeText(url)
+        setShareCopied(true)
+        setTimeout(() => setShareCopied(false), 2000)
+      } catch {
+        // ignore
+      }
+    }
+  }, [modelId, designId, shareTitle, shareText])
+
   const handleAddToCart = () => {
     console.log('Added to cart:', { modelId, designId })
-  }
-
-  const handleBookInstallation = () => {
-    if (typeof window !== 'undefined') {
-      window.location.href = `/booking?model=${modelId}&design=${designId}`
-    }
   }
 
   const handlePrevImage = () => {
@@ -156,111 +221,130 @@ export default function DesignDetailClient({
       {/* Main Content */}
       <div className="container mx-auto px-4 md:px-8 pt-32 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-7xl mx-auto">
-          {/* Left: Image Gallery */}
+          {/* Left: Image Gallery — клик открывает полноэкран */}
           <div className="space-y-4">
             {/* Main Image */}
-            <div className="relative aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-neutral-800 to-neutral-900">
-              <Image
-                src={isMounted && images.length > 0 ? images[currentImageIndex] || '/images/studio-panorama.png' : '/images/studio-panorama.png'}
-                alt={`${design.name} - View ${currentImageIndex + 1}`}
-                fill
-                className="object-cover transition-opacity duration-300"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
-                priority={true}
-                unoptimized={true}
-                onError={e => {
-                  const target = e.target as HTMLImageElement
-                  // Try to find alternative path or use fallback
-                  const currentSrc = target.src
-                  if (currentSrc.includes('/images/sh160/') || currentSrc.includes('/textures/sh160/')) {
-                    // Try uploads path
-                    const filename = currentSrc.split('/').pop() || ''
-                    const uploadsPath = `/uploads/images/${filename}`
-                    target.src = uploadsPath
-                  } else {
-                    target.src = '/images/studio-panorama.png'
-                  }
-                }}
-              />
+            <div
+              className="relative aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-neutral-800 to-neutral-900 cursor-pointer group"
+              onClick={() => setFullscreenOpen(true)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && setFullscreenOpen(true)}
+              aria-label="Open fullscreen"
+            >
+              {currentMedia?.type === 'video' ? (
+                <video
+                  src={currentMedia.url}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                />
+              ) : (
+                <Image
+                  src={isMounted && images.length > 0 ? images[currentImageIndex] || '/images/studio-panorama.png' : '/images/studio-panorama.png'}
+                  alt={`${design.name} - View ${currentImageIndex + 1}`}
+                  fill
+                  className="object-cover transition-opacity duration-300"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                  priority={true}
+                  unoptimized={true}
+                  onError={e => {
+                    const target = e.target as HTMLImageElement
+                    const currentSrc = target.src
+                    if (currentSrc.includes('/images/sh160/') || currentSrc.includes('/textures/sh160/')) {
+                      const filename = currentSrc.split('/').pop() || ''
+                      target.src = `/uploads/images/${filename}`
+                    } else {
+                      target.src = '/images/studio-panorama.png'
+                    }
+                  }}
+                />
+              )}
+              <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/25 transition-colors">
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity rounded-full p-3 bg-black/50 backdrop-blur-sm">
+                  {currentMedia?.type === 'video' ? (
+                    <Play className="w-10 h-10 text-white fill-white" />
+                  ) : (
+                    <Maximize2 className="w-10 h-10 text-white" />
+                  )}
+                </div>
+              </div>
 
               {/* Navigation Arrows */}
-              {isMounted && images.length > 1 && (
+              {isMounted && mediaItems.length > 1 && (
                 <>
                   <button
-                    onClick={handlePrevImage}
+                    type="button"
+                    onClick={e => { e.stopPropagation(); goPrev() }}
                     className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-all"
+                    aria-label="Previous"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 19l-7-7 7-7"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
                   <button
-                    onClick={handleNextImage}
+                    type="button"
+                    onClick={e => { e.stopPropagation(); goNext() }}
                     className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-all"
+                    aria-label="Next"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 </>
               )}
             </div>
 
-            {/* Thumbnail Grid */}
-            {isMounted && images.length > 1 && (
+            {/* Thumbnail Grid — клик переключает и можно открыть полноэкран */}
+            {isMounted && mediaItems.length > 1 && (
               <div className="grid grid-cols-4 gap-3">
-                {images.map((img: string, idx: number) => (
+                {mediaItems.map((item: MediaItem, idx: number) => (
                   <button
                     key={idx}
-                    onClick={() => setCurrentImageIndex(idx)}
+                    type="button"
+                    onClick={() => {
+                      setCurrentImageIndex(idx)
+                      setFullscreenOpen(true)
+                    }}
                     className={`relative aspect-square rounded-2xl overflow-hidden transition-all ${
-                      idx === currentImageIndex
-                        ? 'ring-2 ring-[#00FFA9] scale-105'
-                        : 'hover:scale-105 opacity-60 hover:opacity-100'
+                      idx === currentImageIndex ? 'ring-2 ring-[#00FFA9] scale-105' : 'hover:scale-105 opacity-60 hover:opacity-100'
                     }`}
                   >
-                    <Image
-                      src={img}
-                      alt={`Thumbnail ${idx + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 25vw, 200px"
-                      onError={e => {
-                        const target = e.target as HTMLImageElement
-                        target.src = '/images/studio-panorama.png'
-                      }}
-                    />
+                    {item.type === 'video' ? (
+                      <>
+                        <video
+                          src={item.url}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          muted
+                          playsInline
+                          preload="metadata"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <Play className="w-8 h-8 text-white fill-white" />
+                        </div>
+                      </>
+                    ) : (
+                      <Image
+                        src={item.url}
+                        alt={`Thumbnail ${idx + 1}`}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 25vw, 200px"
+                        onError={e => {
+                          const target = e.target as HTMLImageElement
+                          target.src = '/images/studio-panorama.png'
+                        }}
+                      />
+                    )}
                   </button>
                 ))}
               </div>
             )}
 
-            {/* Video Section */}
-            {design.video && (
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-white mb-3">Design Video</h3>
-                <div className="relative aspect-video rounded-3xl overflow-hidden bg-neutral-900">
-                  <video
-                    src={design.video}
-                    controls
-                    className="w-full h-full object-cover"
-                    preload="metadata"
-                  >
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Right: Product Info */}
@@ -276,9 +360,23 @@ export default function DesignDetailClient({
               <span className="text-white/60">{design.name}</span>
             </div>
 
-            {/* Title & Price */}
+            {/* Title & Price + Share */}
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">{design.name}</h1>
+              <div className="flex items-start justify-between gap-4 mb-2">
+                <h1 className="text-4xl md:text-5xl font-bold text-white flex-1">{design.name}</h1>
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="flex-shrink-0 p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#00FFA9]/30 text-white/80 hover:text-[#00FFA9] transition-all flex items-center gap-2"
+                  title="Share"
+                  aria-label="Share"
+                >
+                  <Share2 className="w-5 h-5" />
+                  <span className="text-sm font-medium hidden sm:inline">
+                    {shareCopied ? 'Link copied!' : 'Share'}
+                  </span>
+                </button>
+              </div>
               <p className="text-xl text-white/60 mb-4">For {scooter.name}</p>
               <div className="flex items-baseline gap-3">
                 <span className="text-5xl font-bold text-[#00FFA9]">{design.price || '$180'}</span>
@@ -345,6 +443,80 @@ export default function DesignDetailClient({
                 </p>
               </div>
             )}
+
+            {/* Action Buttons - under Limited Edition */}
+            <div className="space-y-3">
+              <button
+                onClick={handleAddToCart}
+                className="w-full py-4 rounded-2xl font-semibold text-black transition-all duration-300 hover:scale-105 relative overflow-hidden group"
+                style={{
+                  background: 'linear-gradient(135deg, #00FFA9 0%, #00D4FF 100%)',
+                  boxShadow: '0 8px 32px -4px rgba(0, 255, 169, 0.4)',
+                }}
+              >
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  <CreditCard className="w-5 h-5" />
+                  Add to Cart
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              </button>
+              <button
+                onClick={() => setShowContactOptions(!showContactOptions)}
+                className="w-full py-4 rounded-2xl font-semibold text-white border-2 border-[#00FFA9] hover:bg-[#00FFA9] hover:text-black transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Quick Contact
+              </button>
+            </div>
+
+            {/* Quick Contact Options */}
+            <AnimatePresence>
+              {showContactOptions && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl space-y-3 overflow-hidden"
+                >
+                  <a
+                    href="https://wa.me/84901234567"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-4 rounded-2xl bg-green-500/20 border border-green-500/30 hover:bg-green-500/30 transition-all"
+                  >
+                    <MessageCircle className="w-5 h-5 text-green-400" />
+                    <div className="flex-1">
+                      <div className="font-medium text-white">WhatsApp</div>
+                      <div className="text-xs text-white/60">Instant support</div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-white/40" />
+                  </a>
+                  <a
+                    href="tel:+84901234567"
+                    className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                  >
+                    <Phone className="w-5 h-5 text-[#00FFA9]" />
+                    <div className="flex-1">
+                      <div className="font-medium text-white">Call Now</div>
+                      <div className="text-xs text-white/60">+84 90 123 4567</div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-white/40" />
+                  </a>
+                  <a
+                    href="mailto:info@txd.bike"
+                    className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                  >
+                    <Mail className="w-5 h-5 text-[#00FFA9]" />
+                    <div className="flex-1">
+                      <div className="font-medium text-white">Email</div>
+                      <div className="text-xs text-white/60">info@txd.bike</div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-white/40" />
+                  </a>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Status & Availability */}
             {(design.status || design.editionAvailable !== undefined) && (
@@ -414,89 +586,6 @@ export default function DesignDetailClient({
                 ))}
               </div>
             </div>
-
-            {/* Action Buttons - Enhanced */}
-            <div className="space-y-3">
-              <button
-                onClick={handleBookInstallation}
-                className="w-full py-4 rounded-2xl font-semibold text-black transition-all duration-300 hover:scale-105 relative overflow-hidden group"
-                style={{
-                  background: 'linear-gradient(135deg, #00FFA9 0%, #00D4FF 100%)',
-                  boxShadow: '0 8px 32px -4px rgba(0, 255, 169, 0.4)',
-                }}
-              >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  <Zap className="w-5 h-5" />
-                  Book Installation Now
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              </button>
-
-              <button
-                onClick={handleAddToCart}
-                className="w-full py-4 rounded-2xl font-semibold text-white border-2 border-[#00FFA9] hover:bg-[#00FFA9] hover:text-black transition-all duration-300 flex items-center justify-center gap-2"
-              >
-                <CreditCard className="w-5 h-5" />
-                Add to Cart
-              </button>
-
-              <button
-                onClick={() => setShowContactOptions(!showContactOptions)}
-                className="w-full py-3 rounded-2xl font-medium text-white/90 bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-2"
-              >
-                <MessageCircle className="w-5 h-5" />
-                Quick Contact
-              </button>
-            </div>
-
-            {/* Quick Contact Options */}
-            <AnimatePresence>
-              {showContactOptions && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl space-y-3 overflow-hidden"
-                >
-                <a
-                  href="https://wa.me/84901234567"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-4 rounded-2xl bg-green-500/20 border border-green-500/30 hover:bg-green-500/30 transition-all"
-                >
-                  <MessageCircle className="w-5 h-5 text-green-400" />
-                  <div className="flex-1">
-                    <div className="font-medium text-white">WhatsApp</div>
-                    <div className="text-xs text-white/60">Instant support</div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-white/40" />
-                </a>
-                <a
-                  href="tel:+84901234567"
-                  className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
-                >
-                  <Phone className="w-5 h-5 text-[#00FFA9]" />
-                  <div className="flex-1">
-                    <div className="font-medium text-white">Call Now</div>
-                    <div className="text-xs text-white/60">+84 90 123 4567</div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-white/40" />
-                </a>
-                <a
-                  href="mailto:info@txd.bike"
-                  className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
-                >
-                  <Mail className="w-5 h-5 text-[#00FFA9]" />
-                  <div className="flex-1">
-                    <div className="font-medium text-white">Email</div>
-                    <div className="text-xs text-white/60">info@txd.bike</div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-white/40" />
-                </a>
-                </motion.div>
-              )}
-            </AnimatePresence>
 
             {/* FAQ Section */}
             <div className="p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl">
@@ -613,6 +702,106 @@ export default function DesignDetailClient({
         )}
 
       </div>
+
+      {/* Fullscreen media viewer */}
+      <AnimatePresence>
+        {fullscreenOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md"
+            onClick={() => setFullscreenOpen(false)}
+          >
+            <button
+              type="button"
+              onClick={() => setFullscreenOpen(false)}
+              className="absolute top-4 right-4 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            {mediaItems.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={e => { e.stopPropagation(); goPrev() }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                  aria-label="Previous"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={e => { e.stopPropagation(); goNext() }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                  aria-label="Next"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </>
+            )}
+
+            <div
+              className="relative w-full max-w-6xl max-h-[90vh] h-[85vh] flex items-center justify-center p-4"
+              onClick={e => e.stopPropagation()}
+            >
+              <AnimatePresence mode="wait">
+                {currentMedia?.type === 'image' ? (
+                  <motion.div
+                    key={`img-${currentImageIndex}`}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                    className="relative w-full h-full min-h-[60vh]"
+                  >
+                    <Image
+                      src={currentMedia.url}
+                      alt={`${design.name} fullscreen`}
+                      fill
+                      className="object-contain"
+                      sizes="100vw"
+                      unoptimized
+                      onError={e => {
+                        const t = e.target as HTMLImageElement
+                        t.src = '/images/studio-panorama.png'
+                      }}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key={`vid-${currentImageIndex}`}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                    className="relative w-full aspect-video max-h-[80vh]"
+                  >
+                    <video
+                      src={currentMedia!.url}
+                      className="w-full h-full object-contain rounded-lg"
+                      controls
+                      autoPlay
+                      playsInline
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-sm">
+              {currentImageIndex + 1} / {mediaItems.length}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -491,5 +491,34 @@
         "description": "Vận chuyển & Hỗ trợ lắp đặt."
       }
     }
+  },
+  "cart": {
+    "backToHome": "Quay lại Trang chủ",
+    "title": "Giỏ hàng",
+    "subtitle": "Sản phẩm bạn đã chọn",
+    "emptyTitle": "Giỏ hàng trống",
+    "emptyHint": "Thêm sản phẩm vào giỏ để xem tại đây",
+    "continueShopping": "Tiếp tục mua sắm",
+    "paymentAndDelivery": "Thanh toán và giao hàng",
+    "paymentMethod": "Phương thức thanh toán",
+    "momo": "MoMo",
+    "zalopay": "ZaloPay",
+    "cod": "COD (thanh toán khi nhận hàng)",
+    "bankTransfer": "Chuyển khoản ngân hàng",
+    "visaMastercard": "Visa / Mastercard",
+    "courierServices": "Đơn vị giao hàng",
+    "courierDescription": "Lấy hàng → phân loại → giao tận nhà. Thường có thanh toán khi nhận hàng (COD).",
+    "ghn": "Giao Hàng Nhanh (GHN)",
+    "ghnDesc": "Một trong những đơn vị nhanh nhất, phổ biến với shop online",
+    "ghtk": "Giao Hàng Tiết Kiệm (GHTK)",
+    "ghtkDesc": "Rẻ hơn, phù hợp giao hàng không gấp",
+    "viettelPost": "Viettel Post",
+    "viettelPostDesc": "Mạng lưới toàn quốc, thuận tiện gửi liên tỉnh",
+    "vnpost": "Vietnam Post (VNPost)",
+    "vnpostDesc": "Bưu điện quốc gia, có mặt mọi nơi",
+    "fastCityDelivery": "Giao nhanh nội thành",
+    "fastCityDesc": "Giao hàng qua app — tài liệu, gói nhỏ, đơn gấp.",
+    "grab": "Grab",
+    "be": "Be"
   }
 }

@@ -491,5 +491,34 @@
         "description": "Shipping & Installation support."
       }
     }
+  },
+  "cart": {
+    "backToHome": "Back to Home",
+    "title": "Shopping Cart",
+    "subtitle": "Your selected items",
+    "emptyTitle": "Your cart is empty",
+    "emptyHint": "Add items to your cart to see them here",
+    "continueShopping": "Continue Shopping",
+    "paymentAndDelivery": "Payment and delivery",
+    "paymentMethod": "Payment method",
+    "momo": "MoMo",
+    "zalopay": "ZaloPay",
+    "cod": "COD (cash on delivery)",
+    "bankTransfer": "Bank Transfer",
+    "visaMastercard": "Visa / Mastercard",
+    "courierServices": "Courier services",
+    "courierDescription": "Pickup → sorting → door delivery. Cash on delivery (COD) often available.",
+    "ghn": "Giao Hàng Nhanh (GHN)",
+    "ghnDesc": "One of the fastest, popular with online stores",
+    "ghtk": "Giao Hàng Tiết Kiệm (GHTK)",
+    "ghtkDesc": "Cheaper, good for non-urgent delivery",
+    "viettelPost": "Viettel Post",
+    "viettelPostDesc": "Nationwide network, good for inter-province shipping",
+    "vnpost": "Vietnam Post (VNPost)",
+    "vnpostDesc": "National postal service, available everywhere",
+    "fastCityDelivery": "Fast city delivery",
+    "fastCityDesc": "Motorbike courier via app — documents, small packages, urgent orders.",
+    "grab": "Grab",
+    "be": "Be"
   }
 }
