@@ -518,7 +518,7 @@ function ModelScene3DInner({
         minPolarAngle={Math.PI / 2.4}
         maxPolarAngle={Math.PI / 2.4}
         autoRotate
-        autoRotateSpeed={1.7}
+        autoRotateSpeed={0.85}
       />
       <group ref={groupRef} />
     </>

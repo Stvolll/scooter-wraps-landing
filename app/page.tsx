@@ -304,7 +304,7 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMounted, scootersKeysString])
 
-  // ✅ FIX: Set default design when model changes - use ref to prevent loops
+  // ✅ FIX: Set default design when model or scooters data changes
   const lastModelRef = useRef<string | null>(null)
   const lastDesignIdRef = useRef<string | null>(null)
   
@@ -370,9 +370,9 @@ export default function Home() {
     } catch (err) {
       console.error('Error setting default design:', err)
     }
-    // ✅ FIX: Only depend on selectedModel and isMounted - scooters accessed via closure
+    // Re-run when scooters payload changes to pick first design from fresh API data.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedModel, isMounted])
+  }, [selectedModel, isMounted, scootersKeysString])
 
   // Handle scroll for parallax effect (client-side only)
   useEffect(() => {

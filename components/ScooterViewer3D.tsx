@@ -285,7 +285,7 @@ function DynamicLighting({ rotationY }: { rotationY: number }) {
 const FLOOR_Y = -0.35
 const ORBIT_TARGET_Y = FLOOR_Y + 0.28
 const INITIAL_AZIMUTH = -Math.PI / 2 // правый борт к зрителю
-const AUTOROTATE_SPEED = 60 / 35 // ~1.714, 35 сек на оборот (по часовой)
+const AUTOROTATE_SPEED = 60 / 70 // ~0.857, 70 сек на оборот (по часовой)
 
 /**
  * HDR панорама как фон и environment (equirect). Одна загрузка через useLoader.
