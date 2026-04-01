@@ -12,15 +12,9 @@
  */
 
 import { useEffect, useRef, useState, useMemo } from 'react'
-import dynamic from 'next/dynamic'
+import * as THREE from 'three'
 import { MaterialFormat } from '@/lib/materials/types'
-import {
-  findMaterialByFormat,
-  applyMaterial,
-  getMaterialDisplayUrl,
-} from '@/lib/materials/registry'
-// Новая архитектура
-import { useScooterViewerIntegration } from '@/src/presentation/integrations/ScooterViewerIntegration'
+import { findMaterialByFormat, getMaterialDisplayUrl } from '@/lib/materials/registry'
 
 // Global error handler for RangeError (Float32Array issues) - only on client
 if (typeof window !== 'undefined') {
@@ -38,102 +32,6 @@ if (typeof window !== 'undefined') {
   }, true) // Use capture phase to catch early
 }
 
-// Dynamically import PanoramaBackground (client-side only)
-const PanoramaBackground = dynamic(() => import('./PanoramaBackground'), {
-  ssr: false,
-})
-
-// Функция для инициализации window.getCamera() - будет вызвана внутри useEffect
-// ВАЖНО: Эта функция не должна выполнять никаких действий на верхнем уровне модуля
-function createGetCameraFunction() {
-  // Проверяем, что мы на клиенте
-  if (typeof window === 'undefined') return
-
-  // Проверяем, не создана ли уже функция
-  if (window.getCamera && typeof window.getCamera === 'function') {
-    return
-  }
-
-  // Создаем функцию только если её еще нет
-  try {
-    window.getCamera = () => {
-      // Ищем все model-viewer элементы
-      const viewers = document.querySelectorAll('model-viewer')
-
-      if (viewers.length === 0) {
-        console.error('❌ model-viewer не найден. Убедитесь, что модель загружена.')
-        return null
-      }
-
-      if (viewers.length > 1) {
-        console.log(
-          `ℹ️ Найдено ${viewers.length} model-viewer элементов. Используем первый активный.`
-        )
-      }
-
-      // Берем первый загруженный viewer
-      let viewer = null
-      for (let v of viewers) {
-        if (v.loaded) {
-          viewer = v
-          break
-        }
-      }
-
-      // Если ни один не загружен, берем первый
-      if (!viewer) {
-        viewer = viewers[0]
-        console.log('⚠️ Модель еще не загружена, но попробуем получить данные...')
-      }
-
-      try {
-        const orbit = viewer.getCameraOrbit()
-        const target = viewer.getCameraTarget()
-        const fov = viewer.getFieldOfView()
-
-        if (!orbit || !target || fov === undefined) {
-          console.warn(
-            '⚠️ Не удалось получить данные камеры. Подождите, пока модель полностью загрузится.'
-          )
-          console.log('💡 Попробуйте через несколько секунд: window.getCamera()')
-          return null
-        }
-
-        // Получаем путь к модели для информации
-        const modelPath = viewer.src || 'неизвестно'
-        // Extract model name dynamically from path (no hardcoded names)
-        const modelName = modelPath.split('/').pop()?.replace('.glb', '').replace(/[-_]/g, ' ') || '3D Model'
-
-        console.log('')
-        console.log('═══════════════════════════════════════════════════════')
-        console.log(`📷 ПОЛОЖЕНИЕ КАМЕРЫ (${modelName}):`)
-        console.log('═══════════════════════════════════════════════════════')
-        console.log(`   Модель: ${modelPath}`)
-        console.log(`   Orbit: ${orbit.theta}deg ${orbit.phi}deg ${orbit.radius}m`)
-        console.log(`   Target: ${target.x}m ${target.y}m ${target.z}m`)
-        console.log(`   FOV: ${fov}deg`)
-        console.log('')
-        console.log('📋 СКОПИРУЙТЕ ЭТИ ЗНАЧЕНИЯ:')
-        console.log('───────────────────────────────────────────────────────')
-        console.log(`DEFAULT_CAMERA_ORBIT = '${orbit.theta}deg ${orbit.phi}deg ${orbit.radius}m'`)
-        console.log(`DEFAULT_CAMERA_TARGET = '${target.x}m ${target.y}m ${target.z}m'`)
-        console.log(`DEFAULT_FIELD_OF_VIEW = '${fov}deg'`)
-        console.log('═══════════════════════════════════════════════════════')
-        console.log('')
-
-        return { orbit, target, fov, modelPath, modelName }
-      } catch (e) {
-        console.error('❌ Ошибка:', e.message)
-        console.log('💡 Подождите, пока модель загрузится, и попробуйте снова')
-        console.log('💡 Или попробуйте через несколько секунд: window.getCamera()')
-        return null
-      }
-    }
-  } catch (error) {
-    console.error('❌ Ошибка при создании window.getCamera():', error)
-  }
-}
-
 // Стандартные настройки камеры для всех моделей скутеров
 // Эти значения обеспечивают единообразный стартовый ракурс для всех моделей
 // Скутер стоит строго в профиль к зрителю с противоположной стороны, без вида "чуть сверху"
@@ -149,6 +47,308 @@ const DEFAULT_FIELD_OF_VIEW = '30deg' // Угол обзора для комфо
 const MIN_CAMERA_ORBIT = 'auto 70deg 1.2m' // Можно приблизить и опустить ниже
 const MAX_CAMERA_ORBIT = 'auto 95deg 4m' // Можно отдалить
 
+const WRAP_MATERIAL_PATTERNS = [
+  'z-places',
+  'z_places',
+  'z-parts',
+  'z_parts',
+  'a-face',
+  'a_face',
+  'rl-place',
+  'rl_place',
+  'uv',
+  'wrap',
+  'place',
+  'panel',
+  'cover',
+]
+
+function matchesWrapMaterialName(name = '') {
+  const normalizedName = String(name).toLowerCase()
+  return WRAP_MATERIAL_PATTERNS.some(pattern => normalizedName.includes(pattern))
+}
+
+function isTraversableScene(candidate) {
+  return !!candidate && typeof candidate.traverse === 'function'
+}
+
+function findTraversableScene(root, visited = new Set(), depth = 0) {
+  if (!root || depth > 3 || visited.has(root)) return null
+  visited.add(root)
+
+  if (isTraversableScene(root)) {
+    return root
+  }
+
+  const candidates = []
+
+  if (Array.isArray(root)) {
+    candidates.push(...root)
+  } else {
+    candidates.push(root.scene, root.model, root.target, root.root, root.parent, root.scenes?.[0])
+
+    try {
+      const symbolValues = Object.getOwnPropertySymbols(root).map(symbol => root[symbol])
+      candidates.push(...symbolValues)
+    } catch {
+      // Ignore symbol access errors.
+    }
+  }
+
+  for (const candidate of candidates) {
+    const scene = findTraversableScene(candidate, visited, depth + 1)
+    if (scene) return scene
+  }
+
+  return null
+}
+
+function getInternalThreeScene(modelViewer) {
+  if (!modelViewer) return null
+
+  const directCandidates = [
+    modelViewer.scene,
+    modelViewer.model?.scene,
+    modelViewer.model?.scenes?.[0],
+    modelViewer.renderer?.scene,
+    typeof modelViewer.renderer?.getScene === 'function' ? modelViewer.renderer.getScene() : null,
+  ]
+
+  for (const candidate of directCandidates) {
+    if (isTraversableScene(candidate)) {
+      return candidate
+    }
+  }
+
+  return findTraversableScene(modelViewer)
+}
+
+function waitForModelViewerLoad(modelViewer) {
+  if (!modelViewer) return Promise.resolve(false)
+  const hasSceneGraph =
+    Array.isArray(modelViewer.model?.materials) && modelViewer.model.materials.length > 0
+      ? true
+      : !!getInternalThreeScene(modelViewer)
+
+  if (modelViewer.loaded && hasSceneGraph) {
+    if (modelViewer.updateComplete && typeof modelViewer.updateComplete.then === 'function') {
+      return modelViewer.updateComplete.then(() => true).catch(() => true)
+    }
+    return Promise.resolve(true)
+  }
+
+  return new Promise(resolve => {
+    const cleanup = () => {
+      clearInterval(intervalId)
+      clearTimeout(timeoutId)
+      modelViewer.removeEventListener('model-loaded', handleLoad)
+      modelViewer.removeEventListener('scene-graph-ready', handleLoad)
+      modelViewer.removeEventListener('error', handleError)
+    }
+
+    const handleLoad = () => {
+      const readyNow =
+        (Array.isArray(modelViewer.model?.materials) && modelViewer.model.materials.length > 0) ||
+        !!getInternalThreeScene(modelViewer)
+
+      if (!readyNow) return
+
+      Promise.resolve(modelViewer.updateComplete)
+        .catch(() => undefined)
+        .finally(() => {
+          cleanup()
+          resolve(true)
+        })
+    }
+
+    const handleError = () => {
+      cleanup()
+      resolve(false)
+    }
+
+    const intervalId = setInterval(handleLoad, 200)
+    const timeoutId = setTimeout(() => {
+      cleanup()
+      resolve(false)
+    }, 5000)
+
+    modelViewer.addEventListener('model-loaded', handleLoad, { once: true })
+    modelViewer.addEventListener('scene-graph-ready', handleLoad)
+    modelViewer.addEventListener('error', handleError, { once: true })
+    handleLoad()
+  })
+}
+
+function getCompatibleThree(modelViewer) {
+  return (
+    modelViewer?.renderer?.three ||
+    modelViewer?.renderer?.Three ||
+    modelViewer?.Three ||
+    window.THREE ||
+    THREE
+  )
+}
+
+async function applyTextureViaModelViewerMaterialsApi(modelViewer, texturePath) {
+  if (!modelViewer || !texturePath) return false
+
+  const materials = modelViewer.model?.materials
+  const createTexture =
+    typeof modelViewer.createTexture === 'function'
+      ? modelViewer.createTexture.bind(modelViewer)
+      : typeof modelViewer.model?.createTexture === 'function'
+        ? modelViewer.model.createTexture.bind(modelViewer.model)
+        : null
+
+  if (!Array.isArray(materials) || materials.length === 0 || !createTexture) {
+    return false
+  }
+
+  const texture = await createTexture(texturePath)
+  if (!texture) return false
+
+  await Promise.all(
+    materials.map(material =>
+      typeof material?.ensureLoaded === 'function'
+        ? material.ensureLoaded().catch(() => undefined)
+        : Promise.resolve()
+    )
+  )
+
+  const materialsWithTextureSlots = materials.filter(
+    material =>
+      material?.pbrMetallicRoughness?.baseColorTexture &&
+      typeof material.pbrMetallicRoughness.baseColorTexture.setTexture === 'function'
+  )
+  const preferredMaterials = materialsWithTextureSlots.filter(material =>
+    matchesWrapMaterialName(material?.name)
+  )
+  const targetMaterials =
+    preferredMaterials.length > 0
+      ? preferredMaterials
+      : materialsWithTextureSlots.length > 0
+        ? materialsWithTextureSlots
+        : materials
+
+  let updatedMaterials = 0
+
+  targetMaterials.forEach(material => {
+    const pbr = material?.pbrMetallicRoughness
+    const baseColorTexture = pbr?.baseColorTexture
+
+    if (baseColorTexture && typeof baseColorTexture.setTexture === 'function') {
+      baseColorTexture.setTexture(texture)
+      if (typeof pbr?.setBaseColorFactor === 'function') {
+        pbr.setBaseColorFactor([1, 1, 1, 1])
+      }
+      updatedMaterials++
+    }
+  })
+
+  if (updatedMaterials === 0) {
+    return false
+  }
+
+  if (typeof modelViewer.requestUpdate === 'function') {
+    modelViewer.requestUpdate()
+  }
+
+  console.log('✅ Applied texture via model-viewer Materials API:', {
+    updatedMaterials,
+    targetMaterials: targetMaterials.map(material => material?.name || 'unnamed'),
+  })
+
+  return true
+}
+
+async function applyTextureViaThreeScene(scene, texturePath, ThreeLib) {
+  if (
+    !scene ||
+    typeof scene.traverse !== 'function' ||
+    !texturePath ||
+    !ThreeLib?.TextureLoader
+  ) {
+    return false
+  }
+
+  const texture = await new Promise((resolve, reject) => {
+    const loader = new ThreeLib.TextureLoader()
+    loader.load(texturePath, resolve, undefined, reject)
+  })
+
+  texture.flipY = false
+  if (ThreeLib.SRGBColorSpace !== undefined) {
+    texture.colorSpace = ThreeLib.SRGBColorSpace
+  }
+  texture.wrapS = ThreeLib.RepeatWrapping
+  texture.wrapT = ThreeLib.RepeatWrapping
+  texture.needsUpdate = true
+
+  let updatedMaterials = 0
+  let targetedMaterials = 0
+
+  const applyToMaterial = material => {
+    if (!material || typeof material !== 'object' || !('map' in material)) return false
+
+    material.map = texture
+    if ('color' in material && material.color?.set) {
+      material.color.set(0xffffff)
+    }
+    material.needsUpdate = true
+    return true
+  }
+
+  scene.traverse(node => {
+    if (!node?.isMesh || !node.material) return
+
+    const materials = Array.isArray(node.material) ? node.material : [node.material]
+
+    materials.forEach(material => {
+      const shouldApply =
+        matchesWrapMaterialName(node.name) || matchesWrapMaterialName(material.name)
+
+      if (!shouldApply) return
+
+      if (applyToMaterial(material)) {
+        targetedMaterials++
+        updatedMaterials++
+      }
+    })
+
+    if (node.geometry?.attributes?.uv) {
+      node.geometry.attributes.uv.needsUpdate = true
+    }
+  })
+
+  if (updatedMaterials === 0) {
+    scene.traverse(node => {
+      if (!node?.isMesh || !node.material) return
+
+      const materials = Array.isArray(node.material) ? node.material : [node.material]
+      materials.forEach(material => {
+        if (applyToMaterial(material)) {
+          updatedMaterials++
+        }
+      })
+
+      if (node.geometry?.attributes?.uv) {
+        node.geometry.attributes.uv.needsUpdate = true
+      }
+    })
+  }
+
+  if (updatedMaterials === 0) {
+    return false
+  }
+
+  console.log('✅ Applied texture via direct Three.js scene traversal:', {
+    updatedMaterials,
+    targetedMaterials,
+  })
+
+  return true
+}
+
 export default function ScooterViewer({
   modelPath,
   selectedDesign,
@@ -156,9 +356,6 @@ export default function ScooterViewer({
   panoramaUrl = '/images/studio-panorama.png',
   className = '',
 }) {
-  // Новая архитектура - интеграция
-  const scooterViewerIntegration = useScooterViewerIntegration()
-  
   const containerRef = useRef(null)
   const modelViewerRef = useRef(null)
   const textureRetryCountRef = useRef(0) // Track retry count across recursive calls
@@ -166,8 +363,8 @@ export default function ScooterViewer({
   const modelLoadErrorRef = useRef(false) // Use ref instead of state to prevent effect loops
   const [scriptLoaded, setScriptLoaded] = useState(false)
   const [isModelLoaded, setIsModelLoaded] = useState(false)
+  const [isSceneGraphReady, setIsSceneGraphReady] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
-  const [modelRotation, setModelRotation] = useState(0) // Track model rotation for panorama sync
   const [modelLoadError, setModelLoadError] = useState(false) // Keep for display, but use ref for logic
 
   // Check if model needs placeholder (based on model metadata or error state)
@@ -178,25 +375,9 @@ export default function ScooterViewer({
     return false
   }, [])
 
-  // Hook 1: Set mounted state and initialize getCamera function
+  // Hook 1: Set mounted state
   useEffect(() => {
     setIsMounted(true)
-    // Инициализируем window.getCamera() только на клиенте, внутри useEffect
-    try {
-      createGetCameraFunction()
-      // Логируем только после успешной инициализации
-      if (
-        typeof window !== 'undefined' &&
-        window.getCamera &&
-        typeof window.getCamera === 'function'
-      ) {
-        console.log(
-          '✅ Функция window.getCamera() создана. Используйте её в консоли для получения положения камеры.'
-        )
-      }
-    } catch (error) {
-      console.error('❌ Ошибка при инициализации getCamera:', error)
-    }
   }, [])
 
   // Hook 2: Wait for model-viewer script to load
@@ -255,6 +436,7 @@ export default function ScooterViewer({
       let modelViewer = null
       let handleLoad = null
       let handleModelLoad = null
+      let handleSceneGraphReady = null
       let handleProgress = null
       let handleError = null
       let handleCameraChange = null
@@ -378,6 +560,7 @@ export default function ScooterViewer({
     }
     
     // Create model-viewer element
+    setIsSceneGraphReady(false)
     modelViewer = document.createElement('model-viewer')
 
     // Use corrected path if found, otherwise use original
@@ -511,6 +694,12 @@ export default function ScooterViewer({
       // Handle model load events
       handleLoad = (e) => {
       setIsModelLoaded(true)
+      if (
+        (Array.isArray(modelViewer?.model?.materials) && modelViewer.model.materials.length > 0) ||
+        getInternalThreeScene(modelViewer)
+      ) {
+        setIsSceneGraphReady(true)
+      }
       modelLoadErrorRef.current = false // Reset ref first
       setModelLoadError(false) // Reset error flag on successful load
       console.log('✅ 3D model loaded successfully:', fullModelPath)
@@ -518,6 +707,12 @@ export default function ScooterViewer({
 
       handleModelLoad = (e) => {
       setIsModelLoaded(true)
+      if (
+        (Array.isArray(modelViewer?.model?.materials) && modelViewer.model.materials.length > 0) ||
+        getInternalThreeScene(modelViewer)
+      ) {
+        setIsSceneGraphReady(true)
+      }
       modelLoadErrorRef.current = false // Reset ref first
       setModelLoadError(false) // Reset error flag on successful load
       console.log('✅ Model-viewer model-loaded event')
@@ -659,6 +854,11 @@ export default function ScooterViewer({
       } else {
         console.log(`⏳ Model loading progress: ${(progress * 100).toFixed(0)}%`)
       }
+    }
+
+      handleSceneGraphReady = () => {
+      setIsSceneGraphReady(true)
+      console.log('✅ model-viewer scene-graph-ready event')
     }
 
       handleError = async (error) => {
@@ -879,105 +1079,16 @@ export default function ScooterViewer({
       }
     }
 
-      // Track camera orbit changes to sync panorama rotation
-      handleCameraChange = () => {
-      if (!modelViewer) return
-
-      try {
-        const orbit = modelViewer.getCameraOrbit()
-        if (orbit && orbit.theta !== undefined) {
-          // Convert theta (azimuthal angle) to radians for panorama
-          const rotationRad = (orbit.theta * Math.PI) / 180
-          setModelRotation(rotationRad)
-        }
-      } catch (e) {
-        // getCameraOrbit might not be available yet
-      }
-    }
-
     // Add event listeners
     modelViewer.addEventListener('load', handleLoad)
     modelViewer.addEventListener('model-loaded', handleModelLoad)
+    modelViewer.addEventListener('scene-graph-ready', handleSceneGraphReady)
     modelViewer.addEventListener('progress', handleProgress)
     modelViewer.addEventListener('error', handleError)
-    modelViewer.addEventListener('camera-change', handleCameraChange)
 
     // Append to container immediately
     container.appendChild(modelViewer)
     modelViewerRef.current = modelViewer
-
-    // Сохраняем ссылку на modelViewer глобально для доступа из консоли
-    if (typeof window !== 'undefined') {
-      // Сохраняем ссылку на текущий model-viewer
-      if (!window.modelViewers) {
-        window.modelViewers = []
-      }
-      window.modelViewers.push(modelViewer)
-
-      // Добавляем функцию для получения текущего положения камеры (для отладки)
-      // Можно вызвать в консоли: window.getCurrentCameraPosition()
-      window.getCurrentCameraPosition = () => {
-        // Пытаемся найти активный model-viewer
-        const activeViewer =
-          window.modelViewers?.[window.modelViewers.length - 1] ||
-          document.querySelector('model-viewer')
-
-        if (!activeViewer) {
-          console.error('❌ model-viewer не найден. Убедитесь, что модель загружена.')
-          return null
-        }
-
-        try {
-          // Проверяем, загружена ли модель
-          if (!activeViewer.loaded) {
-            console.warn('⚠️ Модель еще не загружена. Подождите несколько секунд.')
-            return null
-          }
-
-          const orbit = activeViewer.getCameraOrbit()
-          const target = activeViewer.getCameraTarget()
-          const fov = activeViewer.getFieldOfView()
-
-          if (!orbit || !target || !fov) {
-            console.warn('⚠️ Не удалось получить данные камеры. Попробуйте через несколько секунд.')
-            return null
-          }
-
-          const position = {
-            orbit: `${orbit.theta}deg ${orbit.phi}deg ${orbit.radius}m`,
-            target: `${target.x}m ${target.y}m ${target.z}m`,
-            fov: `${fov}deg`,
-            raw: { orbit, target, fov },
-            // Формат для копирования в код
-            code: {
-              cameraOrbit: `'${orbit.theta}deg ${orbit.phi}deg ${orbit.radius}m'`,
-              cameraTarget: `'${target.x}m ${target.y}m ${target.z}m'`,
-              fieldOfView: `'${fov}deg'`,
-            },
-          }
-
-          console.log('📷 ТЕКУЩЕЕ ПОЛОЖЕНИЕ КАМЕРЫ:')
-          console.log('   Orbit:', position.orbit)
-          console.log('   Target:', position.target)
-          console.log('   FOV:', position.fov)
-          console.log('')
-          console.log('📋 КОД ДЛЯ КОПИРОВАНИЯ:')
-          console.log(`   DEFAULT_CAMERA_ORBIT = ${position.code.cameraOrbit}`)
-          console.log(`   DEFAULT_CAMERA_TARGET = ${position.code.cameraTarget}`)
-          console.log(`   DEFAULT_FIELD_OF_VIEW = ${position.code.fieldOfView}`)
-
-          return position
-        } catch (e) {
-          console.error('❌ Ошибка получения положения камеры:', e)
-          console.log('💡 Попробуйте подождать, пока модель полностью загрузится')
-          console.log('💡 Или попробуйте через несколько секунд: window.getCurrentCameraPosition()')
-          return null
-        }
-      }
-      console.log('💡 Для получения текущего положения камеры выполните: window.getCamera()')
-    }
-
-    console.log('✅ model-viewer element created and appended to DOM')
 
       // Verify src was set correctly
       setTimeout(() => {
@@ -1001,6 +1112,11 @@ export default function ScooterViewer({
         if (currentContainer) {
           const currentModelViewer = currentContainer.querySelector('model-viewer')
           if (currentModelViewer) {
+            currentModelViewer.removeEventListener('load', handleLoad)
+            currentModelViewer.removeEventListener('model-loaded', handleModelLoad)
+            currentModelViewer.removeEventListener('scene-graph-ready', handleSceneGraphReady)
+            currentModelViewer.removeEventListener('progress', handleProgress)
+            currentModelViewer.removeEventListener('error', handleError)
             // Remove from DOM (event listeners will be cleaned up automatically)
             if (currentContainer.contains(currentModelViewer)) {
               currentContainer.removeChild(currentModelViewer)
@@ -1019,6 +1135,7 @@ export default function ScooterViewer({
     modelLoadErrorRef.current = false // Reset ref first
     setModelLoadError(false)
     setIsModelLoaded(false)
+    setIsSceneGraphReady(false)
     textureRetryCountRef.current = 0 // Reset retry counter when model changes
     textureApplicationStoppedRef.current = false // Reset stop flag when model changes
   }, [modelPath])
@@ -1027,7 +1144,7 @@ export default function ScooterViewer({
   const applyTextureDidRun = useRef(null)
   useEffect(() => {
     // Предохранитель от повторов
-    const designKey = `${selectedDesign?.id}-${selectedDesign?.slug}-${isModelLoaded}`
+    const designKey = `${selectedDesign?.id}-${selectedDesign?.slug}-${selectedDesign?.texture || selectedDesign?.textureUrl || ''}-${isModelLoaded}-${isSceneGraphReady}`
     if (applyTextureDidRun.current === designKey) return
     applyTextureDidRun.current = designKey
     
@@ -1038,13 +1155,14 @@ export default function ScooterViewer({
       hasContainer: !!containerRef.current,
       hasDesign: !!selectedDesign,
       isModelLoaded,
+      isSceneGraphReady,
       selectedDesignId: selectedDesign?.id,
       selectedDesignName: selectedDesign?.name,
       modelPath,
     })
     
     // Get model-viewer element from container
-    if (!containerRef.current || !selectedDesign || !isModelLoaded || modelLoadErrorRef.current || textureApplicationStoppedRef.current) {
+    if (!containerRef.current || !selectedDesign || !isModelLoaded || !isSceneGraphReady || modelLoadErrorRef.current || textureApplicationStoppedRef.current) {
       if (textureApplicationStoppedRef.current) {
         // Silently skip if already stopped
         return
@@ -1062,6 +1180,7 @@ export default function ScooterViewer({
           hasContainer: !!containerRef.current,
           hasDesign: !!selectedDesign,
           isModelLoaded,
+          isSceneGraphReady,
           modelLoadError: modelLoadErrorRef.current,
           stopped: textureApplicationStoppedRef.current,
         })
@@ -1097,6 +1216,15 @@ export default function ScooterViewer({
         console.log('✅ Applied variant:', selectedDesign.variant)
       } catch (error) {
         console.warn('Failed to apply variant:', error)
+      }
+    } else {
+      try {
+        if ('variantName' in modelViewer) {
+          modelViewer.variantName = null
+        }
+        modelViewer.removeAttribute('variant-name')
+      } catch (error) {
+        console.warn('Failed to reset variant:', error)
       }
     }
     
@@ -1172,47 +1300,6 @@ export default function ScooterViewer({
     
     if (textureMaterial && !selectedDesign?.variant) {
       try {
-        // Пробуем использовать новую архитектуру
-        const tryNewArchitecture = async () => {
-          try {
-            const currentContainer = containerRef.current
-            if (!currentContainer) return false
-            
-            const currentModelViewer = currentContainer.querySelector('model-viewer')
-            if (!currentModelViewer || !currentModelViewer.loaded) return false
-            
-            // Получаем scene
-            let scene = null
-            if (currentModelViewer.model?.scene && typeof currentModelViewer.model.scene.traverse === 'function') {
-              scene = currentModelViewer.model.scene
-            } else if (currentModelViewer.model?.scenes?.[0] && typeof currentModelViewer.model.scenes[0].traverse === 'function') {
-              scene = currentModelViewer.model.scenes[0]
-            }
-            
-            if (!scene) return false
-            
-            // Используем новую архитектуру
-            await scooterViewerIntegration.applyTextureWithNewArchitecture(
-              selectedDesign,
-              scene,
-              scene // model = scene для Three.js
-            )
-            
-            console.log('✅ Texture applied using new architecture')
-            return true
-          } catch (error) {
-            console.warn('⚠️ New architecture failed, falling back to legacy:', error)
-            return false
-          }
-        }
-        
-        // Пробуем новую архитектуру
-        const newArchitectureWorked = await tryNewArchitecture()
-        if (newArchitectureWorked) {
-          return // Новая архитектура сработала
-        }
-        
-        // Fallback на старую логику
         const textureUrl = getMaterialDisplayUrl(textureMaterial)
         if (!textureUrl) {
           console.warn('⚠️ No texture URL found in texture material')
@@ -1222,6 +1309,50 @@ export default function ScooterViewer({
         console.log('🔍 [3D DEBUG] Full texture path:', window.location.origin + textureUrl)
         if (selectedDesign.textures) {
           console.log('🎨 Using textures format (one texture for all materials):', selectedDesign.textures)
+        }
+
+        const texturePath = textureUrl.startsWith('/') ? textureUrl : `/${textureUrl}`
+        const resolvedTexturePath =
+          typeof window !== 'undefined'
+            ? new URL(texturePath, window.location.origin).toString()
+            : texturePath
+        const modelReady = await waitForModelViewerLoad(modelViewer)
+
+        if (modelReady) {
+          try {
+            const appliedWithMaterialsApi = await applyTextureViaModelViewerMaterialsApi(
+              modelViewer,
+              resolvedTexturePath
+            )
+            if (appliedWithMaterialsApi) {
+              return
+            }
+          } catch (materialsApiError) {
+            console.warn('⚠️ Materials API texture apply failed, falling back to legacy scene traversal:', materialsApiError)
+          }
+
+          try {
+            const compatibleThree = getCompatibleThree(modelViewer)
+            if (compatibleThree && !window.THREE) {
+              window.THREE = compatibleThree
+            }
+            const directScene = getInternalThreeScene(modelViewer)
+
+            const appliedViaThreeScene = await applyTextureViaThreeScene(
+              directScene,
+              resolvedTexturePath,
+              compatibleThree
+            )
+
+            if (appliedViaThreeScene) {
+              if (typeof modelViewer.requestUpdate === 'function') {
+                modelViewer.requestUpdate()
+              }
+              return
+            }
+          } catch (threeSceneError) {
+            console.warn('⚠️ Direct Three.js texture apply failed, falling back to legacy logic:', threeSceneError)
+          }
         }
         
         // Reset retry count when starting new texture application
@@ -1816,7 +1947,7 @@ export default function ScooterViewer({
         }
       } // Close if (textureMaterial && !selectedDesign?.variant)
     })() // Close async IIFE
-  }, [selectedDesign?.id, selectedDesign?.slug, isModelLoaded]) // Removed modelLoadError to prevent loop
+  }, [selectedDesign?.id, selectedDesign?.slug, selectedDesign?.texture, selectedDesign?.textureUrl, isModelLoaded, isSceneGraphReady]) // Removed modelLoadError to prevent loop
 
   // Show loading state until mounted or script loaded
   const shouldShowLoading = typeof window === 'undefined' || !isMounted || !scriptLoaded
@@ -1866,4 +1997,3 @@ export default function ScooterViewer({
     </div>
   )
 }
-

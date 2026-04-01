@@ -29,7 +29,7 @@ import FAQSection from '@/components/sections/FAQSection'
 import ContactSection from '@/components/sections/ContactSection'
 import CTASection from '@/components/sections/CTASection'
 
-const ScooterViewer = dynamic(() => import('@/components/ScooterViewer3D'), {
+const ScooterViewer = dynamic(() => import('@/components/ScooterViewer'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full bg-black" />
@@ -38,6 +38,7 @@ const ScooterViewer = dynamic(() => import('@/components/ScooterViewer3D'), {
 
 export default function Home() {
   const { t, language } = useLanguage()
+  const DEFAULT_PANORAMA = '/hdr/panoramic_3.webp'
   // Default to first available model with designs - dynamically determined to avoid hardcoding
   const getFirstModelWithDesigns = (scootersObj: Record<string, any>) => {
     // Find first model with designs
@@ -66,11 +67,13 @@ export default function Home() {
   }, [t])
   
   const [selectedDesign, setSelectedDesign] = useState<any>(null)
+  const [scenePanoramaUrl, setScenePanoramaUrl] = useState<string>(DEFAULT_PANORAMA)
   const [scrollProgress, setScrollProgress] = useState(0)
   const [isPastTrigger, setIsPastTrigger] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const heroRef = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+  const sceneLoadTokenRef = useRef(0)
 
   // Load scooters from API with fallback to config file (with timeout to prevent hanging)
   const loadScootersDidRun = useRef(false)
@@ -264,6 +267,19 @@ export default function Home() {
   
   // ✅ FIX: Use useMemo to track scooters keys changes without dependency
   const scootersKeysString = useMemo(() => Object.keys(scooters).sort().join(','), [scooters])
+  const scootersDesignsSignature = useMemo(() => {
+    return JSON.stringify(
+      Object.entries(scooters).reduce((acc, [key, scooter]) => {
+        acc[key] = {
+          panorama: scooter?.panorama || null,
+          designIds: Array.isArray(scooter?.designs)
+            ? scooter.designs.map((design: any) => design?.id || design?.slug || null)
+            : [],
+        }
+        return acc
+      }, {} as Record<string, any>)
+    )
+  }, [scooters])
   
   useEffect(() => {
     if (!isMounted) return
@@ -344,11 +360,17 @@ export default function Home() {
         
         lastDesignIdRef.current = firstDesignId
         
-        // Use functional update to check current state without dependency
-        setSelectedDesign(prevDesign => {
+        const rawPanorama =
+          (firstDesign as any).panorama ||
+          (firstDesign as any).bg_webp ||
+          (firstDesign as any).background ||
+          scooter.panorama ||
+          DEFAULT_PANORAMA
+        const panorama = typeof rawPanorama === 'string' && rawPanorama.trim() !== '' ? rawPanorama : DEFAULT_PANORAMA
+
+        // Keep model/design card linkage and apply matching scene panorama atomically.
+        setSelectedDesign((prevDesign: any) => {
           const currentDesignId = (prevDesign as any)?.id
-          
-          // Only update if design actually changed (compare by ID to avoid object reference issues)
           if (!currentDesignId || currentDesignId !== firstDesignId) {
             console.log('🎨 Setting default design:', {
               model: scooter.id,
@@ -357,14 +379,20 @@ export default function Home() {
             })
             return firstDesign
           }
-          return prevDesign // No change needed
+          return prevDesign
         })
+        setScenePanoramaUrl(panorama)
       } else if (scooter) {
         console.warn('⚠️ No designs found for model:', scooter?.id, scooter?.name)
         // Clear selected design if model has no designs
         if (lastDesignIdRef.current !== null) {
           lastDesignIdRef.current = null
           setSelectedDesign(null)
+          setScenePanoramaUrl(
+            typeof scooter.panorama === 'string' && scooter.panorama.trim() !== ''
+              ? scooter.panorama
+              : DEFAULT_PANORAMA
+          )
         }
       }
     } catch (err) {
@@ -372,7 +400,7 @@ export default function Home() {
     }
     // Re-run when scooters payload changes to pick first design from fresh API data.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedModel, isMounted, scootersKeysString])
+  }, [selectedModel, isMounted, scootersDesignsSignature])
 
   // Handle scroll for parallax effect (client-side only)
   useEffect(() => {
@@ -412,6 +440,41 @@ export default function Home() {
     }
   }
 
+  const normalizeAssetUrl = useCallback((value?: string | null): string | null => {
+    if (!value || typeof value !== 'string') return null
+    const trimmed = value.trim()
+    if (!trimmed) return null
+    if (/^https?:\/\//i.test(trimmed)) return trimmed
+    return trimmed.startsWith('/') ? trimmed : `/${trimmed}`
+  }, [])
+
+  const preloadImage = useCallback((url: string): Promise<void> => {
+    return new Promise(resolve => {
+      const img = new Image()
+      img.onload = () => resolve()
+      img.onerror = () => resolve()
+      img.src = url
+    })
+  }, [])
+
+  // Scene update contract: preload texture/panorama, then commit together.
+  const applyDesignToScene = useCallback(async (design: any, modelFallbackPanorama?: string) => {
+    const token = ++sceneLoadTokenRef.current
+    const nextTexture = normalizeAssetUrl(design?.texture || design?.textureUrl)
+    const nextPanorama =
+      normalizeAssetUrl(design?.panorama || design?.bg_webp || design?.background) ||
+      normalizeAssetUrl(modelFallbackPanorama) ||
+      DEFAULT_PANORAMA
+
+    const preloadTasks: Promise<void>[] = [preloadImage(nextPanorama)]
+    if (nextTexture) preloadTasks.push(preloadImage(nextTexture))
+    await Promise.all(preloadTasks)
+
+    if (token !== sceneLoadTokenRef.current) return
+    setSelectedDesign(design)
+    setScenePanoramaUrl(nextPanorama)
+  }, [normalizeAssetUrl, preloadImage, DEFAULT_PANORAMA])
+
   // ✅ FIX из рабочего проекта: Debounce для design selection
   const designSelectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
@@ -424,9 +487,9 @@ export default function Home() {
     
     // ✅ FIX: Небольшая задержка для batch rapid clicks (50ms debounce)
     designSelectTimeoutRef.current = setTimeout(() => {
-      setSelectedDesign(design)
+      applyDesignToScene(design, currentScooter?.panorama)
     }, 50)
-  }, [])
+  }, [applyDesignToScene, currentScooter?.panorama])
   
   // ✅ FIX: Cleanup timeout on unmount
   useEffect(() => {
@@ -462,15 +525,7 @@ export default function Home() {
   }
 
   // Фон 3D-сцены: у каждой карточки свой panorama; при смене карточки меняется фон
-  const currentPanorama = useMemo(() => {
-    if (!selectedDesign) return '/hdr/panoramic_3.webp'
-    const url =
-      (selectedDesign as any).panorama ||
-      (selectedDesign as any).bg_webp ||
-      (selectedDesign as any).background
-    if (url && typeof url === 'string' && url.trim() !== '') return url
-    return '/hdr/panoramic_3.webp'
-  }, [selectedDesign])
+  const currentPanorama = useMemo(() => scenePanoramaUrl || DEFAULT_PANORAMA, [scenePanoramaUrl, DEFAULT_PANORAMA])
 
   return (
     <>
