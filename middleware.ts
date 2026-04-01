@@ -1,10 +1,9 @@
 /**
- * Next.js Middleware for Security Headers and Rate Limiting
- * Runs on every request before the route handler
+ * Next.js Middleware for security headers and routing guards.
+ * Runs on every request before the route handler.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { rateLimit, getClientIdentifier, resolveRateLimitTier } from './lib/rate-limit'
 
 export async function middleware(request: NextRequest) {
   // Check if request is for placeholder domains
@@ -51,50 +50,6 @@ export async function middleware(request: NextRequest) {
   ].join('; ')
 
   response.headers.set('Content-Security-Policy', csp)
-
-  // Rate limiting for API routes (skipped in development for DX; fail-open on limiter errors)
-  if (
-    request.nextUrl.pathname.startsWith('/api/') &&
-    process.env.NODE_ENV !== 'development'
-  ) {
-    const pathname = request.nextUrl.pathname
-    const identifier = getClientIdentifier(request)
-    const tier = resolveRateLimitTier(pathname)
-
-    let rateLimitResult: Awaited<ReturnType<typeof rateLimit>> | null = null
-    try {
-      rateLimitResult = await rateLimit(request, identifier, tier)
-    } catch (err) {
-      console.error('[rate-limit] Limiter failure (fail-open):', err)
-    }
-
-    if (rateLimitResult && !rateLimitResult.success) {
-      console.warn('Rate limit exceeded:', identifier, pathname, tier)
-
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Too many requests. Please try again later.',
-          retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000),
-        },
-        {
-          status: 429,
-          headers: {
-            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-            'X-RateLimit-Reset': new Date(rateLimitResult.reset).toISOString(),
-            'Retry-After': Math.ceil((rateLimitResult.reset - Date.now()) / 1000).toString(),
-          },
-        }
-      )
-    }
-
-    if (rateLimitResult) {
-      response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString())
-      response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
-      response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.reset).toISOString())
-    }
-  }
 
   return response
 }
