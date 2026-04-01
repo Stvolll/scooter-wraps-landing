@@ -70,8 +70,9 @@ export async function GET() {
         },
       })
       
-      // Add timeout to prevent hanging - use withTimeout helper for better error handling
-      models = await withTimeout(dbQuery, 2000, []) as any[] // Reduced to 2 seconds for faster fallback
+      // Keep dev snappy, but allow slower cold starts in production.
+      const dbTimeoutMs = process.env.NODE_ENV === 'production' ? 8000 : 3000
+      models = await withTimeout(dbQuery, dbTimeoutMs, []) as any[]
     } catch (dbError: any) {
       console.warn('⚠️ Database query failed, using fallback:', dbError.message)
       models = []

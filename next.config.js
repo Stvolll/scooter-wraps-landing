@@ -74,6 +74,18 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ['three', '@react-three/fiber', '@react-three/drei'],
+    outputFileTracingExcludes: {
+      '/api/admin/models/[id]': [
+        './public/uploads/models/**',
+        './public/uploads/images/**',
+        './public/models/**',
+        './public/textures/**',
+        './public/videos/**',
+        './public/hdr/**',
+        './public/images/designs/**',
+        './public/_optimized/**',
+      ],
+    },
     // optimizeCss: true, // Requires 'critters' package - disabled for now
     // Increase body size limit for large file uploads (API routes and Server Actions)
     serverActions: {
