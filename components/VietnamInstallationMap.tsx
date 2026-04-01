@@ -172,15 +172,6 @@ export default function VietnamInstallationMap() {
     setIsMounted(true)
   }, [])
 
-  const formatPrice = (price: number) => {
-    // Always VND for Vietnam
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-      minimumFractionDigits: 0,
-    }).format(price)
-  }
-
   // Get all partners from all cities
   const getAllPartners = (): InstallationPartner[] => {
     return cities.flatMap(city => city.partners)
@@ -279,16 +270,16 @@ export default function VietnamInstallationMap() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00FFA9]/10 border border-[#00FFA9]/20 mb-4 backdrop-blur-xl">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00FFA9]/10 border border-[#00FFA9]/20 mb-6 backdrop-blur-xl">
             <Globe className="w-4 h-4 text-[#00FFA9]" />
             <span className="text-xs font-semibold text-[#00FFA9] uppercase tracking-wider">
               {t('installationServices.installationNetwork')}
             </span>
           </div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 pb-2 text-center bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
             {t('installationServices.title')}
           </h2>
-          <p className="text-base md:text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">
             {t('installationServices.subtitle')}
           </p>
         </motion.div>
@@ -375,20 +366,6 @@ export default function VietnamInstallationMap() {
                     </div>
                   </div>
 
-                  {/* Price - Bottom */}
-                  {activePartner && (
-                    <div className="mt-auto pt-3 border-t border-white/5">
-                      <div className="flex flex-wrap items-baseline gap-1.5">
-                        <span className="text-lg font-bold text-[#00FFA9] leading-none">
-                          {formatPrice(activePartner.priceRange.min)}
-                        </span>
-                        <span className="text-white/30 text-sm">—</span>
-                        <span className="text-lg font-bold text-[#00FFA9] leading-none break-words">
-                          {formatPrice(activePartner.priceRange.max)}
-                        </span>
-                      </div>
-                    </div>
-                  )}
                 </motion.button>
               )
             })}
@@ -440,18 +417,6 @@ export default function VietnamInstallationMap() {
                   <p className="text-xs text-white/60 line-clamp-2">{partner.address}</p>
                 </div>
 
-                {/* Price - Bottom */}
-                <div className="mt-auto pt-3 border-t border-white/5">
-                  <div className="flex flex-wrap items-baseline gap-1.5">
-                    <span className="text-lg font-bold text-[#00FFA9] leading-none">
-                      {formatPrice(partner.priceRange.min)}
-                    </span>
-                    <span className="text-white/30 text-sm">—</span>
-                    <span className="text-lg font-bold text-[#00FFA9] leading-none break-words">
-                      {formatPrice(partner.priceRange.max)}
-                    </span>
-                  </div>
-                </div>
               </motion.button>
             ))}
           </motion.div>
@@ -539,35 +504,6 @@ export default function VietnamInstallationMap() {
                       </div>
                     </div>
                     <div className="text-white leading-relaxed">{selectedPartner.address}</div>
-                  </div>
-
-                  {/* Price Range */}
-                  <div className="p-5 rounded-2xl bg-gradient-to-br from-[#00FFA9]/10 to-[#00D4FF]/10 border border-[#00FFA9]/20 backdrop-blur-xl">
-                    <div className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3">
-                      {t('installationServices.installationPrice')}
-                    </div>
-                    <div className="flex items-baseline gap-2 mb-2">
-                      <span className="text-3xl md:text-4xl font-bold text-[#00FFA9]">
-                        {formatPrice(selectedPartner.priceRange.min)}
-                      </span>
-                      <span className="text-xl text-white/40">—</span>
-                      <span className="text-3xl md:text-4xl font-bold text-[#00FFA9]">
-                        {formatPrice(selectedPartner.priceRange.max)}
-                      </span>
-                    </div>
-                    {selectedPartner.hasDiscount && selectedPartner.discountPercent && (
-                      <div className="mt-3 pt-3 border-t border-[#00FFA9]/20 flex items-center gap-3">
-                        <span className="text-sm text-white/60 line-through">
-                          {formatPrice(
-                            selectedPartner.priceRange.max /
-                              (1 - selectedPartner.discountPercent / 100)
-                          )}
-                        </span>
-                        <span className="px-3 py-1 rounded-full bg-[#FFD700]/20 text-[#FFD700] text-sm font-bold border border-[#FFD700]/40">
-                          {t('installationServices.save')} {selectedPartner.discountPercent}% {t('installationServices.off')}
-                        </span>
-                      </div>
-                    )}
                   </div>
 
                   {/* Contact Info */}

@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 // Testimonials are fetched from API endpoint
+import { getPublicSiteUrl } from '@/lib/site-url'
 
 export default async function TestimonialsAdminPage() {
   const cookieStore = await cookies()
@@ -16,7 +17,7 @@ export default async function TestimonialsAdminPage() {
   let testimonials: any[] = []
   try {
     // Try to fetch from API endpoint
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/testimonials`, {
+    const response = await fetch(`${getPublicSiteUrl()}/api/testimonials`, {
       cache: 'no-store',
     })
     if (response.ok) {

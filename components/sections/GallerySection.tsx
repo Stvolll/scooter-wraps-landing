@@ -125,10 +125,10 @@ export default function GallerySection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 pb-2 text-center bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
             {t('gallery.title')}
           </h2>
-          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">
             {t('gallery.subtitle')}
           </p>
         </motion.div>

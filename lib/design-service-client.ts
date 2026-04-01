@@ -41,9 +41,6 @@ let servicesCache: {
   TextureMaterial?: any
   MaterialId?: any
   DesignId?: any
-  MaterialMetadata?: any
-  DesignMetadata?: any
-  ResourceReference?: any
   MaterialFormat?: any
 } | null = null
 
@@ -89,9 +86,6 @@ async function loadServiceModules() {
       TextureMaterial: textureMaterialModule.TextureMaterial,
       MaterialId: valueObjectsModule.MaterialId,
       DesignId: valueObjectsModule.DesignId,
-      MaterialMetadata: valueObjectsModule.MaterialMetadata,
-      DesignMetadata: valueObjectsModule.DesignMetadata,
-      ResourceReference: valueObjectsModule.ResourceReference,
       MaterialFormat: materialFormatModule.MaterialFormat,
     }
 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma, withTimeout } from '@/lib/prisma'
-import { MaterialFormat } from '@prisma/client'
+import { MaterialFormat } from '@/lib/materials/types'
 import {
   findMaterialByFormat,
   findMaterialByRole,

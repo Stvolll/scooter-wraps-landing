@@ -83,7 +83,7 @@ async function migrateToMaterials() {
 
       // Gallery images as PHOTO materials
       if (design.galleryImages && Array.isArray(design.galleryImages) && design.galleryImages.length > 0) {
-        design.galleryImages.forEach((url, index) => {
+        design.galleryImages.forEach((url: string, index: number) => {
           if (url) {
             materialsToCreate.push({
               designId: design.id,

@@ -12,6 +12,9 @@ import { useLanguage } from '@/contexts/LanguageContext'
 export default function ContactSection() {
   const { t } = useLanguage()
   const [isMounted, setIsMounted] = useState(false)
+  const [modelOptions, setModelOptions] = useState<Array<{ id: string; name: string }>>([
+    { id: 'nvx', name: 'Yamaha NVX' },
+  ])
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -26,6 +29,25 @@ export default function ContactSection() {
     setIsMounted(true)
   }, [])
 
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        const response = await fetch('/api/scooters', { cache: 'no-store' })
+        if (!response.ok) return
+        const data = await response.json()
+        const scooterMap = data.scooters || {}
+        const options = Object.entries(scooterMap).map(([id, scooter]: [string, any]) => ({
+          id,
+          name: scooter?.name || id,
+        }))
+        if (options.length > 0) setModelOptions(options)
+      } catch {
+        // keep fallback options
+      }
+    }
+    loadModels()
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -33,18 +55,23 @@ export default function ContactSection() {
     setSuccess(false)
 
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
+      const selectedModelName =
+        modelOptions.find(model => model.id === formData.model)?.name || formData.model
+      const text = [
+        '*New TXD Inquiry*',
+        '',
+        `Name: ${formData.name}`,
+        `Phone: ${formData.phone}`,
+        `Scooter Model: ${selectedModelName}`,
+        `Message: ${formData.message || '-'}`,
+      ].join('\n')
+      const whatsappUrl = `https://wa.me/${phoneDigits.join('')}?text=${encodeURIComponent(text)}`
 
-      const data = await response.json()
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to send message')
+      if (typeof window !== 'undefined') {
+        const opened = window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+        if (!opened) {
+          window.location.href = whatsappUrl
+        }
       }
 
       setSuccess(true)
@@ -61,52 +88,51 @@ export default function ContactSection() {
         setSuccess(false)
       }, 5000)
     } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again.')
+      setError(err.message || 'Unable to open WhatsApp. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
+  // Basic bot-resistance: keep real phone out of plain static text.
+  const phoneDigits = ['84', '386', '764', '077']
+  const phoneCompact = `+${phoneDigits.join('')}`
+  const phonePretty = `+${phoneDigits[0]} ${phoneDigits[1]} ${phoneDigits[2]} ${phoneDigits[3]}`
+  const phoneMasked = '+84 *** *** 077'
+
   const contactMethods = [
     {
       icon: '📱',
       title: 'WhatsApp',
-      value: '+84 xxx xxx xxx',
+      value: phoneMasked,
       action: t('contactSection.chatNow'),
       color: '#25D366',
-      link: 'https://wa.me/84xxxxxxxxx',
+      link: `https://wa.me/${phoneDigits.join('')}`,
     },
     {
       icon: '📞',
       title: 'Phone',
-      value: '+84 xxx xxx xxx',
+      value: phoneMasked,
       action: t('contactSection.callNow'),
       color: '#00D4FF',
-      link: 'tel:+84xxxxxxxxx',
+      link: `tel:${phoneCompact}`,
     },
     {
       icon: '✉️',
       title: 'Email',
-      value: 'hello@txd.vn',
+      value: 'info@txd.bike',
       action: t('contactSection.sendEmail'),
       color: '#B77EFF',
-      link: 'mailto:hello@txd.vn',
+      link: 'mailto:info@txd.bike',
     },
     {
       icon: '📍',
       title: 'Location',
-      value: 'Ho Chi Minh City',
+      value: 'Nha Trang',
       action: t('contactSection.getDirections'),
       color: '#FFB800',
       link: '#',
     },
-  ]
-
-  const socialMedia = [
-    { name: 'Facebook', icon: 'facebook', link: '#', color: '#1877F2' },
-    { name: 'Instagram', icon: 'instagram', link: '#', color: '#E4405F' },
-    { name: 'Zalo', icon: 'zalo', link: '#', color: '#0068FF' },
-    { name: 'TikTok', icon: 'tiktok', link: '#', color: '#000000' },
   ]
 
   return (
@@ -128,10 +154,10 @@ export default function ContactSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 pb-2 text-center bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
             {t('contactSection.title')}
           </h2>
-          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">
             {t('contactSection.subtitle')}
           </p>
         </motion.div>
@@ -178,7 +204,9 @@ export default function ContactSection() {
                     </div>
                     <div className="flex-1">
                       <div className="text-sm text-white/60">{method.title}</div>
-                      <div className="text-white font-semibold">{method.value}</div>
+                      <div className="text-white font-semibold" title={method.title === 'Email' ? method.value : undefined}>
+                        {method.title === 'Phone' || method.title === 'WhatsApp' ? phoneMasked : method.value}
+                      </div>
                     </div>
                     <div className="text-sm font-medium text-white/60 group-hover:text-[#00FFA9] transition-colors">
                       {method.action} →
@@ -186,38 +214,6 @@ export default function ContactSection() {
                   </div>
                 </motion.a>
               ))}
-            </div>
-
-            {/* Social media */}
-            <div>
-              <h4 className="text-lg font-semibold text-white mb-4">
-                {t('contactSection.followUs')}
-              </h4>
-              <div className="flex gap-3">
-                {socialMedia.map(social => (
-                  <a
-                    key={social.name}
-                    href={social.link}
-                    className="w-12 h-12 rounded-xl flex items-center justify-center text-white transition-all duration-300 hover:scale-110"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      backdropFilter: 'blur(20px)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                    }}
-                    aria-label={social.name}
-                  >
-                    <span className="text-xl">
-                      {social.icon === 'facebook'
-                        ? '📘'
-                        : social.icon === 'instagram'
-                          ? '📸'
-                          : social.icon === 'zalo'
-                            ? '💬'
-                            : '🎵'}
-                    </span>
-                  </a>
-                ))}
-              </div>
             </div>
 
             {/* Business hours */}
@@ -272,7 +268,7 @@ export default function ContactSection() {
                   value={formData.phone}
                   onChange={e => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00FFA9] transition-colors"
-                  placeholder="+84 xxx xxx xxx"
+                  placeholder={phonePretty}
                   required
                 />
               </div>
@@ -289,8 +285,11 @@ export default function ContactSection() {
                   required
                 >
                   <option value="">{t('contactSection.selectModel')}</option>
-                  <option value="nvx">Yamaha NVX</option>
-                  <option value="a-vision">A-Vision</option>
+                  {modelOptions.map(model => (
+                    <option key={model.id} value={model.id}>
+                      {model.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 

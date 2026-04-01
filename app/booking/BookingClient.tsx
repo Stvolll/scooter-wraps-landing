@@ -7,8 +7,8 @@ import InstallationBooking from '@/components/InstallationBooking'
 export default function BookingClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const model = searchParams.get('model') ?? ''
-  const design = searchParams.get('design') ?? ''
+  const model = searchParams?.get('model') ?? ''
+  const design = searchParams?.get('design') ?? ''
 
   const modelLabel = useMemo(() => {
     if (!model) return ''

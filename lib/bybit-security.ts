@@ -5,7 +5,8 @@
  */
 
 import { NextRequest } from 'next/server'
-import { verifyHMACSignature, verifyHMACSignatureSync } from './security'
+import { verifyHMACSignature } from './security'
+import { verifyHMACSignatureSync } from './security-node'
 
 const BYBIT_API_KEY = process.env.BYBIT_API_KEY || ''
 const BYBIT_API_SECRET = process.env.BYBIT_API_SECRET || ''

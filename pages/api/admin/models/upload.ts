@@ -162,10 +162,10 @@ export default async function handler(
       runValidation()
     })
 
-    bb.on('error', (err) => {
+    bb.on('error', (err: unknown) => {
       res.status(500).json({
         error: 'Upload failed',
-        details: err.message,
+        details: err instanceof Error ? err.message : String(err),
       })
       resolve()
     })

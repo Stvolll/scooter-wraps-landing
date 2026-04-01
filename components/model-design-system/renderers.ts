@@ -3,7 +3,8 @@
 // ============================================
 
 import * as THREE from 'three'
-import type { TextureMaterial, BackgroundMaterial, Design } from './domain'
+import { BackgroundMaterial } from './domain'
+import type { TextureMaterial, Design } from './domain'
 import type { BackgroundRenderData, IMaterialRenderer } from './types'
 
 // ========== Texture Renderer ==========

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { MaterialFormat } from '@prisma/client'
+import { MaterialFormat } from '@/lib/materials/types'
 import { findMaterialByFormat } from '@/lib/materials/registry'
 import { getDesignById } from '@/lib/designsData'
 
@@ -125,7 +125,7 @@ export async function GET(
           design = {
             id: dbDesign.id,
             modelId: dbDesign.scooterModel?.slug || dbDesign.scooterModelId,
-            name: dbDesign.title || dbDesign.name,
+            name: dbDesign.title,
             textureWebp: textureMaterial?.url || dbDesign.textureWebp,
             textureUrl: textureMaterial?.url || dbDesign.textureUrl,
             texture: textureMaterial?.url || dbDesign.textureUrl || dbDesign.textureWebp,

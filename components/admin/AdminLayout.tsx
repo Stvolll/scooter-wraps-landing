@@ -8,6 +8,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
 
   const isActive = (href: string) => {
+    if (!pathname) return false
     if (href === '/admin') return pathname === '/admin'
     return pathname.startsWith(href)
   }

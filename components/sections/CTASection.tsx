@@ -54,7 +54,7 @@ export default function CTASection() {
             initial={isMounted ? { opacity: 0, y: 20 } : false}
             animate={isMounted ? { opacity: 1, y: 0 } : false}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight"
+            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 pb-2 text-center bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight"
           >
             {t('cta.readyToTransform')}
             <br />
@@ -66,7 +66,7 @@ export default function CTASection() {
             initial={isMounted ? { opacity: 0, y: 20 } : false}
             animate={isMounted ? { opacity: 1, y: 0 } : false}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-lg md:text-xl text-white/70 mb-12 max-w-2xl mx-auto"
+            className="text-lg md:text-xl text-white/60 mb-12 max-w-2xl mx-auto leading-relaxed"
           >
             {t('cta.subtitle')}
           </motion.p>

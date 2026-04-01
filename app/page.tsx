@@ -22,12 +22,9 @@ import LandingDesignCard from '@/components/LandingDesignCard'
 // Landing sections
 import ProductExperience from '@/components/ProductExperience'
 import USPSection from '@/components/sections/USPSection'
-import ProcessSection from '@/components/sections/ProcessSection'
 import TestimonialsSection from '@/components/sections/TestimonialsSection'
-import GallerySection from '@/components/sections/GallerySection'
 import FAQSection from '@/components/sections/FAQSection'
 import ContactSection from '@/components/sections/ContactSection'
-import CTASection from '@/components/sections/CTASection'
 
 const ScooterViewer = dynamic(() => import('@/components/ScooterViewer'), {
   ssr: false,
@@ -798,13 +795,10 @@ export default function Home() {
             'linear-gradient(180deg, rgba(0, 0, 0, 1) 0%, rgba(15, 15, 15, 1) 5%, rgba(15, 15, 15, 1) 100%)',
         }}
       >
-        <ProductExperience selectedModel={selectedModel || ''} scooterName={currentScooter ? getModelName(currentScooter.id, currentScooter.name) : 'Scooter'} />
         <USPSection />
-        <ProcessSection />
-        <GallerySection />
+        <ProductExperience selectedModel={selectedModel || ''} scooterName={currentScooter ? getModelName(currentScooter.id, currentScooter.name) : 'Scooter'} />
         <TestimonialsSection />
         <FAQSection />
-        <CTASection />
         <ContactSection />
       </div>
     </>

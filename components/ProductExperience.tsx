@@ -2,107 +2,156 @@
 
 /**
  * ProductExperience Component
- * Three high-performance sections in Premium Industrial/Brutalist style:
- * 1. Blueprint Tech-Specs (Interactive CAD-style map)
- * 2. Production Protocol (Vertical timeline)
- * 3. Visual Request Terminal (Concierge form with before/after slider)
+ * Installation guide, tools, map, bento, and production protocol.
  */
 
-import { useState, useEffect, useRef } from 'react'
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
-import { Palette, Monitor, Printer, Truck, ChevronRight, Wrench, Droplet, Scissors, Wind, Sparkles } from 'lucide-react'
-import InteractiveScooterBlueprint from './InteractiveScooterBlueprint'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Wrench, Droplet, Scissors, Wind, Sparkles } from 'lucide-react'
 import VietnamInstallationMap from './VietnamInstallationMap'
 import Image from 'next/image'
 import { useLanguage } from '@/contexts/LanguageContext'
 
+const TOOL_TITLE_CLASS = 'text-xl md:text-2xl font-semibold leading-snug'
 
-// Production protocol steps
-const protocolSteps = [
-  {
-    number: '01',
-    title: 'CREATIVE',
-    description: 'Design adaptation for specific geometry.',
-    icon: Palette,
+const toolDescriptions = {
+  en: {
+    solution: {
+      title: 'Application Solution',
+      intro: 'Used for wet installation to allow repositioning before fixing.',
+      points: [
+        { icon: '💧', label: 'Mix ratio', text: '2–3 drops of soap per 0.5–1L water' },
+        { icon: '🧼', label: 'Surface', text: 'Slightly wet, not flooded' },
+        { icon: '⚡', label: 'Timing', text: 'Work quickly — adhesive activates after water removal' },
+      ],
+    },
+    knife: {
+      title: 'Precision Knife',
+      intro: 'For accurate trimming along edges and cutouts.',
+      points: [
+        { icon: '🔪', label: 'Blade', text: 'Use a sharp new blade' },
+        { icon: '✂️', label: 'Cutting', text: 'Light pressure, multiple passes' },
+        { icon: '⚠️', label: 'Safety', text: 'Avoid cutting directly on painted surfaces' },
+      ],
+    },
+    heatgun: {
+      title: 'Heat Gun',
+      intro: 'Helps apply film on curves and complex shapes.',
+      points: [
+        { icon: '🔥', label: 'Heat', text: 'Use moderate temperature' },
+        { icon: '🌪', label: 'Movement', text: "Keep moving, don't stay in one spot" },
+        { icon: '❄️', label: 'Fixing', text: 'Let film cool to lock shape' },
+      ],
+    },
+    squeegee: {
+      title: 'Squeegee',
+      intro: 'Removes water and air bubbles.',
+      points: [
+        { icon: '➡️', label: 'Direction', text: 'Move from center to edges' },
+        { icon: '📏', label: 'Pressure', text: 'Apply evenly' },
+        { icon: '🛡', label: 'Protection', text: 'Use soft edge (felt) to avoid scratches' },
+      ],
+    },
   },
-  {
-    number: '02',
-    title: 'RENDER',
-    description: '3D Visualization verification.',
-    icon: Monitor,
+  vi: {
+    solution: {
+      title: 'Dung dịch thi công (Application Solution)',
+      intro: 'Dùng cho phương pháp dán ướt để có thể điều chỉnh vị trí trước khi cố định.',
+      points: [
+        { icon: '💧', label: 'Tỷ lệ', text: '2–3 giọt xà phòng / 0.5–1L nước' },
+        { icon: '🧼', label: 'Bề mặt', text: 'Chỉ cần ẩm nhẹ, không đọng nước' },
+        { icon: '⚡', label: 'Thời điểm', text: 'Làm nhanh, keo sẽ bám sau khi gạt nước' },
+      ],
+    },
+    knife: {
+      title: 'Dao cắt (Precision Knife)',
+      intro: 'Dùng để cắt chính xác theo mép và chi tiết.',
+      points: [
+        { icon: '🔪', label: 'Lưỡi dao', text: 'Dùng lưỡi dao mới, sắc' },
+        { icon: '✂️', label: 'Thao tác', text: 'Cắt nhẹ, nhiều lần' },
+        { icon: '⚠️', label: 'An toàn', text: 'Tránh cắt trực tiếp lên bề mặt sơn' },
+      ],
+    },
+    heatgun: {
+      title: 'Máy khò nhiệt (Heat Gun)',
+      intro: 'Giúp dán ở các bề mặt cong và phức tạp.',
+      points: [
+        { icon: '🔥', label: 'Nhiệt', text: 'Dùng nhiệt vừa phải' },
+        { icon: '🌪', label: 'Di chuyển', text: 'Di chuyển liên tục' },
+        { icon: '❄️', label: 'Cố định', text: 'Để nguội để cố định form' },
+      ],
+    },
+    squeegee: {
+      title: 'Gạt (Squeegee)',
+      intro: 'Dùng để loại bỏ nước và bọt khí.',
+      points: [
+        { icon: '➡️', label: 'Hướng gạt', text: 'Gạt từ trung tâm ra ngoài' },
+        { icon: '📏', label: 'Lực', text: 'Lực đều tay' },
+        { icon: '🛡', label: 'Bảo vệ', text: 'Dùng loại có mép mềm để tránh trầy' },
+      ],
+    },
   },
-  {
-    number: '03',
-    title: 'EXECUTION',
-    description: 'High-DPI Printing & lamination.',
-    icon: Printer,
-  },
-  {
-    number: '04',
-    title: 'DEPLOY',
-    description: 'Shipping & Installation support.',
-    icon: Truck,
-  },
-]
+} as const
 
 interface ProductExperienceProps {
   selectedModel?: string
   scooterName?: string
 }
 
-export default function ProductExperience({ selectedModel = 'nvx', scooterName }: ProductExperienceProps) {
+export default function ProductExperience({ selectedModel: _selectedModel, scooterName }: ProductExperienceProps) {
   const { t, language } = useLanguage()
   const [isMounted, setIsMounted] = useState(false)
-  const [hoveredTool, setHoveredTool] = useState<string | null>(null)
-  const protocolRef = useRef<HTMLDivElement>(null)
-  
-  // Production protocol steps with translations
-  const protocolSteps = [
-    {
-      number: '01',
-      title: t('productionProcess.steps.creative.title'),
-      description: t('productionProcess.steps.creative.description'),
-      icon: Palette,
-    },
-    {
-      number: '02',
-      title: t('productionProcess.steps.render.title'),
-      description: t('productionProcess.steps.render.description'),
-      icon: Monitor,
-    },
-    {
-      number: '03',
-      title: t('productionProcess.steps.execution.title'),
-      description: t('productionProcess.steps.execution.description'),
-      icon: Printer,
-    },
-    {
-      number: '04',
-      title: t('productionProcess.steps.deploy.title'),
-      description: t('productionProcess.steps.deploy.description'),
-      icon: Truck,
-    },
-  ]
-  
-  // Scroll progress for protocol section
-  // Only initialize useScroll after component is mounted to avoid hydration issues
-  const { scrollYProgress } = useScroll({
-    target: isMounted ? protocolRef : undefined,
-    offset: ['start end', 'end start'],
-    layoutEffect: false, // Use layoutEffect: false to prevent SSR issues
+  const [detailToolId, setDetailToolId] = useState<string | null>(null)
+  const [isCoarsePointer, setIsCoarsePointer] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia('(pointer: coarse)').matches
   })
+  const leaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Pre-calculate transforms for all steps (hooks must be called at top level)
-  // Use fallback values to prevent errors during SSR
-  const step0Transform = useTransform(scrollYProgress, [0, 1], [0, 0])
-  const step1Transform = useTransform(scrollYProgress, [0, 1], [0, -50])
-  const step2Transform = useTransform(scrollYProgress, [0, 1], [0, -100])
-  const step3Transform = useTransform(scrollYProgress, [0, 1], [0, -150])
-  const stepTransforms = [step0Transform, step1Transform, step2Transform, step3Transform]
+  const detailLang = language === 'vi' ? 'vi' : 'en'
 
+  const clearLeaveTimer = useCallback(() => {
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current)
+      leaveTimerRef.current = null
+    }
+  }, [])
+
+  const showToolDetail = useCallback(
+    (id: string) => {
+      clearLeaveTimer()
+      setDetailToolId(id)
+    },
+    [clearLeaveTimer]
+  )
+
+  const scheduleHideToolDetail = useCallback(() => {
+    clearLeaveTimer()
+    leaveTimerRef.current = setTimeout(() => setDetailToolId(null), 200)
+  }, [clearLeaveTimer])
+
+  const toggleToolDetailMobile = useCallback(
+    (id: string) => {
+      setDetailToolId(prev => (prev === id ? null : id))
+    },
+    []
+  )
+  
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia('(pointer: coarse)')
+    const update = () => setIsCoarsePointer(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => {
+      mq.removeEventListener('change', update)
+      clearLeaveTimer()
+    }
+  }, [clearLeaveTimer])
 
 
   return (
@@ -114,23 +163,23 @@ export default function ProductExperience({ selectedModel = 'nvx', scooterName }
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#00FFA9] rounded-full blur-[120px] opacity-10" />
         </div>
         
-        <div className="relative container mx-auto px-4 md:px-8 lg:px-16 max-w-7xl">
-          {/* Section Header - Compact */}
+        <div className="relative container mx-auto px-4 md:px-8 lg:px-16 max-w-7xl flex flex-col">
+          {/* Section header — типографика как у «{model} Designs» на главной */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={isMounted ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="mb-12 text-center"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#00FFA9]/10 border border-[#00FFA9]/20 mb-4">
-              <span className="text-[10px] font-semibold text-[#00FFA9] uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00FFA9]/10 border border-[#00FFA9]/20 mb-6">
+              <span className="text-xs font-semibold text-[#00FFA9] uppercase tracking-wider">
                 {t('installationGuide.title')}
               </span>
             </div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 text-white">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 pb-2 text-center bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
               {t('installationGuide.howToApply')}
             </h2>
-            <p className="text-sm md:text-base text-white/60 max-w-xl mx-auto">
+            <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">
               {scooterName ? (
                 <>
                   {t('installationGuide.interactiveGuideFor')} <span className="text-[#00FFA9] font-medium">{scooterName}</span>
@@ -146,10 +195,10 @@ export default function ProductExperience({ selectedModel = 'nvx', scooterName }
             initial={{ opacity: 0, y: 20 }}
             animate={isMounted ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="mb-12"
+            className="mb-12 order-2"
           >
             <div
-              className="p-6 md:p-8 rounded-2xl"
+              className="p-6 pb-8 md:p-8 md:pb-10 rounded-2xl"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(16px) saturate(180%)',
@@ -167,110 +216,106 @@ export default function ProductExperience({ selectedModel = 'nvx', scooterName }
                 </h3>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {/* Tool items */}
                 {[
-                  { 
+                  {
                     id: 'solution',
-                    icon: Droplet, 
-                    name: t('installationGuide.tools.applicationSolution.name'), 
+                    icon: Droplet,
+                    name: t('installationGuide.tools.applicationSolution.name'),
                     desc: t('installationGuide.tools.applicationSolution.desc'),
-                    image: '/images/application-solution.webp'
+                    image: '/images/application-solution.webp',
                   },
-                  { 
+                  {
                     id: 'knife',
-                    icon: Scissors, 
-                    name: t('installationGuide.tools.precisionKnife.name'), 
+                    icon: Scissors,
+                    name: t('installationGuide.tools.precisionKnife.name'),
                     desc: t('installationGuide.tools.precisionKnife.desc'),
-                    image: '/images/precision-knife.webp'
+                    image: '/images/precision-knife.webp',
                   },
-                  { 
+                  {
                     id: 'heatgun',
-                    icon: Wind, 
-                    name: t('installationGuide.tools.heatGun.name'), 
+                    icon: Wind,
+                    name: t('installationGuide.tools.heatGun.name'),
                     desc: t('installationGuide.tools.heatGun.desc'),
-                    image: '/images/heat-gun.webp'
+                    image: '/images/heat-gun.webp',
                   },
-                  { 
+                  {
                     id: 'squeegee',
-                    icon: Sparkles, 
-                    name: t('installationGuide.tools.squeegee.name'), 
+                    icon: Sparkles,
+                    name: t('installationGuide.tools.squeegee.name'),
                     desc: t('installationGuide.tools.squeegee.desc'),
-                    image: '/images/squeegee.webp'
+                    image: '/images/squeegee.webp',
                   },
                 ].map((item, index) => {
                   const Icon = item.icon
-                  const isHovered = hoveredTool === item.id
+                  const isActive = detailToolId === item.id
                   return (
                     <motion.div
-                      key={item.name}
+                      key={item.id}
+                      role="button"
+                      aria-pressed={isActive}
+                      tabIndex={0}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={isMounted ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3, delay: 0.1 + index * 0.05 }}
-                      className="relative p-4 rounded-xl border transition-all overflow-hidden aspect-square flex flex-col group"
+                      className={`relative p-4 rounded-xl border transition-all duration-200 overflow-hidden aspect-square flex flex-col group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFA9]/60 ${
+                        isCoarsePointer ? 'cursor-pointer active:scale-[0.98]' : ''
+                      } ${isActive ? 'ring-2 ring-[#00FFA9]/45 shadow-[0_0_28px_rgba(0,255,169,0.2)]' : ''}`}
                       style={{
-                        borderColor: isHovered ? 'rgba(0, 255, 169, 0.35)' : 'rgba(255, 255, 255, 0.08)',
-                        backgroundColor: isHovered ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.04)',
-                        boxShadow: isHovered 
-                          ? '0 6px 24px -2px rgba(0, 255, 169, 0.25), 0 0 0 1px rgba(0, 255, 169, 0.2) inset' 
+                        borderColor: isActive ? 'rgba(0, 255, 169, 0.45)' : 'rgba(255, 255, 255, 0.08)',
+                        backgroundColor: isActive ? 'rgba(255, 255, 255, 0.11)' : 'rgba(255, 255, 255, 0.04)',
+                        boxShadow: isActive
+                          ? '0 6px 28px -2px rgba(0, 255, 169, 0.28), 0 0 0 1px rgba(0, 255, 169, 0.22) inset'
                           : '0 2px 12px -2px rgba(0, 0, 0, 0.15)',
                       }}
-                      whileHover={{ 
-                        scale: 1.02,
-                        y: -2,
-                        transition: { duration: 0.2 }
+                      whileHover={isCoarsePointer ? undefined : { scale: 1.02, y: -2, transition: { duration: 0.2 } }}
+                      onMouseEnter={() => {
+                        if (!isCoarsePointer) showToolDetail(item.id)
                       }}
-                      onMouseEnter={() => setHoveredTool(item.id)}
-                      onMouseLeave={() => setHoveredTool(null)}
-                      onTouchStart={() => setHoveredTool(hoveredTool === item.id ? null : item.id)}
+                      onMouseLeave={() => {
+                        if (!isCoarsePointer) scheduleHideToolDetail()
+                      }}
+                      onClick={() => {
+                        if (isCoarsePointer) toggleToolDetailMobile(item.id)
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          toggleToolDetailMobile(item.id)
+                        }
+                      }}
                     >
-                      {/* Image that slides in from right - under text */}
                       <AnimatePresence mode="wait">
-                        {isHovered && (
+                        {isActive && (
                           <motion.div
-                            key={`image-${item.id}`}
+                            key={`overlay-${item.id}`}
                             initial={{ x: '100%', opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             exit={{ x: '100%', opacity: 0 }}
-                            transition={{ 
-                              type: 'spring', 
-                              stiffness: 300, 
-                              damping: 30,
-                              duration: 0.35 
-                            }}
-                            className="absolute inset-0 rounded-xl overflow-hidden z-10"
-                            style={{ pointerEvents: 'none' }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 32, duration: 0.35 }}
+                            className="absolute inset-0 rounded-xl overflow-hidden z-[15] pointer-events-none"
                           >
-                            <div className="relative w-full h-full">
-                              <img
-                                src={item.image}
-                                alt={item.name}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement
-                                  target.style.display = 'none'
-                                  const parent = target.parentElement
-                                  if (parent) {
-                                    parent.style.background = 'linear-gradient(135deg, rgba(0, 255, 169, 0.2), rgba(0, 212, 255, 0.2))'
-                                  }
-                                }}
-                              />
-                            </div>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
                           </motion.div>
                         )}
                       </AnimatePresence>
 
-                      {/* Text - Bottom (above image) */}
-                      <div className="relative z-20 mt-auto pt-2">
-                        <div className="text-sm font-bold text-white mb-0.5 leading-tight">{item.name}</div>
-                        <div className="text-xs text-white/60 leading-snug">{item.desc}</div>
+                      <div
+                        className={`relative z-20 mt-auto pt-2 transition-all duration-200 ${
+                          isActive ? 'bg-black/30 backdrop-blur-[2px] rounded-md p-2 -m-2' : ''
+                        }`}
+                      >
+                        <div className={`${TOOL_TITLE_CLASS} text-white mb-1`}>{item.name}</div>
+                        <div className="text-xs md:text-sm text-white/60 leading-snug font-medium line-clamp-2">
+                          {item.desc}
+                        </div>
                       </div>
 
-                      {/* Icon - Top Left (above everything) */}
                       <div className="absolute top-3 left-3 z-30">
-                        <div className="w-9 h-9 rounded-lg bg-[#00FFA9]/12 border border-[#00FFA9]/25 flex items-center justify-center transition-transform duration-200"
+                        <div
+                          className="w-9 h-9 rounded-lg bg-[#00FFA9]/12 border border-[#00FFA9]/25 flex items-center justify-center transition-transform duration-200"
                           style={{
-                            transform: isHovered ? 'scale(1.08) rotate(4deg)' : 'scale(1) rotate(0deg)',
+                            transform: isActive ? 'scale(1.08) rotate(4deg)' : 'scale(1) rotate(0deg)',
                           }}
                         >
                           <Icon className="w-5 h-5 text-[#00FFA9]" />
@@ -280,35 +325,47 @@ export default function ProductExperience({ selectedModel = 'nvx', scooterName }
                   )
                 })}
               </div>
-            </div>
-          </motion.div>
 
-          {/* Interactive Blueprint - Redesigned */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isMounted ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            className="mb-16"
-          >
-            <div
-              className="p-6 md:p-8 rounded-2xl"
-              style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(16px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-                boxShadow: '0 4px 24px -2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.08) inset',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-              }}
-            >
-              <div className="flex items-center gap-2.5 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-[#00FFA9]/10 border border-[#00FFA9]/20 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-[#00FFA9]" />
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold text-white">
-                  {t('installationGuide.interactiveInstallationGuide')}
-                </h3>
+              {/* Floating detail panel — clean inline text (no card box) */}
+              <div className="relative mt-6 min-h-[280px] md:min-h-[260px]">
+                <AnimatePresence mode="wait">
+                  {detailToolId && detailToolId in toolDescriptions.en ? (
+                    <motion.div
+                      key={`${detailToolId}-${detailLang}`}
+                      role="region"
+                      aria-live="polite"
+                      initial={{ opacity: 0, y: 14 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.22, ease: 'easeOut' }}
+                      className="absolute top-0 left-0 w-full max-w-2xl pl-4 md:pl-4 pr-2 pb-6 md:pb-8 text-left"
+                      onMouseEnter={clearLeaveTimer}
+                      onMouseLeave={() => {
+                        if (!isCoarsePointer) scheduleHideToolDetail()
+                      }}
+                    >
+                      <h4 className={`${TOOL_TITLE_CLASS} text-white mb-3`}>
+                        {toolDescriptions[detailLang][detailToolId as keyof typeof toolDescriptions.en].title}
+                      </h4>
+                      <p className="text-sm md:text-base text-white/75 leading-relaxed mb-4">
+                        {toolDescriptions[detailLang][detailToolId as keyof typeof toolDescriptions.en].intro}
+                      </p>
+                      <ul className="space-y-3">
+                        {toolDescriptions[detailLang][detailToolId as keyof typeof toolDescriptions.en].points.map(
+                          point => (
+                            <li key={point.label} className="leading-relaxed">
+                              <div className="text-sm md:text-base text-white/90 font-medium">
+                                {point.icon} {point.label}
+                              </div>
+                              <div className="text-sm md:text-base text-white/70 mt-0.5">{point.text}</div>
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
               </div>
-              <InteractiveScooterBlueprint selectedModel={selectedModel} />
             </div>
           </motion.div>
 
@@ -317,13 +374,13 @@ export default function ProductExperience({ selectedModel = 'nvx', scooterName }
             initial={{ opacity: 0, y: 20 }}
             animate={isMounted ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="mb-16"
+            className="mb-16 order-3"
           >
             <VietnamInstallationMap />
           </motion.div>
 
           {/* Bento Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16 order-1">
             {/* Large card: Film texture macro */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -445,127 +502,6 @@ export default function ProductExperience({ selectedModel = 'nvx', scooterName }
                 </div>
               </div>
             </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 2: Production Protocol */}
-      <section ref={protocolRef} className="relative py-24 md:py-32" style={{ position: 'relative' }} suppressHydrationWarning>
-        <div className="container mx-auto px-4 md:px-8 lg:px-16">
-          {/* Section Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isMounted ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-12 text-center"
-          >
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-              {t('productionProcess.title')}
-            </h2>
-            <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto">
-              {t('productionProcess.subtitle')}
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left Side: Sticky Header */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={isMounted ? { opacity: 1 } : { opacity: 1 }}
-              transition={{ duration: 0.6 }}
-              className="lg:col-span-3 lg:sticky lg:top-24 h-fit"
-            >
-              <div
-                className="p-8 rounded-3xl"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  backdropFilter: 'blur(20px) saturate(180%)',
-                  WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  boxShadow: '0 8px 32px -4px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
-                }}
-              >
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">
-                  {t('productionProcess.our')}
-                </h2>
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#00FFA9]">
-                  {t('productionProcess.ourProcess')}
-                </h2>
-              </div>
-            </motion.div>
-
-            {/* Right Side: Scrollable Steps */}
-            <div className="lg:col-span-9 space-y-0">
-              {protocolSteps.map((step, index) => {
-                const Icon = step.icon
-                const yTransform = stepTransforms[index]
-
-                return (
-                  <motion.div
-                    key={step.number}
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={isMounted ? { opacity: 1, x: 0 } : { opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.15 }}
-                    style={{ y: yTransform }}
-                    className="mb-6"
-                  >
-                    <div
-                      className="p-6 rounded-3xl transition-all duration-300 hover:scale-[1.02]"
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.08)',
-                        backdropFilter: 'blur(20px) saturate(180%)',
-                        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        boxShadow: '0 8px 32px -4px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
-                      }}
-                    >
-                      <div className="flex items-start gap-6">
-                        {/* Step Number */}
-                        <div className="flex-shrink-0">
-                          <div
-                            className="w-16 h-16 rounded-2xl flex items-center justify-center"
-                            style={{
-                              background: 'linear-gradient(135deg, rgba(0, 255, 169, 0.2), rgba(0, 212, 255, 0.2))',
-                              border: '1px solid rgba(0, 255, 169, 0.3)',
-                            }}
-                          >
-                            <span className="text-2xl font-bold text-[#00FFA9]">{step.number}</span>
-                          </div>
-                        </div>
-
-                        {/* Icon */}
-                        <div className="flex-shrink-0 mt-2">
-                          <div
-                            className="w-12 h-12 rounded-xl flex items-center justify-center"
-                            style={{
-                              background: 'rgba(255, 255, 255, 0.1)',
-                              border: '1px solid rgba(255, 255, 255, 0.2)',
-                            }}
-                          >
-                            <Icon className="w-6 h-6 text-white" />
-                          </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1">
-                          <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
-                            {step.title}
-                          </h3>
-                          <p className="text-sm md:text-base text-white/60 leading-relaxed">
-                            {step.description}
-                          </p>
-                        </div>
-
-                        {/* Arrow */}
-                        <div className="flex-shrink-0 mt-2">
-                          <ChevronRight className="w-6 h-6 text-white/40" />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )
-              })}
-            </div>
           </div>
         </div>
       </section>

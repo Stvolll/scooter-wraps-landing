@@ -38,6 +38,8 @@ interface ModelData {
     name: string
     slug: string
     texture_webp: string | null
+    texture?: string | null
+    textures?: { body?: string; plastic?: string; accents?: string }
     bg_webp: string | null
     design_info: {
       film_type: string | null
@@ -136,10 +138,8 @@ export default function ModelPage() {
     return {
       id: design.id,
       name: design.name,
-      // Поддержка разных форматов текстур
-      texture: design.texture_webp || design.texture,
+      texture: design.texture_webp || design.texture || undefined,
       textures: design.textures || undefined,
-      modelId: model?.id,
     }
   }
 

@@ -16,7 +16,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Mail,
-  Phone,
   MapPin,
   Instagram,
   Facebook,
@@ -81,7 +80,7 @@ export default function Footer() {
       />
 
       <div className="relative z-50 container mx-auto px-4 md:px-8 lg:px-16 py-16 max-w-7xl" style={{ position: 'relative', zIndex: 50, backgroundColor: 'transparent' }}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-12">
           {/* Brand & Description */}
           <div className="space-y-4">
             <Link href="/" className="inline-block">
@@ -93,29 +92,6 @@ export default function Footer() {
             <p className="text-sm text-white/60 leading-relaxed">
               {t('footer.description') || 'Premium vinyl wraps for scooters. Transform your ride with professional design and installation.'}
             </p>
-          </div>
-
-          {/* Quick Links */}
-          <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-white uppercase tracking-wider">Quick Links</h4>
-            <nav className="flex flex-col gap-3">
-              {[
-                { href: '/', label: 'Home' },
-                { href: '/#gallery', label: 'Gallery' },
-                { href: '/#process', label: 'Process' },
-                { href: '/#faq', label: 'FAQ' },
-                { href: '/#contact', label: 'Contact' },
-              ].map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-sm text-white/60 hover:text-[#00FFA9] transition-colors flex items-center gap-2 group"
-                >
-                  <span>{link.label}</span>
-                  <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </Link>
-              ))}
-            </nav>
           </div>
 
           {/* Contact Info */}
@@ -132,16 +108,7 @@ export default function Footer() {
                 <span>info@txd.bike</span>
               </a>
               <a
-                href="tel:+84901234567"
-                className="flex items-center gap-3 text-sm text-white/60 hover:text-[#00FFA9] transition-colors group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-[#00FFA9]/10 group-hover:border-[#00FFA9]/30 transition-all">
-                  <Phone className="w-4 h-4" />
-                </div>
-                <span>+84 90 123 4567</span>
-              </a>
-              <a
-                href="https://wa.me/84901234567"
+                href="https://wa.me/84386764077"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 text-sm text-white/60 hover:text-[#00FFA9] transition-colors group"

@@ -49,7 +49,7 @@ async function main() {
       if (data.designs && Array.isArray(data.designs)) {
         console.log(`   📐 Создаю ${data.designs.length} дизайнов...`)
         
-        for (const design of data.designs) {
+        for (const design of data.designs as Array<Record<string, any>>) {
           const designSlug = `${slug}-${design.id}`
           
           // Подготавливаем данные для текстур

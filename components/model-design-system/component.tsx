@@ -39,7 +39,10 @@ export default function ModelScene3D({
     return null
   }
 
-  const { scene, error: gltfError } = useGLTF(modelUrl)
+  const { scene, error: gltfError } = useGLTF(modelUrl) as {
+    scene: THREE.Group
+    error?: Error
+  }
   const groupRef = useRef<THREE.Group>(null)
   const clonedSceneRef = useRef<THREE.Group | null>(null)
   const { scene: threeScene } = useThree()

@@ -21,7 +21,7 @@ export default function FileDisplay({
 }: FileDisplayProps) {
   const getFileInfo = (url: string) => {
     try {
-      const urlObj = new URL(url.startsWith('/') ? `http://localhost${url}` : url)
+      const urlObj = new URL(url, 'https://local.invalid')
       const pathname = urlObj.pathname
       const filename = pathname.split('/').pop() || url
       const extension = filename.split('.').pop()?.toUpperCase() || ''

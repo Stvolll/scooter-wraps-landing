@@ -8,7 +8,6 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
-import Image from 'next/image'
 
 export default function USPSection() {
   const { t } = useLanguage()
@@ -64,10 +63,10 @@ export default function USPSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 pb-2 text-center bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
             {t('usp.title')}
           </h2>
-          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto">{t('usp.subtitle')}</p>
+          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">{t('usp.subtitle')}</p>
         </motion.div>
 
         {/* USP Grid */}
@@ -119,65 +118,6 @@ export default function USPSection() {
             </motion.div>
           ))}
         </div>
-
-        {/* Certifications */}
-        <motion.div
-          initial={isMounted ? { opacity: 0, y: 20 } : false}
-          animate={isMounted ? { opacity: 1, y: 0 } : false}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-16 mb-12"
-        >
-          <h3 className="text-center text-lg font-semibold text-white/80 mb-6">
-            {t('usp.certifications') || 'Certified Premium Materials'}
-          </h3>
-          <div className="flex flex-wrap justify-center items-center gap-8">
-            {/* 3M Certification */}
-            <motion.div
-              initial={isMounted ? { opacity: 0, scale: 0.9 } : false}
-              animate={isMounted ? { opacity: 1, scale: 1 } : false}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="p-4 rounded-2xl"
-              style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-2xl font-bold text-white">
-                  3M
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-white">3M™ Certified</div>
-                  <div className="text-xs text-white/60">Premium Vinyl</div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Avery Dennison Certification */}
-            <motion.div
-              initial={isMounted ? { opacity: 0, scale: 0.9 } : false}
-              animate={isMounted ? { opacity: 1, scale: 1 } : false}
-              transition={{ duration: 0.5, delay: 0.6 }}
-              className="p-4 rounded-2xl"
-              style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-xs font-bold text-white">
-                  AVERY
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-white">Avery Dennison</div>
-                  <div className="text-xs text-white/60">Authorized Partner</div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
 
         {/* Enhanced Trust badges with numbers */}
         <motion.div

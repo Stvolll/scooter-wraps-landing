@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isValidEmail, sanitizeInput } from '@/lib/security'
 import { sendEmail } from '@/lib/email'
+import { getPublicSiteUrl } from '@/lib/site-url'
 import { randomBytes } from 'crypto'
 
 export const dynamic = 'force-dynamic'
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Send verification email
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const baseUrl = getPublicSiteUrl()
     const verificationUrl = `${baseUrl}/newsletter/verify?token=${verificationToken}`
 
     await sendEmail({

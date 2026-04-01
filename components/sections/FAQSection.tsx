@@ -24,6 +24,7 @@ export default function FAQSection() {
   const { t } = useLanguage()
   const [isMounted, setIsMounted] = useState(false)
   const [openId, setOpenId] = useState<number | null>(1)
+  const whatsappSupportUrl = 'https://wa.me/84386764077'
 
   useEffect(() => {
     setIsMounted(true)
@@ -46,10 +47,10 @@ export default function FAQSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 pb-2 text-center bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
             {t('faq.title')}
           </h2>
-          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto">{t('faq.subtitle')}</p>
+          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">{t('faq.subtitle')}</p>
         </motion.div>
 
         {/* FAQ Accordion */}
@@ -128,9 +129,14 @@ export default function FAQSection() {
           className="mt-16 text-center"
         >
           <p className="text-white/60 mb-4">{t('faq.stillQuestions')}</p>
-          <button className="px-8 py-3 rounded-2xl font-semibold text-white border-2 border-[#00FFA9] hover:bg-[#00FFA9] hover:text-black transition-all duration-300">
+          <a
+            href={whatsappSupportUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-8 py-3 rounded-2xl font-semibold text-white border-2 border-[#00FFA9] hover:bg-[#00FFA9] hover:text-black transition-all duration-300"
+          >
             {t('faq.contactSupport')}
-          </button>
+          </a>
         </motion.div>
       </div>
     </section>

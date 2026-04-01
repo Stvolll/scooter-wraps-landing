@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { rateLimit, getClientIdentifier } from './lib/security'
+import { rateLimit, getClientIdentifier, resolveRateLimitTier } from './lib/rate-limit'
 
 export async function middleware(request: NextRequest) {
   // Check if request is for placeholder domains
@@ -52,34 +52,24 @@ export async function middleware(request: NextRequest) {
 
   response.headers.set('Content-Security-Policy', csp)
 
-  // Rate limiting for API routes
-  if (request.nextUrl.pathname.startsWith('/api/')) {
+  // Rate limiting for API routes (skipped in development for DX; fail-open on limiter errors)
+  if (
+    request.nextUrl.pathname.startsWith('/api/') &&
+    process.env.NODE_ENV !== 'development'
+  ) {
+    const pathname = request.nextUrl.pathname
     const identifier = getClientIdentifier(request)
+    const tier = resolveRateLimitTier(pathname)
 
-    // Different limits for different endpoints
-    let limit = 10
-    let window = 10
-
-    if (
-      request.nextUrl.pathname.includes('/checkout') ||
-      request.nextUrl.pathname.includes('/book-installation')
-    ) {
-      limit = 5 // Stricter limit for payment/booking endpoints
-      window = 60
-    } else if (request.nextUrl.pathname.includes('/uploads')) {
-      limit = 50 // File uploads - higher limit for admin panel
-      window = 60
-    } else if (request.nextUrl.pathname.includes('/admin')) {
-      limit = 30 // Higher limit for admin (will be further protected by auth)
-      window = 10
+    let rateLimitResult: Awaited<ReturnType<typeof rateLimit>> | null = null
+    try {
+      rateLimitResult = await rateLimit(request, identifier, tier)
+    } catch (err) {
+      console.error('[rate-limit] Limiter failure (fail-open):', err)
     }
 
-    const rateLimitResult = await rateLimit(request, identifier, limit, window)
-
-    if (!rateLimitResult.success) {
-      response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString())
-      response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
-      response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.reset).toISOString())
+    if (rateLimitResult && !rateLimitResult.success) {
+      console.warn('Rate limit exceeded:', identifier, pathname, tier)
 
       return NextResponse.json(
         {
@@ -99,10 +89,11 @@ export async function middleware(request: NextRequest) {
       )
     }
 
-    // Add rate limit headers to successful responses
-    response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString())
-    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
-    response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.reset).toISOString())
+    if (rateLimitResult) {
+      response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString())
+      response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
+      response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.reset).toISOString())
+    }
   }
 
   return response

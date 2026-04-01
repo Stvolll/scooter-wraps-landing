@@ -4,37 +4,8 @@ import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
 import { Readable } from 'stream'
+import busboy from 'busboy'
 import { FileTypeDetector } from '@/lib/utils/FileTypeDetector'
-
-// Inline busboy loader - use absolute path to avoid Turbopack issues
-function getBusboy() {
-  try {
-    // Use absolute path to busboy module
-    const path = require('path')
-    const busboyPath = path.join(process.cwd(), 'node_modules', 'next', 'dist', 'compiled', 'busboy', 'index.js')
-    const fs = require('fs')
-    
-    if (!fs.existsSync(busboyPath)) {
-      throw new Error(`Busboy not found at: ${busboyPath}`)
-    }
-    
-    // Use Function constructor to avoid static analysis
-    const req = new Function('p', 'return require(p)')
-    const busboy = req(busboyPath)
-    console.log(`✅ Busboy loaded from: ${busboyPath}`)
-    return busboy
-  } catch (error: any) {
-    console.error('❌ Failed to load busboy:', error)
-    // Fallback: try require with relative path
-    try {
-      const busboy = require('next/dist/compiled/busboy')
-      console.log(`✅ Busboy loaded using fallback require`)
-      return busboy
-    } catch (fallbackError: any) {
-      throw new Error(`Busboy module not available: ${error.message}. Fallback also failed: ${fallbackError.message}`)
-    }
-  }
-}
 
 // Configure route to handle large file uploads
 export const runtime = 'nodejs'
@@ -72,10 +43,9 @@ async function parseMultipartFormData(request: NextRequest): Promise<{ file: Fil
     let hasError = false
     let timeout: NodeJS.Timeout | null = null
 
-    const Busboy = getBusboy()
-    const busboy = Busboy({ headers: { 'content-type': contentType } })
+    const parser = busboy({ headers: { 'content-type': contentType } })
 
-    busboy.on('file', (name, stream, info) => {
+    parser.on('file', (name: string, stream: Readable, info: busboy.FileInfo) => {
       const { filename, encoding, mimeType } = info
       console.log(`📄 File field received: ${name}, filename: ${filename}, type: ${mimeType}`)
       
@@ -114,7 +84,7 @@ async function parseMultipartFormData(request: NextRequest): Promise<{ file: Fil
       }
     })
 
-    busboy.on('field', (name, value) => {
+    parser.on('field', (name: string, value: string) => {
       console.log(`📋 Field received: ${name} = ${value}`)
       if (name === 'folder') {
         folder = value
@@ -123,8 +93,8 @@ async function parseMultipartFormData(request: NextRequest): Promise<{ file: Fil
       }
     })
 
-    busboy.on('finish', () => {
-      clearTimeout(timeout)
+    parser.on('finish', () => {
+      if (timeout) clearTimeout(timeout)
       if (hasError) return
       
       if (!file) {
@@ -143,7 +113,7 @@ async function parseMultipartFormData(request: NextRequest): Promise<{ file: Fil
       resolve({ file, folder, customFilename })
     })
 
-    busboy.on('error', (err) => {
+    parser.on('error', (err: Error) => {
       console.error('❌ Busboy error:', err)
       hasError = true
       reject(new Error(`Multipart parsing error: ${err.message}`))
@@ -182,7 +152,7 @@ async function parseMultipartFormData(request: NextRequest): Promise<{ file: Fil
       }
     })
 
-    busboy.on('error', (err) => {
+    parser.on('error', (err: Error) => {
       console.error('❌ Busboy error:', err)
       if (timeout) clearTimeout(timeout)
       if (!hasError) {
@@ -199,7 +169,7 @@ async function parseMultipartFormData(request: NextRequest): Promise<{ file: Fil
       }
     }, 30000)
 
-    nodeStream.pipe(busboy)
+    nodeStream.pipe(parser)
   })
 }
 

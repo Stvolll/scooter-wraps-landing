@@ -3,13 +3,14 @@ import DesignDetailClient from './DesignDetailClient'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { prisma, withTimeout } from '@/lib/prisma'
-import { MaterialFormat } from '@prisma/client'
+import { MaterialFormat } from '@/lib/materials/types'
 import {
   findMaterialByFormat,
   findMaterialsByFormat,
   findMaterialByRole,
   getMaterialDisplayUrl,
 } from '@/lib/materials/registry'
+import { getPublicSiteUrl } from '@/lib/site-url'
 
 // Force dynamic rendering to prevent RSC payload fetch failures
 export const dynamic = 'force-dynamic'
@@ -286,15 +287,17 @@ export default async function DesignPage({ params }: DesignPageProps) {
   // Если в конфиге нет дизайнов — пробуем API (те же данные, что на главной)
   if (!configDesign && model) {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-      const res = await fetch(`${baseUrl}/api/scooters`, { cache: 'no-store', next: { revalidate: 0 } })
-      if (res.ok) {
-        const data = await res.json()
-        const apiScooters = data.scooters || data
-        scooter = apiScooters[model]
-        configDesign = scooter?.designs?.find(
-          (d: any) => d.id === slug || d.slug === slug || d.id === slugStripped || d.slug === slugStripped
-        )
+      const baseUrl = getPublicSiteUrl()
+      if (baseUrl) {
+        const res = await fetch(`${baseUrl}/api/scooters`, { cache: 'no-store', next: { revalidate: 0 } })
+        if (res.ok) {
+          const data = await res.json()
+          const apiScooters = data.scooters || data
+          scooter = apiScooters[model]
+          configDesign = scooter?.designs?.find(
+            (d: any) => d.id === slug || d.slug === slug || d.id === slugStripped || d.slug === slugStripped
+          )
+        }
       }
     } catch (e) {
       // ignore

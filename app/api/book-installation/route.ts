@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   try {
     // Rate limiting
     const identifier = getClientIdentifier(request)
-    const rateLimitResult = await rateLimit(request, identifier, 5, 60) // 5 requests per minute
+    const rateLimitResult = await rateLimit(request, identifier, 'strict')
     if (!rateLimitResult.success) {
       return securityErrorResponse('Too many requests. Please try again later.', 429, {
         identifier,

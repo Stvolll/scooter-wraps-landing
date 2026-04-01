@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { MaterialFormat } from '@prisma/client'
+import { MaterialFormat as PrismaMaterialFormat } from '@prisma/client'
+import { MaterialFormat } from '@/lib/materials/types'
 import { findMaterialsByFormat, findMaterialByRole, getMaterialDisplayUrl } from '@/lib/materials/registry'
 
 /**
@@ -22,7 +23,7 @@ export async function GET() {
         published: true,
         materials: {
           some: {
-            format: MaterialFormat.PHOTO,
+            format: PrismaMaterialFormat.PHOTO,
           },
         },
       },
@@ -39,7 +40,7 @@ export async function GET() {
         price: true,
         materials: {
           where: {
-            format: MaterialFormat.PHOTO,
+            format: PrismaMaterialFormat.PHOTO,
           },
           select: {
             id: true,

@@ -11,6 +11,7 @@ import { validateCSRFRequest } from '@/lib/csrf'
 import { prisma } from '@/lib/prisma'
 import { createMoMoPayment } from '@/lib/payment/momo'
 import { createZaloPayPayment } from '@/lib/payment/zalopay'
+import { getPublicSiteUrl } from '@/lib/site-url'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     // Rate limiting
     const identifier = getClientIdentifier(request)
-    const rateLimitResult = await rateLimit(request, identifier, 5, 60) // 5 requests per minute
+    const rateLimitResult = await rateLimit(request, identifier, 'strict')
     if (!rateLimitResult.success) {
       logSecurityEvent('rate_limit_exceeded', {
         identifier,
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
     if (body.promoCode) {
       try {
         const promoResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/promo-codes?code=${encodeURIComponent(body.promoCode)}&totalAmount=${body.totalPrice || design.price}`
+          `${getPublicSiteUrl()}/api/promo-codes?code=${encodeURIComponent(body.promoCode)}&totalAmount=${body.totalPrice || design.price}`
         )
         const promoData = await promoResponse.json()
         if (promoData.success) {
@@ -147,7 +148,7 @@ export async function POST(request: NextRequest) {
         }
 
         if (momoConfig.partnerCode && momoConfig.accessKey && momoConfig.secretKey) {
-          const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+          const baseUrl = getPublicSiteUrl()
           const momoResponse = await createMoMoPayment(momoConfig, {
             orderId: order.orderId,
             amount: finalPrice,
@@ -175,7 +176,7 @@ export async function POST(request: NextRequest) {
         }
 
         if (zalopayConfig.appId && zalopayConfig.key1 && zalopayConfig.key2) {
-          const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+          const baseUrl = getPublicSiteUrl()
           const appTransId = `${new Date().toISOString().slice(2, 10).replace(/-/g, '')}_${zalopayConfig.appId}_${timestamp}`
           const zalopayResponse = await createZaloPayPayment(zalopayConfig, {
             appUser: body.phone,

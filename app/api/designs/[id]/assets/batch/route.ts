@@ -155,6 +155,7 @@ export async function POST(
 
     // Обновление дизайна с загруженными файлами
     const updateData: any = {}
+    const scooterModelUpdateData: Record<string, string> = {}
     const texturesToCreate: Array<{
       url: string
       type: string

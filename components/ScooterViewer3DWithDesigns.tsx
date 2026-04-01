@@ -28,6 +28,7 @@ interface ScooterViewer3DWithDesignsProps {
 export default function ScooterViewer3DWithDesigns({
   modelPath,
   selectedDesign,
+  panoramaUrl,
   className = '',
 }: ScooterViewer3DWithDesignsProps) {
   const [isMounted, setIsMounted] = useState(false)
@@ -68,7 +69,11 @@ export default function ScooterViewer3DWithDesigns({
       className={`relative w-full h-full ${className}`}
       style={{ background: 'linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%)' }}
     >
-      <CanvasWithModelScene modelUrl={modelUrl} designId={designId} />
+      <CanvasWithModelScene
+        modelUrl={modelUrl}
+        designId={designId}
+        panoramaUrl={panoramaUrl}
+      />
     </div>
   )
 }
