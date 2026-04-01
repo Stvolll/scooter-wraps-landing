@@ -7,7 +7,7 @@
  * Using Google Maps Embed API with iOS 26 styling
  */
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   MapPin,
@@ -154,76 +154,23 @@ const cities: City[] = [
   },
 ]
 
-// Center of Vietnam for map view
-const vietnamCenter = '16.0,108.0' // Center of Vietnam
-const vietnamZoom = 6 // Zoom level to show all of Vietnam
-
 export default function VietnamInstallationMap() {
   const { t, language } = useLanguage()
   const [selectedCity, setSelectedCity] = useState<City | null>(null)
   const [selectedPartner, setSelectedPartner] = useState<InstallationPartner | null>(null)
-  const [mapLocation, setMapLocation] = useState<string>(vietnamCenter)
-  const [mapZoom, setMapZoom] = useState<number>(vietnamZoom)
-  const [isMounted, setIsMounted] = useState(false)
-
-  // Fix hydration error - only render map on client
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
-  // Get all partners from all cities
-  const getAllPartners = (): InstallationPartner[] => {
-    return cities.flatMap(city => city.partners)
-  }
-
-  // Generate Google Maps URL with markers
-  const getMapUrl = () => {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
-    
-    // If no API key, return null to hide iframe
-    if (!apiKey) {
-      return null
-    }
-    
-    // If city selected, show city markers
-    // Otherwise show all partners
-    let markers: InstallationPartner[] = []
-    
-    if (selectedCity) {
-      markers = selectedCity.partners
-    } else {
-      markers = getAllPartners()
-    }
-
-    // Build markers query
-    const markersQuery = markers
-      .map(
-        partner =>
-          `markers=color:${partner.hasDiscount ? 'gold' : partner.status === 'active' ? '0x00FFA9' : 'gray'}|${partner.coordinates.lat},${partner.coordinates.lng}`
-      )
-      .join('&')
-
-    return `https://www.google.com/maps/embed/v1/view?key=${apiKey}&center=${mapLocation}&zoom=${mapZoom}&maptype=roadmap&${markersQuery}`
-  }
 
   const handleCityClick = (city: City) => {
     setSelectedCity(city)
     setSelectedPartner(null)
-    setMapLocation(`${city.coordinates.lat},${city.coordinates.lng}`)
-    setMapZoom(12)
   }
 
   const handlePartnerClick = (partner: InstallationPartner) => {
-    setSelectedPartner(partner)
-    setMapLocation(`${partner.coordinates.lat},${partner.coordinates.lng}`)
-    setMapZoom(14)
+    setSelectedPartner(prev => (prev?.id === partner.id ? null : partner))
   }
 
   const handleBack = () => {
     if (selectedCity) {
       setSelectedCity(null)
-      setMapLocation(vietnamCenter)
-      setMapZoom(vietnamZoom)
     }
     setSelectedPartner(null)
   }
@@ -233,31 +180,9 @@ export default function VietnamInstallationMap() {
   }
 
   return (
-    <section className="relative py-20 md:py-32 overflow-hidden min-h-screen rounded-3xl">
-      {/* Map as Background */}
-      <div className="absolute inset-0 w-full h-full rounded-3xl overflow-hidden">
-        {isMounted && getMapUrl() ? (
-          <iframe
-            width="100%"
-            height="100%"
-            style={{
-              border: 0,
-              filter: 'grayscale(100%) brightness(0.3) contrast(0.8) blur(2px)',
-              pointerEvents: 'none',
-            }}
-            loading="lazy"
-            allowFullScreen
-            referrerPolicy="no-referrer-when-downgrade"
-            src={getMapUrl()!}
-            title="Vietnam Installation Services Map Background"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-neutral-900 to-black" />
-        )}
-      </div>
-
-      {/* Dark Overlay for better readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/80" />
+    <section className="relative py-12 md:py-20 overflow-hidden rounded-3xl">
+      {/* Clean background */}
+      <div className="absolute inset-0 bg-neutral-950" />
 
       {/* Content Layer */}
       <div className="relative z-10 container mx-auto px-4 md:px-8 lg:px-16 max-w-7xl">
@@ -267,7 +192,7 @@ export default function VietnamInstallationMap() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-8 md:mb-10"
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00FFA9]/10 border border-[#00FFA9]/20 mb-6 backdrop-blur-xl">
             <Globe className="w-4 h-4 text-[#00FFA9]" />
@@ -313,7 +238,7 @@ export default function VietnamInstallationMap() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6"
           >
             {cities.map((city, index) => {
               const activePartner = city.partners.find(p => p.status === 'active')
@@ -355,170 +280,178 @@ export default function VietnamInstallationMap() {
 
         {/* Partners Grid - Show when city selected */}
         {selectedCity && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-12"
-          >
-            {selectedCity.partners.map((partner, index) => (
-              <motion.button
-                key={partner.id}
-                onClick={() => handlePartnerClick(partner)}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="text-left p-5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#00FFA9]/30 transition-all backdrop-blur-xl group relative overflow-hidden flex flex-col"
-                style={{
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-                }}
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {/* Partner Name */}
-                <div className="mb-4">
-                  <h3 className="font-bold text-white text-lg leading-tight mb-2">{partner.name}</h3>
-                  <p className="text-xs text-white/60 line-clamp-2">{partner.address}</p>
-                </div>
-
-              </motion.button>
-            ))}
-          </motion.div>
-        )}
-
-        {/* Partner Detail Modal */}
-        <AnimatePresence>
-          {selectedPartner && (
-            <>
-              {/* Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
-                onClick={() => setSelectedPartner(null)}
-              />
-
-              {/* Modal */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl z-50 bg-gradient-to-br from-neutral-900/95 via-neutral-950/95 to-black/95 border border-white/10 rounded-3xl p-8 overflow-y-auto max-h-[90vh] backdrop-blur-2xl"
-                style={{
-                  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-                }}
-              >
-                <button
-                  onClick={() => setSelectedPartner(null)}
-                  className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-
-                <div className="space-y-6">
-                  {/* Header */}
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl md:text-2xl font-bold text-white">
-                        {selectedPartner.name}
-                      </h3>
+          <>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-5"
+            >
+              {selectedCity.partners.map((partner, index) => {
+                const isSelected = selectedPartner?.id === partner.id
+                return (
+                  <motion.button
+                    key={partner.id}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => handlePartnerClick(partner)}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className={`text-left p-5 rounded-2xl border transition-all backdrop-blur-xl group relative overflow-hidden flex flex-col ${
+                      isSelected
+                        ? 'ring-2 ring-[#00FFA9]/45 border-[#00FFA9]/35 bg-white/10 shadow-[0_0_28px_rgba(0,255,169,0.15)]'
+                        : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-[#00FFA9]/30'
+                    }`}
+                    style={{
+                      boxShadow: isSelected
+                        ? '0 6px 28px -2px rgba(0, 255, 169, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 4px 20px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+                    }}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div className="mb-4">
+                      <h3 className="font-bold text-white text-lg leading-tight mb-2">{partner.name}</h3>
+                      <p className="text-xs text-white/60 line-clamp-2">{partner.address}</p>
                     </div>
-                    <div className="flex items-center gap-2 text-white/60">
-                      <MapPin className="w-4 h-4" />
-                      <span>{selectedCity && getCityName(selectedCity)}, {language === 'vi' ? 'Việt Nam' : 'Vietnam'}</span>
-                    </div>
-                  </div>
+                  </motion.button>
+                )
+              })}
+            </motion.div>
 
-                  {/* Address */}
-                  <div className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl">
-                    <div className="flex items-center gap-2 mb-2">
-                      <MapPin className="w-4 h-4 text-[#00FFA9]" />
-                      <div className="text-xs font-semibold text-white/60 uppercase tracking-wider">
-                        {t('installationServices.address')}
-                      </div>
-                    </div>
-                    <div className="text-white leading-relaxed">{selectedPartner.address}</div>
-                  </div>
-
-                  {/* Contact Info */}
-                  <div className="space-y-3">
-                    <div className="text-sm font-semibold text-white uppercase tracking-wider">
-                      {t('installationServices.contact')}
-                    </div>
-                    <a
-                      href={`tel:${selectedPartner.phone}`}
-                      className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-[#00FFA9]/10 border border-[#00FFA9]/30 flex items-center justify-center">
-                        <Phone className="w-5 h-5 text-[#00FFA9]" />
-                      </div>
+            <div
+              className={`relative transition-all duration-300 ease-out ${
+                selectedPartner ? 'mt-6 pb-2' : 'mt-2'
+              }`}
+            >
+              <AnimatePresence mode="wait">
+                {selectedPartner && selectedCity && (
+                  <motion.div
+                    key={selectedPartner.id}
+                    role="region"
+                    aria-live="polite"
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.22, ease: 'easeOut' }}
+                    className="top-0 left-0 w-full max-w-2xl text-left rounded-2xl p-6 md:p-8"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      backdropFilter: 'blur(16px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+                      boxShadow: '0 4px 24px -2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.08) inset',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                    }}
+                  >
+                    <div className="flex items-start justify-between gap-4 mb-6">
                       <div>
-                        <div className="text-sm text-white/60">{t('installationServices.phone')}</div>
-                        <div className="text-white">{selectedPartner.phone}</div>
+                        <h3 className="text-xl md:text-2xl font-bold text-white mb-1">{selectedPartner.name}</h3>
+                        <div className="flex items-center gap-2 text-white/60 text-sm">
+                          <MapPin className="w-4 h-4 shrink-0" />
+                          <span>
+                            {getCityName(selectedCity)}, {language === 'vi' ? 'Việt Nam' : 'Vietnam'}
+                          </span>
+                        </div>
                       </div>
-                    </a>
-
-                    {selectedPartner.whatsapp && (
-                      <a
-                        href={`https://wa.me/${selectedPartner.whatsapp.replace(/\s/g, '')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPartner(null)}
+                        className="shrink-0 w-10 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all"
+                        aria-label={language === 'vi' ? 'Đóng chi tiết' : 'Close details'}
                       >
-                        <div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/30 flex items-center justify-center">
-                          <MessageCircle className="w-5 h-5 text-green-400" />
-                        </div>
-                        <div>
-                          <div className="text-sm text-white/60">{t('installationServices.whatsapp')}</div>
-                          <div className="text-white">{selectedPartner.whatsapp}</div>
-                        </div>
-                      </a>
-                    )}
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
 
-                    {selectedPartner.email && (
-                      <a
-                        href={`mailto:${selectedPartner.email}`}
-                        className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-[#00FFA9]/10 border border-[#00FFA9]/30 flex items-center justify-center">
-                          <Mail className="w-5 h-5 text-[#00FFA9]" />
+                    <div className="space-y-6">
+                      <div className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl">
+                        <div className="flex items-center gap-2 mb-2">
+                          <MapPin className="w-4 h-4 text-[#00FFA9]" />
+                          <div className="text-xs font-semibold text-white/60 uppercase tracking-wider">
+                            {t('installationServices.address')}
+                          </div>
                         </div>
-                        <div>
-                          <div className="text-sm text-white/60">{t('installationServices.email')}</div>
-                          <div className="text-white">{selectedPartner.email}</div>
-                        </div>
-                      </a>
-                    )}
-                  </div>
+                        <div className="text-white leading-relaxed">{selectedPartner.address}</div>
+                      </div>
 
-                  {/* Status */}
-                  <div className="flex items-center gap-2 p-4 rounded-2xl bg-white/5 border border-white/10">
-                    {selectedPartner.status === 'active' ? (
-                      <>
-                        <CheckCircle2 className="w-5 h-5 text-[#00FFA9]" />
-                        <span className="text-sm text-white/60">
-                          Service is active and accepting bookings
-                        </span>
-                      </>
-                    ) : selectedPartner.status === 'pending' ? (
-                      <>
-                        <AlertCircle className="w-5 h-5 text-yellow-400" />
-                        <span className="text-sm text-white/60">Service is pending approval</span>
-                      </>
-                    ) : (
-                      <>
-                        <AlertCircle className="w-5 h-5 text-white/40" />
-                        <span className="text-sm text-white/60">Coming soon</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
+                      <div className="space-y-3">
+                        <div className="text-sm font-semibold text-white uppercase tracking-wider">
+                          {t('installationServices.contact')}
+                        </div>
+                        <a
+                          href={`tel:${selectedPartner.phone}`}
+                          className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                        >
+                          <div className="w-10 h-10 rounded-xl bg-[#00FFA9]/10 border border-[#00FFA9]/30 flex items-center justify-center">
+                            <Phone className="w-5 h-5 text-[#00FFA9]" />
+                          </div>
+                          <div>
+                            <div className="text-sm text-white/60">{t('installationServices.phone')}</div>
+                            <div className="text-white">{selectedPartner.phone}</div>
+                          </div>
+                        </a>
+
+                        {selectedPartner.whatsapp && (
+                          <a
+                            href={`https://wa.me/${selectedPartner.whatsapp.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                          >
+                            <div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/30 flex items-center justify-center">
+                              <MessageCircle className="w-5 h-5 text-green-400" />
+                            </div>
+                            <div>
+                              <div className="text-sm text-white/60">{t('installationServices.whatsapp')}</div>
+                              <div className="text-white">{selectedPartner.whatsapp}</div>
+                            </div>
+                          </a>
+                        )}
+
+                        {selectedPartner.email && (
+                          <a
+                            href={`mailto:${selectedPartner.email}`}
+                            className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                          >
+                            <div className="w-10 h-10 rounded-xl bg-[#00FFA9]/10 border border-[#00FFA9]/30 flex items-center justify-center">
+                              <Mail className="w-5 h-5 text-[#00FFA9]" />
+                            </div>
+                            <div>
+                              <div className="text-sm text-white/60">{t('installationServices.email')}</div>
+                              <div className="text-white">{selectedPartner.email}</div>
+                            </div>
+                          </a>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 p-4 rounded-2xl bg-white/5 border border-white/10">
+                        {selectedPartner.status === 'active' ? (
+                          <>
+                            <CheckCircle2 className="w-5 h-5 text-[#00FFA9] shrink-0" />
+                            <span className="text-sm text-white/60">
+                              Service is active and accepting bookings
+                            </span>
+                          </>
+                        ) : selectedPartner.status === 'pending' ? (
+                          <>
+                            <AlertCircle className="w-5 h-5 text-yellow-400 shrink-0" />
+                            <span className="text-sm text-white/60">Service is pending approval</span>
+                          </>
+                        ) : (
+                          <>
+                            <AlertCircle className="w-5 h-5 text-white/40 shrink-0" />
+                            <span className="text-sm text-white/60">Coming soon</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </>
+        )}
       </div>
     </section>
   )
