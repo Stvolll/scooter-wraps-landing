@@ -796,8 +796,8 @@ export default function Home() {
         }}
       >
         <USPSection />
-        <ProductExperience selectedModel={selectedModel || ''} scooterName={currentScooter ? getModelName(currentScooter.id, currentScooter.name) : 'Scooter'} />
         <TestimonialsSection />
+        <ProductExperience selectedModel={selectedModel || ''} scooterName={currentScooter ? getModelName(currentScooter.id, currentScooter.name) : 'Scooter'} />
         <FAQSection />
         <ContactSection />
       </div>

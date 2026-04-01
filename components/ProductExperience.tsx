@@ -179,15 +179,6 @@ export default function ProductExperience({ selectedModel: _selectedModel, scoot
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 pb-2 text-center bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
               {t('installationGuide.howToApply')}
             </h2>
-            <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">
-              {scooterName ? (
-                <>
-                  {t('installationGuide.interactiveGuideFor')} <span className="text-[#00FFA9] font-medium">{scooterName}</span>
-                </>
-              ) : (
-                t('installationGuide.interactiveGuide')
-              )}
-            </p>
           </motion.div>
 
           {/* Required Tools & Accessories - Redesigned */}
@@ -397,7 +388,7 @@ export default function ProductExperience({ selectedModel: _selectedModel, scoot
             >
               <div className="relative w-full h-full aspect-square lg:aspect-auto lg:h-full min-h-[400px]">
                 <Image
-                  src="/images/placeholders/film-texture-macro.svg"
+                  src="/images/Gemini_1.webp"
                   alt="Premium film texture macro photography"
                   fill
                   className="object-cover"
@@ -489,7 +480,7 @@ export default function ProductExperience({ selectedModel: _selectedModel, scoot
             >
               <div className="relative w-full aspect-square">
                 <Image
-                  src="/images/placeholders/packaging-tube.svg"
+                  src="/images/Gemini_tube.webp"
                   alt="Secure packaging tube"
                   fill
                   className="object-cover"
