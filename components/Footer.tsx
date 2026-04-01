@@ -134,7 +134,7 @@ export default function Footer() {
               {[
                 { icon: Instagram, href: 'https://instagram.com/txd.bike', label: 'Instagram' },
                 { icon: Facebook, href: 'https://facebook.com/txd.bike', label: 'Facebook' },
-                { icon: Youtube, href: 'https://youtube.com/@txd.bike', label: 'YouTube' },
+                { icon: Youtube, href: 'https://youtube.com/@txdbike', label: 'YouTube' },
               ].map((social) => {
                 const Icon = social.icon
                 return (
