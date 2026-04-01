@@ -6,7 +6,7 @@
  */
 
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function ContactSection() {
@@ -97,8 +97,14 @@ export default function ContactSection() {
   // Basic bot-resistance: keep real phone out of plain static text.
   const phoneDigits = ['84', '386', '764', '077']
   const phoneCompact = `+${phoneDigits.join('')}`
-  const phonePretty = `+${phoneDigits[0]} ${phoneDigits[1]} ${phoneDigits[2]} ${phoneDigits[3]}`
   const phoneMasked = '+84 *** *** 077'
+  const randomPhonePlaceholder = useMemo(() => {
+    const prefixes = ['90', '91', '93', '94', '96', '97', '98']
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)]
+    const mid = String(Math.floor(Math.random() * 900) + 100)
+    const tail = String(Math.floor(Math.random() * 900) + 100)
+    return `+84 ${prefix} ${mid} ${tail}`
+  }, [])
 
   const contactMethods = [
     {
@@ -268,7 +274,7 @@ export default function ContactSection() {
                   value={formData.phone}
                   onChange={e => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00FFA9] transition-colors"
-                  placeholder={phonePretty}
+                  placeholder={randomPhonePlaceholder}
                   required
                 />
               </div>

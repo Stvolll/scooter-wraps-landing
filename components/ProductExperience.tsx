@@ -157,7 +157,7 @@ export default function ProductExperience({ selectedModel: _selectedModel, scoot
   return (
     <div className="relative text-white">
       {/* SECTION 1: Interactive Installation Guide - Redesigned */}
-      <section className="relative py-20 md:py-28 overflow-hidden">
+      <section className="relative pt-20 md:pt-28 pb-2 md:pb-4 overflow-hidden">
         {/* Subtle glow effect */}
         <div className="absolute inset-0">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#00FFA9] rounded-full blur-[120px] opacity-10" />
@@ -317,8 +317,12 @@ export default function ProductExperience({ selectedModel: _selectedModel, scoot
                 })}
               </div>
 
-              {/* Floating detail panel — clean inline text (no card box) */}
-              <div className="relative mt-6 min-h-[280px] md:min-h-[260px]">
+              {/* Floating detail panel — collapsed by default, expands on hover/tap */}
+              <div
+                className={`relative transition-all duration-300 ease-out overflow-hidden ${
+                  detailToolId ? 'mt-6 min-h-[280px] md:min-h-[260px]' : 'mt-2 min-h-[12px]'
+                }`}
+              >
                 <AnimatePresence mode="wait">
                   {detailToolId && detailToolId in toolDescriptions.en ? (
                     <motion.div
@@ -377,7 +381,7 @@ export default function ProductExperience({ selectedModel: _selectedModel, scoot
               initial={{ opacity: 0, scale: 0.9 }}
               animate={isMounted ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="lg:col-span-2 lg:row-span-2 rounded-3xl overflow-hidden group cursor-pointer transition-all duration-300 hover:scale-[1.02]"
+              className="lg:col-span-2 lg:row-span-2 rounded-3xl overflow-hidden group cursor-pointer transition-all duration-300 hover:scale-[1.02] flex flex-col min-h-[400px]"
               style={{
                 background: 'rgba(255, 255, 255, 0.08)',
                 backdropFilter: 'blur(20px) saturate(180%)',
@@ -386,11 +390,12 @@ export default function ProductExperience({ selectedModel: _selectedModel, scoot
                 boxShadow: '0 8px 32px -4px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
               }}
             >
-              <div className="relative w-full h-full aspect-square lg:aspect-auto lg:h-full min-h-[400px]">
+              <div className="relative w-full flex-1 min-h-[320px] aspect-square md:min-h-[400px] lg:aspect-[8/5] lg:min-h-[460px]">
                 <Image
                   src="/images/Gemini_1.webp"
                   alt="Premium film texture macro photography"
                   fill
+                  unoptimized
                   className="object-cover"
                   priority
                 />

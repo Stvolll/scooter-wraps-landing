@@ -14,7 +14,6 @@ import {
   Phone,
   Mail,
   MessageCircle,
-  Tag,
   X,
   CheckCircle2,
   AlertCircle,
@@ -318,7 +317,6 @@ export default function VietnamInstallationMap() {
           >
             {cities.map((city, index) => {
               const activePartner = city.partners.find(p => p.status === 'active')
-              const hasDiscount = city.partners.some(p => p.hasDiscount)
 
               return (
                 <motion.button
@@ -334,23 +332,6 @@ export default function VietnamInstallationMap() {
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  {/* Discount badge */}
-                  {hasDiscount && (
-                    <div className="absolute top-3 right-3 z-10">
-                      <motion.span
-                        initial={{ scale: 0, rotate: -12 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-[#FFD700]/25 to-[#FFA500]/25 text-[#FFD700] text-[10px] font-bold border border-[#FFD700]/50 flex items-center gap-1"
-                        style={{
-                          boxShadow: '0 2px 8px rgba(255, 215, 0, 0.3)',
-                        }}
-                      >
-                        <Tag className="w-3 h-3" />
-                        <span>{t('installationServices.sale')}</span>
-                      </motion.span>
-                    </div>
-                  )}
-
                   {/* Icon and City Name */}
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-lg bg-[#00FFA9]/15 border border-[#00FFA9]/25 flex items-center justify-center group-hover:bg-[#00FFA9]/25 transition-colors flex-shrink-0">
@@ -394,23 +375,6 @@ export default function VietnamInstallationMap() {
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
               >
-                {/* Discount badge */}
-                {partner.hasDiscount && (
-                  <div className="absolute top-3 right-3 z-10">
-                    <motion.span
-                      initial={{ scale: 0, rotate: -12 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-[#FFD700]/25 to-[#FFA500]/25 text-[#FFD700] text-[10px] font-bold border border-[#FFD700]/50 flex items-center gap-1"
-                      style={{
-                        boxShadow: '0 2px 8px rgba(255, 215, 0, 0.3)',
-                      }}
-                    >
-                      <Tag className="w-3 h-3" />
-                      <span>{t('installationServices.sale')}</span>
-                    </motion.span>
-                  </div>
-                )}
-
                 {/* Partner Name */}
                 <div className="mb-4">
                   <h3 className="font-bold text-white text-lg leading-tight mb-2">{partner.name}</h3>
@@ -421,28 +385,6 @@ export default function VietnamInstallationMap() {
             ))}
           </motion.div>
         )}
-
-        {/* Legend */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-wrap items-center justify-center gap-4"
-        >
-          <div className="flex items-center gap-2.5 px-5 py-3 rounded-xl bg-white/10 border border-white/20 backdrop-blur-xl">
-            <div className="w-4 h-4 rounded-full bg-[#00FFA9] shadow-lg shadow-[#00FFA9]/50" />
-            <span className="text-sm font-medium text-white/90">{t('installationServices.activeService')}</span>
-          </div>
-          <div className="flex items-center gap-2.5 px-5 py-3 rounded-xl bg-white/10 border border-white/20 backdrop-blur-xl">
-            <div className="w-4 h-4 rounded-full bg-white/30 border border-white/20" />
-            <span className="text-sm font-medium text-white/90">{t('installationServices.comingSoon')}</span>
-          </div>
-          <div className="flex items-center gap-2.5 px-5 py-3 rounded-xl bg-white/10 border border-white/20 backdrop-blur-xl">
-            <div className="w-4 h-4 rounded-full bg-[#FFD700] shadow-lg shadow-[#FFD700]/50" />
-            <span className="text-sm font-medium text-white/90">{t('installationServices.specialDiscount')}</span>
-          </div>
-        </motion.div>
 
         {/* Partner Detail Modal */}
         <AnimatePresence>
@@ -482,12 +424,6 @@ export default function VietnamInstallationMap() {
                       <h3 className="text-xl md:text-2xl font-bold text-white">
                         {selectedPartner.name}
                       </h3>
-                      {selectedPartner.hasDiscount && (
-                        <span className="px-3 py-1 rounded-full bg-[#FFD700]/20 text-[#FFD700] text-sm font-medium border border-[#FFD700]/30 flex items-center gap-1">
-                          <Tag className="w-4 h-4" />
-                          {selectedPartner.discountPercent}% {t('installationServices.off')}
-                        </span>
-                      )}
                     </div>
                     <div className="flex items-center gap-2 text-white/60">
                       <MapPin className="w-4 h-4" />

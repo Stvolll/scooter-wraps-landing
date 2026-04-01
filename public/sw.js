@@ -1,35 +1,67 @@
-// Service Worker for PWA
-const CACHE_NAME = 'txd-v1'
-const urlsToCache = ['/', '/manifest.json', '/icon-192x192.png', '/icon-512x512.png']
+const APP_CACHE = 'txd-app-v2'
+const MODEL_CACHE = 'txd-models-v2'
+const APP_SHELL = ['/', '/manifest.json', '/icon-192x192.png', '/icon-512x512.png']
 
-// Install event - cache resources
+const MODEL_EXTENSIONS = ['.glb', '.gltf', '.hdr', '.ktx2', '.webp', '.jpg', '.jpeg', '.png']
+
+function isModelAsset(url) {
+  const pathname = url.pathname.toLowerCase()
+  if (pathname.startsWith('/api/')) return false
+  return MODEL_EXTENSIONS.some(ext => pathname.endsWith(ext))
+}
+
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(urlsToCache)
-    })
+    caches.open(APP_CACHE).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting())
   )
 })
 
-// Fetch event - serve from cache, fallback to network
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      // Return cached version or fetch from network
-      return response || fetch(event.request)
-    })
-  )
-})
-
-// Activate event - clean up old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then(keys => {
       return Promise.all(
-        cacheNames
-          .filter(cacheName => cacheName !== CACHE_NAME)
-          .map(cacheName => caches.delete(cacheName))
+        keys
+          .filter(key => ![APP_CACHE, MODEL_CACHE].includes(key))
+          .map(key => caches.delete(key))
       )
+    }).then(() => self.clients.claim())
+  )
+})
+
+self.addEventListener('fetch', event => {
+  const request = event.request
+  if (request.method !== 'GET') return
+
+  const url = new URL(request.url)
+  if (url.origin !== self.location.origin) return
+
+  if (isModelAsset(url)) {
+    event.respondWith(
+      caches.open(MODEL_CACHE).then(async cache => {
+        const cached = await cache.match(request)
+        if (cached) return cached
+
+        const network = await fetch(request)
+        if (network && network.ok) {
+          cache.put(request, network.clone())
+        }
+        return network
+      })
+    )
+    return
+  }
+
+  if (url.pathname.startsWith('/api/')) return
+
+  event.respondWith(
+    caches.match(request).then(async cached => {
+      if (cached) return cached
+      const network = await fetch(request)
+      if (network && network.ok && request.destination !== 'document') {
+        const cache = await caches.open(APP_CACHE)
+        cache.put(request, network.clone())
+      }
+      return network
     })
   )
 })

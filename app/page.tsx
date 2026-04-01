@@ -71,6 +71,8 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false)
   const heroRef = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+  const designStripRef = useRef<HTMLDivElement>(null)
+  const hasRunDesignNudgeRef = useRef(false)
   const sceneLoadTokenRef = useRef(0)
 
   // Load scooters from API with fallback to config file (with timeout to prevent hanging)
@@ -525,6 +527,69 @@ export default function Home() {
   // Фон 3D-сцены: у каждой карточки свой panorama; при смене карточки меняется фон
   const currentPanorama = useMemo(() => scenePanoramaUrl || DEFAULT_PANORAMA, [scenePanoramaUrl, DEFAULT_PANORAMA])
 
+  // Warm up nearby models to reduce perceived wait on weak networks.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!selectedModel) return
+
+    const modelIds = Object.keys(scooters)
+    if (modelIds.length < 2) return
+
+    const currentIndex = modelIds.indexOf(selectedModel)
+    if (currentIndex < 0) return
+
+    const connection = (navigator as any).connection
+    const isSlowNetwork = Boolean(connection?.saveData) || /2g|3g/.test(connection?.effectiveType || '')
+    const prefetchCount = isSlowNetwork ? 1 : 2
+
+    const candidates = [
+      modelIds[(currentIndex + 1) % modelIds.length],
+      modelIds[(currentIndex + 2) % modelIds.length],
+    ]
+      .slice(0, prefetchCount)
+      .map(id => scooters[id]?.glbModelUrl || scooters[id]?.model)
+      .filter((path): path is string => typeof path === 'string' && path.length > 0)
+
+    if (candidates.length === 0) return
+
+    const run = () => {
+      candidates.forEach(path => {
+        const normalized = path.startsWith('/') ? path : `/${path}`
+        fetch(normalized, { cache: 'force-cache' }).catch(() => undefined)
+      })
+    }
+
+    if ('requestIdleCallback' in window) {
+      ;(window as any).requestIdleCallback(run, { timeout: 1500 })
+    } else {
+      setTimeout(run, 400)
+    }
+  }, [selectedModel, scooters])
+
+  // Mobile onboarding hint: show a peek of the next card immediately.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.innerWidth >= 768) return
+    if (hasRunDesignNudgeRef.current) return
+    if (!currentScooter || !Array.isArray(currentScooter.designs) || currentScooter.designs.length < 2) return
+
+    const strip = designStripRef.current
+    if (!strip) return
+
+    hasRunDesignNudgeRef.current = true
+    const timer = window.setTimeout(() => {
+      const firstCard = strip.querySelector('.snap-start') as HTMLElement | null
+      const firstCardWidth = firstCard?.offsetWidth || 280
+      const gapPx = 24 // matches gap-6
+      const targetLeft = Math.max(0, Math.round((firstCardWidth + gapPx) * 0.2))
+      strip.scrollLeft = targetLeft
+    }, 0)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [currentScooter?.id, currentScooter?.designs])
+
   return (
     <>
       {/* Dark background fill below 3D scene */}
@@ -731,6 +796,7 @@ export default function Home() {
 
             {/* Horizontal Scroll Container - Full Width with enhanced styling */}
             <div
+              ref={designStripRef}
               className="overflow-x-auto overflow-y-visible no-scrollbar snap-x snap-mandatory flex gap-6 px-4 md:px-8 py-8"
               style={{
                 scrollbarWidth: 'none',
@@ -742,17 +808,19 @@ export default function Home() {
               {currentScooter && currentScooter.designs && currentScooter.designs.length > 0 ? (
                 (currentScooter.designs as any[]).map((design: any, index: number) => {
                 const isSelected = (selectedDesign as any)?.id === design.id
+                const isMobileCards = isMounted && typeof window !== 'undefined' && window.innerWidth < 768
 
                 return (
                   <motion.div
                     key={design.id}
                     className="snap-start"
-                    initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                    viewport={{ once: true, margin: '-100px' }}
+                    initial={isMobileCards ? false : { opacity: 0, y: 30, scale: 0.9 }}
+                    animate={isMobileCards ? { opacity: 1, y: 0, scale: 1 } : undefined}
+                    whileInView={isMobileCards ? undefined : { opacity: 1, y: 0, scale: 1 }}
+                    viewport={isMobileCards ? undefined : { once: true, margin: '-100px' }}
                     transition={{ 
                       duration: 0.5, 
-                      delay: index * 0.1,
+                      delay: isMobileCards ? 0 : index * 0.1,
                       type: 'spring',
                       stiffness: 100,
                       damping: 15
@@ -780,25 +848,6 @@ export default function Home() {
               )}
             </div>
 
-            {/* Scroll hint (mobile) - Enhanced */}
-            <motion.div 
-              className="mt-8 text-center md:hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
-                <p className="text-white/50 text-sm">{t('page.swipeToExplore')}</p>
-                <motion.div
-                  animate={{ x: [0, 4, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                >
-                  <svg className="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </motion.div>
-              </div>
-            </motion.div>
           </div>
         </div>
       </div>

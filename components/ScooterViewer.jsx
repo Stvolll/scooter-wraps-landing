@@ -362,6 +362,7 @@ export default function ScooterViewer({
   const textureApplicationStoppedRef = useRef(false) // Flag to stop all texture application attempts
   const modelLoadErrorRef = useRef(false) // Use ref instead of state to prevent effect loops
   const modelLoadedSuccessfullyRef = useRef(false) // Distinguish model load success from non-fatal subresource errors
+  const lastProgressPercentRef = useRef(0)
   const [scriptLoaded, setScriptLoaded] = useState(false)
   const [isModelLoaded, setIsModelLoaded] = useState(false)
   const [isSceneGraphReady, setIsSceneGraphReady] = useState(false)
@@ -862,14 +863,14 @@ export default function ScooterViewer({
 
       handleProgress = (e) => {
       const progress = e.detail?.totalProgress || 0
+      const nextPercent = Math.round(progress * 100)
+      if (nextPercent === lastProgressPercentRef.current) return
+      lastProgressPercentRef.current = nextPercent
       if (typeof onLoadProgress === 'function') {
-        onLoadProgress(Math.round(progress * 100))
+        onLoadProgress(nextPercent)
       }
       if (progress === 1) {
-        console.log('✅ Model loading progress: 100%')
         setIsModelLoaded(true)
-      } else {
-        console.log(`⏳ Model loading progress: ${(progress * 100).toFixed(0)}%`)
       }
     }
 

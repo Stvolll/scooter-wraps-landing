@@ -35,9 +35,9 @@ export default function FAQSection() {
   }
 
   return (
-    <section className="relative pt-12 md:pt-16 pb-20 md:pb-32 overflow-hidden">
+    <section className="relative pt-2 md:pt-4 pb-20 md:pb-32 overflow-hidden">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-neutral-950 to-black" />
+      <div className="absolute inset-x-0 -top-14 bottom-0 bg-gradient-to-b from-neutral-950 via-neutral-950 to-black" />
 
       <div className="relative container mx-auto px-4 md:px-8 lg:px-16">
         {/* Section header */}

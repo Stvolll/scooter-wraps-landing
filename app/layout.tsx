@@ -6,6 +6,7 @@ import ClientWrapper from '@/components/ClientWrapper'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import ConditionalLayout from '@/components/ConditionalLayout'
+import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar'
 
 const inter = Inter({
   subsets: ['latin', 'latin-ext'],
@@ -155,9 +156,43 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Model Viewer Web Component — type="module" нужен для 3.x (ESM), иначе Unexpected token 'export' */}
         <Script
           src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"
-          strategy="lazyOnload"
+          strategy="afterInteractive"
           type="module"
         />
+        <Script id="model-viewer-fallback-loader" strategy="afterInteractive">
+          {`
+            (function () {
+              if (typeof window === 'undefined') return;
+              var fallbackSources = [
+                'https://cdn.jsdelivr.net/npm/@google/model-viewer@3.4.0/dist/model-viewer.min.js',
+                'https://unpkg.com/@google/model-viewer@3.4.0/dist/model-viewer.min.js'
+              ];
+
+              function hasModelViewer() {
+                return !!(window.customElements && window.customElements.get('model-viewer'));
+              }
+
+              function injectAt(index) {
+                if (index >= fallbackSources.length || hasModelViewer()) return;
+                var script = document.createElement('script');
+                script.type = 'module';
+                script.src = fallbackSources[index];
+                script.async = true;
+                script.onload = function () {
+                  if (!hasModelViewer()) injectAt(index + 1);
+                };
+                script.onerror = function () {
+                  injectAt(index + 1);
+                };
+                document.head.appendChild(script);
+              }
+
+              window.setTimeout(function () {
+                if (!hasModelViewer()) injectAt(0);
+              }, 2500);
+            })();
+          `}
+        </Script>
         {/* Google Analytics GA4 */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
         <script
@@ -173,6 +208,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <ClientWrapper>
+          <ServiceWorkerRegistrar />
           <ConditionalLayout>
             <Header />
             <main>{children}</main>
