@@ -38,8 +38,8 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.947.0",
-    "@aws-sdk/s3-request-presigner": "^3.947.0",
+    "@aws-sdk/client-s3": "^3.1021.0",
+    "@aws-sdk/s3-request-presigner": "^3.1021.0",
     "@babylonjs/core": "^6.0.0",
     "@babylonjs/loaders": "^6.0.0",
     "@prisma/client": "^6.0.0",
