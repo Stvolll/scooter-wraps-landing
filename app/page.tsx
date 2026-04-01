@@ -51,6 +51,7 @@ export default function Home() {
   const [selectedModel, setSelectedModel] = useState<string | null>(firstModelKey)
   const [scooters, setScooters] = useState<Record<string, any>>(fallbackScooters)
   const [isLoadingScooters, setIsLoadingScooters] = useState(true)
+  const [modelLoadProgress, setModelLoadProgress] = useState(0)
   
   // Function to translate model names - memoized to avoid hydration issues
   const getModelName = useMemo(() => {
@@ -547,6 +548,7 @@ export default function Home() {
                       modelPath={currentScooter.glbModelUrl || currentScooter.model}
                       selectedDesign={selectedDesign}
                       panoramaUrl={currentPanorama}
+                      onLoadProgress={setModelLoadProgress}
                       className="w-full h-full"
                     />
                   ) : (
@@ -556,18 +558,19 @@ export default function Home() {
 
         {/* Model Selection Menu Overlay - iOS 26 Glassmorphism Style */}
         <div
-          className="absolute bottom-11 left-0 right-0 z-30 flex justify-center"
-          style={{ pointerEvents: 'auto', transform: 'scale(1.1)' }}
+          className="absolute bottom-2 md:bottom-11 left-0 right-0 z-30 flex justify-center"
+          style={{ pointerEvents: 'auto' }}
         >
-          <div className="w-full max-w-7xl mx-auto px-4 md:px-8 lg:px-16">
+          <div className="w-full max-w-7xl mx-auto px-0 md:px-8 lg:px-16">
             <div
-              className="flex flex-nowrap gap-2 md:gap-4 overflow-x-auto scrollbar-hide justify-center"
+              className="flex flex-nowrap gap-2 md:gap-4 overflow-x-auto scrollbar-hide justify-start md:justify-center"
               style={{
                 scrollbarWidth: 'none' /* Firefox */,
                 msOverflowStyle: 'none' /* IE and Edge */,
                 WebkitOverflowScrolling: 'touch' /* iOS smooth scroll */,
-                paddingLeft: '1rem' /* Space for first button when scrolling */,
-                paddingRight: '1rem' /* Space for last button when scrolling */,
+                touchAction: 'pan-x',
+                paddingLeft: '0.5rem' /* Keep first button fully visible on mobile */,
+                paddingRight: '0.5rem' /* Keep last button fully visible on mobile */,
               }}
             >
               {isLoadingScooters ? (
@@ -585,63 +588,42 @@ export default function Home() {
                 </div>
               ) : (
                 Object.entries(scooters).map(([id, scooter]) => {
-                // Determine if buttons are over white background (when scrolled)
-                // Always use false on server to ensure consistent rendering
-                // On client, this will be updated after mount via useEffect
-                const isOverWhiteBackground = false // Always false for SSR consistency
                 const textColor = selectedModel === id
                   ? 'text-white'
                   : 'text-white/90'
-                const borderColor = selectedModel === id
-                  ? 'rgba(255, 255, 255, 0.4)'
-                  : 'rgba(255, 255, 255, 0.2)'
-                const backgroundOpacity = selectedModel === id
-                  ? 0.15
-                  : 0.08
-
                 return (
                   <button
                     key={id}
                     onClick={() => handleModelChange(id)}
                     suppressHydrationWarning
-                    className={`px-5 py-2.5 rounded-2xl font-semibold text-sm md:text-base transition-all duration-300 relative overflow-hidden whitespace-nowrap flex-shrink-0 ${textColor} ${selectedModel === id ? 'ios-glass-button-active' : ''}`}
+                    className={`px-7 py-3.5 md:px-5 md:py-2.5 rounded-2xl font-semibold text-[17px] md:text-base transition-all duration-300 relative overflow-hidden whitespace-nowrap flex-shrink-0 ${textColor} ${selectedModel === id ? 'ios-glass-button-active' : ''}`}
                     style={{
-                      background: `rgba(255, 255, 255, ${backgroundOpacity})`,
+                      background: selectedModel === id ? 'rgba(0, 0, 0, 0.31)' : 'rgba(0, 0, 0, 0.24)',
                       backdropFilter: 'blur(20px) saturate(180%)',
                       WebkitBackdropFilter: 'blur(20px) saturate(180%)',
                       border:
                         selectedModel === id
-                          ? `1.5px solid ${borderColor}`
-                          : `1px solid ${borderColor}`,
+                          ? '2px solid #00FFA9'
+                          : 'none',
                       boxShadow:
                         selectedModel === id
                           ? '0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2) inset, 0 0 20px rgba(255, 255, 255, 0.3), 0 0 40px rgba(0, 255, 136, 0.2)'
-                          : '0 4px 16px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
+                          : '0 4px 16px rgba(0, 0, 0, 0.05)',
                     }}
                     onMouseEnter={e => {
                       if (selectedModel !== id) {
-                        // Use actual scrollProgress for hover effects (client-side only)
-                        const actualIsOverWhite = isMounted && scrollProgress > 0.3
-                        if (actualIsOverWhite) {
-                          e.currentTarget.style.background = 'rgba(0, 0, 0, 0.2)'
-                          e.currentTarget.style.border = '1px solid rgba(0, 0, 0, 0.15)'
-                          e.currentTarget.style.boxShadow =
-                            '0 6px 24px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.1) inset'
-                        } else {
-                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)'
-                          e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.3)'
-                          e.currentTarget.style.boxShadow =
-                            '0 6px 24px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.15) inset, 0 0 15px rgba(255, 255, 255, 0.2)'
-                        }
+                        e.currentTarget.style.background = 'rgba(0, 0, 0, 0.31)'
+                        e.currentTarget.style.border = 'none'
+                        e.currentTarget.style.boxShadow =
+                          '0 6px 24px rgba(0, 0, 0, 0.3)'
                       }
                     }}
                     onMouseLeave={e => {
                       if (selectedModel !== id) {
                         // Reset to initial state
-                        e.currentTarget.style.background = `rgba(255, 255, 255, ${backgroundOpacity})`
-                        e.currentTarget.style.border = `1px solid ${borderColor}`
-                        e.currentTarget.style.boxShadow =
-                          '0 4px 16px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.1) inset'
+                        e.currentTarget.style.background = 'rgba(0, 0, 0, 0.24)'
+                        e.currentTarget.style.border = 'none'
+                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.05)'
                       }
                     }}
                   >
@@ -662,8 +644,36 @@ export default function Home() {
                 )
               }))}
             </div>
+            <div className="mt-1 flex justify-center md:hidden">
+              <div className="inline-flex items-center gap-2">
+                <motion.div
+                  animate={{ x: [0, -4, 0] }}
+                  transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+                  className="text-white/75"
+                >
+                  ←
+                </motion.div>
+                <span className="text-[12px] text-white/75 tracking-wide">Swipe model buttons</span>
+                <motion.div
+                  animate={{ x: [0, 4, 0] }}
+                  transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+                  className="text-white/75"
+                >
+                  →
+                </motion.div>
+              </div>
+            </div>
           </div>
         </div>
+        {modelLoadProgress > 0 && modelLoadProgress < 100 && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+            <div className="w-28 h-28 md:w-36 md:h-36 rounded-xl bg-black/20 border border-white/20 backdrop-blur-sm flex items-center justify-center">
+              <span className="text-4xl md:text-5xl lg:text-6xl font-bold leading-none text-white tracking-tight drop-shadow-[0_2px_14px_rgba(0,0,0,0.65)]">
+                {modelLoadProgress}%
+              </span>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Dark Content Block (appears after scroll) - Transparent background */}
@@ -687,18 +697,24 @@ export default function Home() {
           transition: 'background 0.3s ease-out',
         }}
       >
-        <div className="pb-20 md:pb-32" style={{ paddingTop: 'calc(5rem - 44px)' }}>
+        <div className="pb-20 md:pb-32 pt-3 md:pt-9">
           {/* Product Strip - Horizontal Scroll */}
           <div className="mb-20">
             {/* Title Container - Enhanced with gradient and badge */}
             <div className="container mx-auto px-4 md:px-6 lg:px-8 mb-12">
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '0px 0px -100px 0px' }}
-                transition={{ duration: 0.6 }}
+                initial={false}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
                 className="text-center"
               >
+                <motion.div
+                  className="mb-1 flex justify-center md:hidden"
+                  animate={{ y: [0, 5, 0], opacity: [0.85, 1, 0.85] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                >
+                  <span className="text-[#00FFA9] text-2xl leading-none">⌃</span>
+                </motion.div>
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00FFA9]/10 border border-[#00FFA9]/20 mb-6">
                   <span className="text-xs font-semibold text-[#00FFA9] uppercase tracking-wider">
                     {t('designCards.premiumDesigns')}

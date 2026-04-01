@@ -49,10 +49,10 @@ export default function LanguageSwitcher() {
   if (!mounted) {
     return (
       <button
-        className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition-all duration-300"
+        className="relative w-12 h-12 flex items-center justify-center rounded-xl bg-black/20 border border-white/20 hover:bg-black/30 transition-all duration-300"
         aria-label="Switch language"
       >
-        <Globe className="w-5 h-5 text-white/90" />
+        <Globe className="w-6 h-6 text-white" />
       </button>
     )
   }
@@ -61,10 +61,10 @@ export default function LanguageSwitcher() {
     <div ref={dropdownRef} className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition-all duration-300 group"
+        className="relative w-12 h-12 flex items-center justify-center rounded-xl bg-black/20 border border-white/20 hover:bg-black/30 transition-all duration-300 group"
         aria-label="Switch language"
       >
-        <Globe className="w-5 h-5 text-white/90 group-hover:text-white transition-colors" />
+        <Globe className="w-6 h-6 text-white group-hover:text-white transition-colors" />
       </button>
 
       <AnimatePresence>

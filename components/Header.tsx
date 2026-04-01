@@ -34,12 +34,12 @@ export default function Header() {
               onMouseLeave={() => setIsLogoHovered(false)}
               className="relative flex items-center gap-3"
             >
-              <div className="relative h-[53px] w-auto flex items-center">
+              <div className="relative h-[62px] md:h-[60px] w-auto flex items-center">
                 {isMounted ? (
                   <img
                     src="/SVG/Logotype_TXD.svg"
                     alt="TXD Logo"
-                    className="h-[53px] w-auto object-contain logo-animated"
+                    className="h-[62px] md:h-[60px] w-auto object-contain logo-animated"
                     style={{
                       filter:
                         'brightness(0) saturate(100%) invert(45%) sepia(85%) saturate(2500%) hue-rotate(160deg) brightness(95%) contrast(105%)',
@@ -66,32 +66,32 @@ export default function Header() {
           </Link>
 
           {/* Navigation Menu */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {/* Language Switcher */}
             <LanguageSwitcher />
 
             {/* Paper Roll Icon - Using paper-roll.svg */}
             <Link
               href="/cart"
-              className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition-all duration-300 group"
+              className="relative w-12 h-12 flex items-center justify-center rounded-xl bg-black/20 border border-white/20 hover:bg-black/30 transition-all duration-300 group"
               aria-label="Shopping Cart"
             >
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="relative w-6 h-6"
+                className="relative w-7 h-7"
               >
                 {isMounted ? (
                   <img
                     src="/SVG/paper-roll.svg"
                     alt="Paper Roll"
-                    className="w-6 h-6 object-contain opacity-90 group-hover:opacity-100 transition-opacity"
+                    className="w-7 h-7 object-contain opacity-100 group-hover:opacity-100 transition-opacity drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]"
                     style={{
-                      filter: 'brightness(0) saturate(100%) invert(1)',
+                      filter: 'brightness(0) saturate(100%) invert(1) contrast(130%)',
                     }}
                   />
                 ) : (
-                  <div className="w-6 h-6 bg-transparent" />
+                  <div className="w-7 h-7 bg-transparent" />
                 )}
               </motion.div>
               {cartItemsCount > 0 && (

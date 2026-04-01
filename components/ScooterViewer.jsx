@@ -35,13 +35,12 @@ if (typeof window !== 'undefined') {
 // Стандартные настройки камеры для всех моделей скутеров
 // Эти значения обеспечивают единообразный стартовый ракурс для всех моделей
 // Скутер стоит строго в профиль к зрителю с противоположной стороны, без вида "чуть сверху"
-const DEFAULT_CAMERA_ORBIT = '-90deg 90deg 2.5m' // theta(horizontal) phi(vertical) radius(distance)
-// theta: -90deg = строго боковой вид с противоположной стороны (зеркально к 90deg)
-// phi: 90deg = строго горизонтальный вид (не сверху, не снизу)
-// radius: 2.5m = расстояние от камеры до модели
-
-const DEFAULT_CAMERA_TARGET = '0m 0.5m 0m' // Центр обзора на уровне центра модели
-const DEFAULT_FIELD_OF_VIEW = '30deg' // Угол обзора для комфортного просмотра
+const DEFAULT_CAMERA_ORBIT = '-90deg 90deg 2.5m' // Desktop/original view
+const DEFAULT_CAMERA_TARGET = '0m 0.5m 0m'
+const DEFAULT_FIELD_OF_VIEW = '30deg'
+const MOBILE_CAMERA_ORBIT = '215deg 84deg 2.55m' // Mobile-first framing rotated by 180deg
+const MOBILE_CAMERA_TARGET = '0m 0.55m 0m'
+const MOBILE_FIELD_OF_VIEW = '31deg'
 
 // Ограничения камеры
 const MIN_CAMERA_ORBIT = 'auto 70deg 1.2m' // Можно приблизить и опустить ниже
@@ -355,12 +354,14 @@ export default function ScooterViewer({
   environmentImage = null,
   panoramaUrl = '/images/studio-panorama.png',
   className = '',
+  onLoadProgress,
 }) {
   const containerRef = useRef(null)
   const modelViewerRef = useRef(null)
   const textureRetryCountRef = useRef(0) // Track retry count across recursive calls
   const textureApplicationStoppedRef = useRef(false) // Flag to stop all texture application attempts
   const modelLoadErrorRef = useRef(false) // Use ref instead of state to prevent effect loops
+  const modelLoadedSuccessfullyRef = useRef(false) // Distinguish model load success from non-fatal subresource errors
   const [scriptLoaded, setScriptLoaded] = useState(false)
   const [isModelLoaded, setIsModelLoaded] = useState(false)
   const [isSceneGraphReady, setIsSceneGraphReady] = useState(false)
@@ -447,6 +448,10 @@ export default function ScooterViewer({
       
       // Capture selectedDesign in closure for diagnostics
       const currentSelectedDesign = selectedDesign
+      const isMobileViewport = typeof window !== 'undefined' && window.innerWidth < 768
+      const initialCameraOrbit = isMobileViewport ? MOBILE_CAMERA_ORBIT : DEFAULT_CAMERA_ORBIT
+      const initialCameraTarget = isMobileViewport ? MOBILE_CAMERA_TARGET : DEFAULT_CAMERA_TARGET
+      const initialFieldOfView = isMobileViewport ? MOBILE_FIELD_OF_VIEW : DEFAULT_FIELD_OF_VIEW
 
       // Clear any existing content
       container.innerHTML = ''
@@ -586,9 +591,9 @@ export default function ScooterViewer({
 
     // Camera settings - стандартные настройки для всех моделей
     // Используем константы для единообразия стартовой позиции
-    modelViewer.setAttribute('camera-orbit', DEFAULT_CAMERA_ORBIT)
-    modelViewer.setAttribute('camera-target', DEFAULT_CAMERA_TARGET)
-    modelViewer.setAttribute('field-of-view', DEFAULT_FIELD_OF_VIEW)
+    modelViewer.setAttribute('camera-orbit', initialCameraOrbit)
+    modelViewer.setAttribute('camera-target', initialCameraTarget)
+    modelViewer.setAttribute('field-of-view', initialFieldOfView)
 
     // Enable zoom with distance limits
     modelViewer.setAttribute('min-camera-orbit', MIN_CAMERA_ORBIT)
@@ -701,7 +706,11 @@ export default function ScooterViewer({
         setIsSceneGraphReady(true)
       }
       modelLoadErrorRef.current = false // Reset ref first
+      modelLoadedSuccessfullyRef.current = true
       setModelLoadError(false) // Reset error flag on successful load
+      if (typeof onLoadProgress === 'function') {
+        onLoadProgress(100)
+      }
       console.log('✅ 3D model loaded successfully:', fullModelPath)
     }
 
@@ -714,7 +723,11 @@ export default function ScooterViewer({
         setIsSceneGraphReady(true)
       }
       modelLoadErrorRef.current = false // Reset ref first
+      modelLoadedSuccessfullyRef.current = true
       setModelLoadError(false) // Reset error flag on successful load
+      if (typeof onLoadProgress === 'function') {
+        onLoadProgress(100)
+      }
       console.log('✅ Model-viewer model-loaded event')
 
       // DIAGNOSTIC: Check if model has materials and textures
@@ -810,13 +823,14 @@ export default function ScooterViewer({
       setTimeout(() => {
         if (modelViewer) {
           // Устанавливаем начальное положение камеры - стандартные значения
-          modelViewer.setAttribute('camera-orbit', DEFAULT_CAMERA_ORBIT)
-          modelViewer.setAttribute('camera-target', DEFAULT_CAMERA_TARGET)
-          modelViewer.setAttribute('field-of-view', DEFAULT_FIELD_OF_VIEW)
+          modelViewer.setAttribute('camera-orbit', initialCameraOrbit)
+          modelViewer.setAttribute('camera-target', initialCameraTarget)
+          modelViewer.setAttribute('field-of-view', initialFieldOfView)
           console.log('📷 Стартовый ракурс камеры установлен (стандарт для всех моделей):', {
-            orbit: DEFAULT_CAMERA_ORBIT,
-            target: DEFAULT_CAMERA_TARGET,
-            fov: DEFAULT_FIELD_OF_VIEW,
+            orbit: initialCameraOrbit,
+            target: initialCameraTarget,
+            fov: initialFieldOfView,
+            viewport: isMobileViewport ? 'mobile' : 'desktop',
           })
 
           // Автоматически выводим текущее положение камеры через 1 секунду после загрузки
@@ -848,6 +862,9 @@ export default function ScooterViewer({
 
       handleProgress = (e) => {
       const progress = e.detail?.totalProgress || 0
+      if (typeof onLoadProgress === 'function') {
+        onLoadProgress(Math.round(progress * 100))
+      }
       if (progress === 1) {
         console.log('✅ Model loading progress: 100%')
         setIsModelLoaded(true)
@@ -862,6 +879,14 @@ export default function ScooterViewer({
     }
 
       handleError = async (error) => {
+      // If the model was already loaded, treat later errors as non-fatal.
+      // model-viewer can emit generic error events for dependent resources
+      // (textures/skybox/etc.), and we should not destroy the entire viewer.
+      if (modelLoadedSuccessfullyRef.current || modelViewer?.loaded) {
+        console.warn('⚠️ Non-fatal model-viewer error after successful model load:', error?.detail || error)
+        return
+      }
+
       // Handle errors generically - no special cases for specific models
       
       // Extract error details - try multiple ways to get error message
@@ -1133,12 +1158,16 @@ export default function ScooterViewer({
   // Reset model load error when model path changes
   useEffect(() => {
     modelLoadErrorRef.current = false // Reset ref first
+    modelLoadedSuccessfullyRef.current = false
     setModelLoadError(false)
     setIsModelLoaded(false)
     setIsSceneGraphReady(false)
+    if (typeof onLoadProgress === 'function') {
+      onLoadProgress(0)
+    }
     textureRetryCountRef.current = 0 // Reset retry counter when model changes
     textureApplicationStoppedRef.current = false // Reset stop flag when model changes
-  }, [modelPath])
+  }, [modelPath, onLoadProgress])
 
   // Hook 4: Apply design texture/variant when it changes
   const applyTextureDidRun = useRef(null)

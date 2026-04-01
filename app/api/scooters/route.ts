@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma, withTimeout } from '@/lib/prisma'
 import { MaterialFormat } from '@/lib/materials/types'
+import { basename } from 'path'
 import {
   findMaterialByFormat,
   findMaterialByRole,
@@ -11,6 +12,35 @@ import {
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
+function normalizeUploadModelPath(pathname: string): string {
+  // Generic rule for uploaded model names: "<timestamp>-MODEL-*.glb" -> "/models/MODEL/MODEL-*.glb"
+  // Works for future models without hardcoding specific slugs.
+  const fileName = basename(pathname).replace(/^\d+-/, '')
+  return `/models/MODEL/${fileName}`
+}
+
+function resolveModelPath(model: any): string | undefined {
+  const candidates = [
+    model.glbModelUrl,
+    model.model,
+    model.glbModelCompressed,
+    model.glbModelMobile,
+  ].filter((value, index, arr) => typeof value === 'string' && value.length > 0 && arr.indexOf(value) === index) as string[]
+
+  for (const candidate of candidates) {
+    // External storage URL - assume source of truth and keep it as-is.
+    if (/^https?:\/\//i.test(candidate)) return candidate
+
+    if (candidate.startsWith('/uploads/models/')) {
+      return normalizeUploadModelPath(candidate)
+    }
+
+    return candidate
+  }
+
+  return candidates[0]
+}
 
 // Public API endpoint для фронтенда
 export async function GET() {
@@ -89,12 +119,14 @@ export async function GET() {
 
     // Преобразуем в формат, совместимый с config/scooters.js
     const scootersObj = models.reduce((acc, model) => {
+      const resolvedModelPath = resolveModelPath(model)
+
       acc[model.slug] = {
         id: model.slug,
         name: model.name,
-        model: model.glbModelUrl || model.model, // Use glbModelUrl first, fallback to model
+        model: resolvedModelPath, // Use verified path to avoid 404 HTML served as GLB
         panorama: model.panorama,
-        glbModelUrl: model.glbModelUrl || model.model, // Primary: glbModelUrl, fallback: model
+        glbModelUrl: resolvedModelPath, // Keep both fields consistent for legacy clients
         glbModelCompressed: model.glbModelCompressed,
         glbModelMobile: model.glbModelMobile,
         designs: (model.designs || []).map((design: any) => {
