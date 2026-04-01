@@ -1,5 +1,5 @@
-const APP_CACHE = 'txd-app-v2'
-const MODEL_CACHE = 'txd-models-v2'
+const APP_CACHE = 'txd-app-v3'
+const MODEL_CACHE = 'txd-models-v3'
 const APP_SHELL = ['/', '/manifest.json', '/icon-192x192.png', '/icon-512x512.png']
 
 const MODEL_EXTENSIONS = ['.glb', '.gltf', '.hdr', '.ktx2', '.webp', '.jpg', '.jpeg', '.png']

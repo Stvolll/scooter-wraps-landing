@@ -32,6 +32,44 @@ if (typeof window !== 'undefined') {
   }, true) // Use capture phase to catch early
 }
 
+const MODEL_VIEWER_CDN_SOURCES = [
+  'https://cdn.jsdelivr.net/npm/@google/model-viewer@3.4.0/dist/model-viewer.min.js',
+  'https://unpkg.com/@google/model-viewer@3.4.0/dist/model-viewer.min.js',
+  'https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js',
+]
+
+function hasModelViewerCustomElement() {
+  return typeof window !== 'undefined' && !!window.customElements?.get('model-viewer')
+}
+
+/** Extra CDN loads when the layout script is slow or blocked (common on mobile networks). */
+function injectModelViewerScriptsFromCdn() {
+  if (typeof window === 'undefined' || hasModelViewerCustomElement()) return
+
+  const tryChain = index => {
+    if (index >= MODEL_VIEWER_CDN_SOURCES.length || hasModelViewerCustomElement()) return
+    const src = MODEL_VIEWER_CDN_SOURCES[index]
+    const selector = `script[data-txd-mv="${index}"]`
+    if (document.querySelector(selector)) {
+      tryChain(index + 1)
+      return
+    }
+    const script = document.createElement('script')
+    script.type = 'module'
+    script.async = true
+    script.dataset.txdMv = String(index)
+    script.src = src
+    script.onload = () => {
+      setTimeout(() => {
+        if (!hasModelViewerCustomElement()) tryChain(index + 1)
+      }, 200)
+    }
+    script.onerror = () => tryChain(index + 1)
+    document.head.appendChild(script)
+  }
+  tryChain(0)
+}
+
 // Стандартные настройки камеры для всех моделей скутеров
 // Эти значения обеспечивают единообразный стартовый ракурс для всех моделей
 // Скутер стоит строго в профиль к зрителю с противоположной стороны, без вида "чуть сверху"
@@ -364,6 +402,8 @@ export default function ScooterViewer({
   const modelLoadedSuccessfullyRef = useRef(false) // Distinguish model load success from non-fatal subresource errors
   const lastProgressPercentRef = useRef(0)
   const [scriptLoaded, setScriptLoaded] = useState(false)
+  const [scriptTimedOut, setScriptTimedOut] = useState(false)
+  const [scriptRetryNonce, setScriptRetryNonce] = useState(0)
   const [isModelLoaded, setIsModelLoaded] = useState(false)
   const [isSceneGraphReady, setIsSceneGraphReady] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
@@ -382,50 +422,68 @@ export default function ScooterViewer({
     setIsMounted(true)
   }, [])
 
-  // Hook 2: Wait for model-viewer script to load
+  // Hook 2: Wait for model-viewer script (mobile CDN often >10s; old code stopped polling and never mounted the scene)
   useEffect(() => {
     if (!isMounted) return
 
-    // Check if already loaded
-    if (typeof window !== 'undefined' && window.customElements) {
-      if (window.customElements.get('model-viewer')) {
+    if (hasModelViewerCustomElement()) {
+      setScriptLoaded(true)
+      setScriptTimedOut(false)
+      return
+    }
+
+    let cancelled = false
+    let intervalId = null
+
+    const markLoaded = () => {
+      if (cancelled) return
+      if (hasModelViewerCustomElement()) {
         setScriptLoaded(true)
-        return
+        setScriptTimedOut(false)
+        if (intervalId != null) clearInterval(intervalId)
       }
     }
 
-    // Poll for script loading
-    let checkInterval = setInterval(() => {
-      if (typeof window !== 'undefined' && window.customElements) {
-        if (window.customElements.get('model-viewer')) {
-          setScriptLoaded(true)
-          clearInterval(checkInterval)
-        }
-      }
-    }, 50)
+    intervalId = setInterval(markLoaded, 120)
+    markLoaded()
 
-    // Timeout after 10 seconds - but don't treat as critical error
-    const timeout = setTimeout(() => {
-      clearInterval(checkInterval)
-      // Check one more time before logging error
-      if (typeof window !== 'undefined' && window.customElements) {
-        if (window.customElements.get('model-viewer')) {
-          // Script loaded, just took longer than expected
-          setScriptLoaded(true)
-          return
-        }
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') markLoaded()
+    }
+    window.addEventListener('pageshow', markLoaded)
+    document.addEventListener('visibilitychange', onVisible)
+
+    try {
+      window.customElements?.whenDefined?.('model-viewer')?.then(() => {
+        if (!cancelled) markLoaded()
+      })
+    } catch {
+      // Older browsers: polling only
+    }
+
+    const injectFallbackTimer = setTimeout(() => {
+      if (cancelled || hasModelViewerCustomElement()) return
+      console.warn('[ScooterViewer] model-viewer still missing — injecting CDN fallback')
+      injectModelViewerScriptsFromCdn()
+    }, 12000)
+
+    const giveUpTimer = setTimeout(() => {
+      if (cancelled) return
+      if (intervalId != null) clearInterval(intervalId)
+      if (!hasModelViewerCustomElement()) {
+        setScriptTimedOut(true)
       }
-      // Only log if script really didn't load
-      console.warn('⚠️ model-viewer script may not have loaded after 10 seconds')
-      console.warn('💡 Tip: Check network connection and CDN availability')
-      console.warn('💡 Tip: Script may still load, model-viewer will work when ready')
-    }, 10000)
+    }, 60000)
 
     return () => {
-      clearInterval(checkInterval)
-      clearTimeout(timeout)
+      cancelled = true
+      if (intervalId != null) clearInterval(intervalId)
+      clearTimeout(injectFallbackTimer)
+      clearTimeout(giveUpTimer)
+      window.removeEventListener('pageshow', markLoaded)
+      document.removeEventListener('visibilitychange', onVisible)
     }
-  }, [isMounted])
+  }, [isMounted, scriptRetryNonce])
 
   // Hook 3: Create and configure model-viewer element
   useEffect(() => {
@@ -514,7 +572,7 @@ export default function ScooterViewer({
         try {
           // Add timeout to prevent hanging
           const controller = new AbortController()
-          const timeoutId = setTimeout(() => controller.abort(), 2000) // 2 second timeout
+          const timeoutId = setTimeout(() => controller.abort(), 8000)
           
           const response = await fetch(testPath, { 
             method: 'HEAD',
@@ -1981,6 +2039,32 @@ export default function ScooterViewer({
 
   // Show loading state until mounted or script loaded
   const shouldShowLoading = typeof window === 'undefined' || !isMounted || !scriptLoaded
+
+  if (scriptTimedOut && !scriptLoaded) {
+    return (
+      <div
+        className={`relative w-full h-full ${className} flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-neutral-100 to-neutral-50 px-6`}
+        suppressHydrationWarning
+        data-viewer-error="script-timeout"
+      >
+        <p className="text-neutral-600 text-center text-sm max-w-sm">
+          3D viewer did not load in time — often a slow or blocked CDN on mobile. Check your connection, then
+          retry.
+        </p>
+        <button
+          type="button"
+          className="px-5 py-2.5 rounded-xl bg-neutral-800 text-white text-sm font-medium active:scale-[0.98] transition-transform"
+          onClick={() => {
+            injectModelViewerScriptsFromCdn()
+            setScriptTimedOut(false)
+            setScriptRetryNonce(n => n + 1)
+          }}
+        >
+          Retry loading 3D
+        </button>
+      </div>
+    )
+  }
 
   if (shouldShowLoading) {
     return (

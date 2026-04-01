@@ -189,7 +189,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               window.setTimeout(function () {
                 if (!hasModelViewer()) injectAt(0);
-              }, 2500);
+              }, 1000);
             })();
           `}
         </Script>
