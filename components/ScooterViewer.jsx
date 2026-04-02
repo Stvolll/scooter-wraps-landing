@@ -79,6 +79,9 @@ const DEFAULT_FIELD_OF_VIEW = '30deg'
 const MOBILE_CAMERA_ORBIT = '215deg 84deg 2.55m' // Mobile-first framing rotated by 180deg
 const MOBILE_CAMERA_TARGET = '0m 0.55m 0m'
 const MOBILE_FIELD_OF_VIEW = '31deg'
+// Медленнее автоповорот на узком экране: при просадке FPS шаг за кадр меньше → не «гифка по кадрам»
+const DESKTOP_AUTO_ROTATE_DPS = '10deg'
+const MOBILE_AUTO_ROTATE_DPS = '5deg'
 
 // Ограничения камеры
 const MIN_CAMERA_ORBIT = 'auto 70deg 1.2m' // Можно приблизить и опустить ниже
@@ -645,8 +648,15 @@ export default function ScooterViewer({
     // Basic controls
     modelViewer.setAttribute('camera-controls', '')
     modelViewer.setAttribute('auto-rotate', '')
-    modelViewer.setAttribute('rotation-per-second', '10deg')
-    modelViewer.setAttribute('interaction-policy', 'allow-when-focused')
+    modelViewer.setAttribute(
+      'rotation-per-second',
+      isMobileViewport ? MOBILE_AUTO_ROTATE_DPS : DESKTOP_AUTO_ROTATE_DPS
+    )
+    // always-allow: на телефонах без «фокуса» rAF/рендер стабильнее, автоповорот не дискретизируется так заметно
+    modelViewer.setAttribute(
+      'interaction-policy',
+      isMobileViewport ? 'always-allow' : 'allow-when-focused'
+    )
 
     // Camera settings - стандартные настройки для всех моделей
     // Используем константы для единообразия стартовой позиции
@@ -666,10 +676,10 @@ export default function ScooterViewer({
     modelViewer.setAttribute('interaction-prompt', 'none') // No auto prompt
 
     // Профессиональное трехточечное студийное освещение
-    modelViewer.setAttribute('shadow-intensity', '0.6') // Средние тени для объема
-    modelViewer.setAttribute('exposure', '1.4') // Яркое студийное освещение
-    modelViewer.setAttribute('tone-mapping', 'commerce') // Оптимально для продуктов
-    modelViewer.setAttribute('shadow-softness', '0.8') // Мягкие, но четкие тени
+    modelViewer.setAttribute('shadow-intensity', '0.6')
+    modelViewer.setAttribute('exposure', '1.4')
+    modelViewer.setAttribute('tone-mapping', 'commerce')
+    modelViewer.setAttribute('shadow-softness', '0.8')
 
     // Environment lighting - студийное HDRI окружение
     modelViewer.setAttribute('environment-image', 'neutral')
@@ -710,10 +720,9 @@ export default function ScooterViewer({
     if (finalPanoramaUrl) {
       const skyboxPath = finalPanoramaUrl.startsWith('/') ? finalPanoramaUrl : `/${finalPanoramaUrl}`
       modelViewer.setAttribute('skybox-image', skyboxPath)
-      modelViewer.setAttribute('skybox-height', '2m') // Высота skybox
+      modelViewer.setAttribute('skybox-height', '2m')
       console.log('🎨 Setting skybox-image via MaterialHandler:', skyboxPath)
     } else {
-      // Если нет панорамы, используем градиентный фон
       modelViewer.style.background = 'linear-gradient(to bottom, #e5e7eb 0%, #f9fafb 100%)'
     }
 

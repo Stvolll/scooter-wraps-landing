@@ -403,21 +403,28 @@ export default function Home() {
   }, [selectedModel, isMounted, scootersDesignsSignature])
 
   // Handle scroll for parallax effect (client-side only)
+  // Один апдейт стейта на кадр: иначе десятки scroll-событий/сек конкурируют с WebGL (model-viewer) и автоповорот дёргается.
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const handleScroll = () => {
+    let ticking = false
+    const readScroll = () => {
       const scrollY = window.scrollY
       const windowHeight = window.innerHeight
-      const triggerPoint = windowHeight * 0.8 // Trigger at 80% of viewport height
-
+      const triggerPoint = windowHeight * 0.8
       setScrollProgress(Math.min(scrollY / windowHeight, 1))
       setIsPastTrigger(scrollY > triggerPoint)
+      ticking = false
     }
 
-    // Use requestAnimationFrame to ensure DOM is ready
+    const handleScroll = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(readScroll)
+    }
+
     requestAnimationFrame(() => {
-      handleScroll() // Initial call
+      readScroll()
       window.addEventListener('scroll', handleScroll, { passive: true })
     })
 
