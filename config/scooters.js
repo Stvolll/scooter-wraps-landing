@@ -1,15 +1,4 @@
-// Fallback configuration for scooter models
-// This is only used if database is not available
-// Models are identified by their slug (id), not by hardcoded names
-// Last updated: 2026-01-04
+// Только emergency-fallback при полном отсутствии ответа от БД (см. /api/scooters).
+// Каталог моделей и дизайнов задаётся в базе и админке — не привязывайте сюда конкретные slug или имена.
 
-export const scooters = {
-  nvx: {
-    id: 'nvx',
-    name: 'Yamaha NVX',
-    model: '/models/MODEL/MODEL-Yamaha-NVX.glb',
-    glbModelUrl: '/models/MODEL/MODEL-Yamaha-NVX.glb',
-    panorama: '/models/MODEL/DESIGNS/Design-1/panorama-D1.webp',
-    designs: [],
-  },
-};
+export const scooters = {}

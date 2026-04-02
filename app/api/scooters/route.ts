@@ -118,6 +118,7 @@ export async function GET() {
     }
 
     // Преобразуем в формат, совместимый с config/scooters.js
+    // Каталог дизайнов только из БД (published). Не подмешивать статику по slug/именам моделей в коде.
     const scootersObj = models.reduce((acc, model) => {
       const resolvedModelPath = resolveModelPath(model)
 
