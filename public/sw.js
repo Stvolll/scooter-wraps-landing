@@ -1,5 +1,5 @@
-const APP_CACHE = 'txd-app-v3'
-const MODEL_CACHE = 'txd-models-v3'
+const APP_CACHE = 'txd-app-v4'
+const MODEL_CACHE = 'txd-models-v4'
 const APP_SHELL = ['/', '/manifest.json', '/icon-192x192.png', '/icon-512x512.png']
 
 const MODEL_EXTENSIONS = ['.glb', '.gltf', '.hdr', '.ktx2', '.webp', '.jpg', '.jpeg', '.png']
@@ -8,6 +8,11 @@ function isModelAsset(url) {
   const pathname = url.pathname.toLowerCase()
   if (pathname.startsWith('/api/')) return false
   return MODEL_EXTENSIONS.some(ext => pathname.endsWith(ext))
+}
+
+function isBuildAsset(url, request) {
+  const pathname = url.pathname.toLowerCase()
+  return pathname.startsWith('/_next/') || request.destination === 'script' || request.destination === 'style'
 }
 
 self.addEventListener('install', event => {
@@ -34,6 +39,12 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(request.url)
   if (url.origin !== self.location.origin) return
+
+  if (isBuildAsset(url, request)) {
+    // Avoid stale JS/CSS bundles across deploys.
+    event.respondWith(fetch(request))
+    return
+  }
 
   if (isModelAsset(url)) {
     event.respondWith(
