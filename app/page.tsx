@@ -534,10 +534,12 @@ export default function Home() {
   // Фон 3D-сцены: у каждой карточки свой panorama; при смене карточки меняется фон
   const currentPanorama = useMemo(() => scenePanoramaUrl || DEFAULT_PANORAMA, [scenePanoramaUrl, DEFAULT_PANORAMA])
 
-  // Warm up nearby models to reduce perceived wait on weak networks.
+  // Warm up nearby models only after first model became interactive.
+  // Otherwise background downloads compete with initial model and increase first paint time.
   useEffect(() => {
     if (typeof window === 'undefined') return
     if (!selectedModel) return
+    if (modelLoadProgress < 100) return
 
     const modelIds = Object.keys(scooters)
     if (modelIds.length < 2) return
@@ -547,13 +549,12 @@ export default function Home() {
 
     const connection = (navigator as any).connection
     const isSlowNetwork = Boolean(connection?.saveData) || /2g|3g/.test(connection?.effectiveType || '')
-    const prefetchCount = isSlowNetwork ? 1 : 2
+    if (isSlowNetwork) return
 
     const candidates = [
       modelIds[(currentIndex + 1) % modelIds.length],
       modelIds[(currentIndex + 2) % modelIds.length],
     ]
-      .slice(0, prefetchCount)
       .map(id => scooters[id]?.glbModelUrl || scooters[id]?.model)
       .filter((path): path is string => typeof path === 'string' && path.length > 0)
 
@@ -566,12 +567,13 @@ export default function Home() {
       })
     }
 
+    const delayedRun = () => setTimeout(run, 1200)
     if ('requestIdleCallback' in window) {
-      ;(window as any).requestIdleCallback(run, { timeout: 1500 })
+      ;(window as any).requestIdleCallback(delayedRun, { timeout: 2500 })
     } else {
-      setTimeout(run, 400)
+      delayedRun()
     }
-  }, [selectedModel, scooters])
+  }, [selectedModel, scooters, modelLoadProgress])
 
   // Mobile onboarding hint: show a peek of the next card immediately.
   useEffect(() => {

@@ -45,9 +45,18 @@ function hasModelViewerCustomElement() {
 /** Extra CDN loads when the layout script is slow or blocked (common on mobile networks). */
 function injectModelViewerScriptsFromCdn() {
   if (typeof window === 'undefined' || hasModelViewerCustomElement()) return
+  if (window.__txdModelViewerLoaderStarted || window.__txdModelViewerLoaderInFlight) return
+
+  // If any model-viewer script is already loading in the document, avoid duplicate define().
+  if (document.querySelector('script[data-txd-model-viewer-loader],script[src*="model-viewer"]')) return
+
+  window.__txdModelViewerLoaderInFlight = true
 
   const tryChain = index => {
-    if (index >= MODEL_VIEWER_CDN_SOURCES.length || hasModelViewerCustomElement()) return
+    if (index >= MODEL_VIEWER_CDN_SOURCES.length || hasModelViewerCustomElement()) {
+      window.__txdModelViewerLoaderInFlight = false
+      return
+    }
     const src = MODEL_VIEWER_CDN_SOURCES[index]
     const selector = `script[data-txd-mv="${index}"]`
     if (document.querySelector(selector)) {
@@ -60,6 +69,10 @@ function injectModelViewerScriptsFromCdn() {
     script.dataset.txdMv = String(index)
     script.src = src
     script.onload = () => {
+      if (hasModelViewerCustomElement()) {
+        window.__txdModelViewerLoaderInFlight = false
+        return
+      }
       setTimeout(() => {
         if (!hasModelViewerCustomElement()) tryChain(index + 1)
       }, 200)
@@ -409,6 +422,8 @@ export default function ScooterViewer({
   const [scriptRetryNonce, setScriptRetryNonce] = useState(0)
   const [isModelLoaded, setIsModelLoaded] = useState(false)
   const [isSceneGraphReady, setIsSceneGraphReady] = useState(false)
+  const [modelFileSizeMB, setModelFileSizeMB] = useState(null)
+  const [loadElapsedSec, setLoadElapsedSec] = useState(0)
   const [isMounted, setIsMounted] = useState(false)
   const [modelLoadError, setModelLoadError] = useState(false) // Keep for display, but use ref for logic
 
@@ -488,6 +503,19 @@ export default function ScooterViewer({
     }
   }, [isMounted, scriptRetryNonce])
 
+
+  // User feedback for long mobile loads
+  useEffect(() => {
+    if (!isMounted || !scriptLoaded || isModelLoaded) return
+
+    setLoadElapsedSec(0)
+    const timer = setInterval(() => {
+      setLoadElapsedSec(prev => prev + 1)
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [isMounted, scriptLoaded, isModelLoaded, modelPath])
+
   // Hook 3: Create and configure model-viewer element
   useEffect(() => {
     if (!isMounted || !scriptLoaded || !containerRef.current || !modelPath) return
@@ -545,6 +573,11 @@ export default function ScooterViewer({
 
     // Pre-check file availability and try alternative paths if needed
     const checkFileAvailability = async () => {
+      // In production we trust canonical API paths to avoid multi-HEAD latency on mobile.
+      if (process.env.NODE_ENV === 'production') {
+        return { found: true, path: fullModelPath }
+      }
+
       // List of possible paths to try
       const pathsToTry = [
         fullModelPath, // Original path
@@ -589,6 +622,7 @@ export default function ScooterViewer({
             const contentLength = response.headers.get('content-length')
             if (contentLength) {
               const sizeMB = parseInt(contentLength) / (1024 * 1024)
+              setModelFileSizeMB(sizeMB)
               console.log(`📦 Model file size: ${sizeMB.toFixed(2)} MB`)
               if (sizeMB > 20) {
                 console.warn(`⚠️ Large model file (${sizeMB.toFixed(2)} MB) - may take longer to load`)
@@ -1254,6 +1288,8 @@ export default function ScooterViewer({
     setModelLoadError(false)
     setIsModelLoaded(false)
     setIsSceneGraphReady(false)
+    setModelFileSizeMB(null)
+    setLoadElapsedSec(0)
     if (typeof onLoadProgress === 'function') {
       onLoadProgress(0)
     }
@@ -2100,15 +2136,22 @@ export default function ScooterViewer({
   }
 
   if (shouldShowLoading) {
+    const showLongWaitHint = loadElapsedSec >= 8
     return (
       <div
-        className={`relative w-full h-full ${className} flex items-center justify-center bg-gradient-to-b from-neutral-100 to-neutral-50`}
+        className={`relative w-full h-full ${className} flex items-center justify-center bg-gradient-to-b from-neutral-900 to-black`}
         suppressHydrationWarning
         data-loading="true"
       >
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neutral-400 mx-auto mb-4"></div>
-          <p className="text-neutral-600">Loading 3D Viewer...</p>
+        <div className="text-center px-6 max-w-sm">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/60 mx-auto mb-4"></div>
+          <p className="text-white font-medium">Loading 3D model...</p>
+          <p className="text-white/60 text-sm mt-2">{loadElapsedSec > 0 ? `${loadElapsedSec}s elapsed` : 'Preparing scene'}</p>
+          {showLongWaitHint && (
+            <p className="text-amber-300/90 text-sm mt-3 leading-relaxed">
+              Mobile network is slow. {modelFileSizeMB ? `Model is ~${modelFileSizeMB.toFixed(1)} MB.` : 'Large model file detected.'}
+            </p>
+          )}
         </div>
       </div>
     )

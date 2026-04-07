@@ -153,17 +153,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }),
           }}
         />
-        {/* Model Viewer Web Component — type="module" нужен для 3.x (ESM), иначе Unexpected token 'export' */}
-        <Script
-          src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"
-          strategy="afterInteractive"
-          type="module"
-        />
-        <Script id="model-viewer-fallback-loader" strategy="afterInteractive">
+        {/* Model Viewer Web Component loader (guarded against duplicate define) */}
+        <Script id="model-viewer-loader" strategy="afterInteractive">
           {`
             (function () {
               if (typeof window === 'undefined') return;
-              var fallbackSources = [
+              if (window.__txdModelViewerLoaderStarted) return;
+              window.__txdModelViewerLoaderStarted = true;
+
+              var sources = [
+                'https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js',
                 'https://cdn.jsdelivr.net/npm/@google/model-viewer@3.4.0/dist/model-viewer.min.js',
                 'https://unpkg.com/@google/model-viewer@3.4.0/dist/model-viewer.min.js'
               ];
@@ -172,24 +171,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 return !!(window.customElements && window.customElements.get('model-viewer'));
               }
 
-              function injectAt(index) {
-                if (index >= fallbackSources.length || hasModelViewer()) return;
+              function hasAnyModelViewerScriptTag() {
+                return !!document.querySelector('script[data-txd-model-viewer-loader],script[src*="model-viewer"]');
+              }
+
+              function loadAt(index) {
+                if (index >= sources.length || hasModelViewer()) return;
+                if (index > 0 && hasAnyModelViewerScriptTag()) return;
+
                 var script = document.createElement('script');
                 script.type = 'module';
-                script.src = fallbackSources[index];
                 script.async = true;
+                script.src = sources[index];
+                script.dataset.txdModelViewerLoader = '1';
                 script.onload = function () {
-                  if (!hasModelViewer()) injectAt(index + 1);
+                  if (!hasModelViewer()) loadAt(index + 1);
                 };
                 script.onerror = function () {
-                  injectAt(index + 1);
+                  loadAt(index + 1);
                 };
                 document.head.appendChild(script);
               }
 
-              window.setTimeout(function () {
-                if (!hasModelViewer()) injectAt(0);
-              }, 1000);
+              loadAt(0);
             })();
           `}
         </Script>
