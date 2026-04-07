@@ -959,6 +959,31 @@ export default function ScooterViewer({
       
       // Extract error details - try multiple ways to get error message
       const errorDetail = error?.detail || error
+      const sourceUrl = String(
+        errorDetail?.sourceError?.url || errorDetail?.sourceError?.src || errorDetail?.url || ''
+      )
+      const sourceMessage = String(errorDetail?.sourceError?.message || '')
+      const sourceDescriptor = `${sourceUrl} ${sourceMessage}`.toLowerCase()
+      const isDependentAssetFailure =
+        sourceDescriptor.includes('.webp') ||
+        sourceDescriptor.includes('.png') ||
+        sourceDescriptor.includes('.jpg') ||
+        sourceDescriptor.includes('.jpeg') ||
+        sourceDescriptor.includes('.hdr') ||
+        sourceDescriptor.includes('source image')
+      const isModelBinaryFailure =
+        sourceDescriptor.includes('.glb') || sourceDescriptor.includes('.gltf')
+
+      // On iOS model-viewer may emit loadfailure for skybox/environment assets.
+      // Do not replace the whole 3D scene with fatal UI unless the model binary failed.
+      if (isDependentAssetFailure && !isModelBinaryFailure) {
+        console.warn('⚠️ Non-fatal dependent asset load error:', {
+          sourceUrl: sourceUrl || 'unknown',
+          sourceMessage: sourceMessage || 'n/a',
+          detail: errorDetail,
+        })
+        return
+      }
       
       // Additional diagnostics: Check if file actually exists and is accessible
       try {
@@ -1037,8 +1062,7 @@ export default function ScooterViewer({
                             errorMessage.includes('Not Found')
       const isDecodeError = errorMessage.includes('could not be decoded') ||
                            errorMessage.includes('InvalidStateError') ||
-                           errorMessage.includes('source image') ||
-                           (errorDetail?.type === 'loadfailure' && errorDetail?.sourceError)
+                           (errorDetail?.type === 'loadfailure' && errorDetail?.sourceError && isModelBinaryFailure)
       
       // Determine display message for UI
       let displayMessage = errorMessage || 'Unknown error occurred'
