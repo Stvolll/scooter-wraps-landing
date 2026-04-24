@@ -17,6 +17,7 @@ interface GalleryItem {
   id: string
   designId: string
   designSlug: string
+  modelSlug?: string
   title: string
   model: string
   image: string
@@ -227,7 +228,7 @@ export default function GallerySection() {
                     transition={{ duration: 0.3 }}
                   >
                     <Link
-                      href={`/designs/${item.designSlug}`}
+                      href={item.modelSlug ? `/designs/${item.modelSlug}/${item.designSlug}` : '/designs'}
                       onClick={(e) => e.stopPropagation()}
                       className="block"
                     >

@@ -33,6 +33,13 @@ export default function LandingDesignCard({
   onDetailsClick,
 }: LandingDesignCardProps) {
   const { t, language } = useLanguage()
+
+  const buildDesignHref = () => {
+    const modelSlug = design.modelId || modelId
+    const designSlug = design.slug || design.id
+    if (!modelSlug || !designSlug) return '/designs'
+    return `/designs/${modelSlug}/${designSlug}`
+  }
   
   // Use MaterialHandler to get display image
   // Priority: preview > coverImage > images[0] > materials (cover) > materials (photo) > textureUrl
@@ -203,7 +210,7 @@ export default function LandingDesignCard({
         <div className="flex items-center justify-between">
           <div className="text-xl font-bold text-[#00FFA9]">{design.price || '$180'}</div>
           <Link
-            href={`/designs/${modelId}/${design.id}`}
+            href={buildDesignHref()}
             onClick={onDetailsClick}
             className="px-4 py-2 rounded-xl text-sm font-medium text-white transition-all hover:scale-105 hover:bg-white/10"
             style={{

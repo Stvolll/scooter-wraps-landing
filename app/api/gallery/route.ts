@@ -84,6 +84,7 @@ export async function GET() {
               id: `${design.id}-${index}`,
               designId: design.id,
               designSlug: design.slug,
+              modelSlug: design.scooterModel?.slug || '',
               title: design.title,
               model: design.scooterModel?.name || design.scooterModel?.slug || 'Unknown',
               image: imageUrl,

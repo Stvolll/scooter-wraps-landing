@@ -23,6 +23,7 @@ interface Testimonial {
   verified: boolean
   date: string
   designSlug?: string
+  modelSlug?: string
 }
 
 const fallbackTestimonials: Testimonial[] = [
@@ -261,7 +262,7 @@ export default function TestimonialsSection() {
                   <div className="flex items-center justify-between text-xs">
                     {testimonial.designSlug ? (
                       <Link
-                        href={`/designs/${testimonial.designSlug}`}
+                        href={testimonial.modelSlug ? `/designs/${testimonial.modelSlug}/${testimonial.designSlug}` : '/designs'}
                         className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/60 hover:text-[#00FFA9] hover:border-[#00FFA9]/30 transition-colors"
                       >
                         {testimonial.design}

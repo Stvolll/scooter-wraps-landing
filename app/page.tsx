@@ -514,20 +514,10 @@ export default function Home() {
     // Формат URL: /designs/{model-slug}/{design-slug}
     if (typeof window !== 'undefined' && currentScooter) {
       // Приоритет: design.slug > design.id
-      // Если slug содержит префикс модели, используем только slug
-      // Иначе используем формат {model-slug}-{design-slug}
       const designSlug = design.slug || design.id
       const modelSlug = currentScooter.id || currentScooter.slug
-      
-      // Если slug уже содержит префикс модели, используем его как есть
-      // Иначе формируем полный slug
-      let finalSlug = designSlug
-      if (designSlug && !designSlug.startsWith(`${modelSlug}-`)) {
-        // Проверяем, может быть slug уже полный
-        finalSlug = designSlug.includes('-') ? designSlug : `${modelSlug}-${designSlug}`
-      }
-      
-      window.location.href = `/designs/${modelSlug}/${finalSlug}`
+
+      window.location.href = `/designs/${modelSlug}/${designSlug}`
     }
   }
 

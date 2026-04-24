@@ -17,7 +17,18 @@ function isBuildAsset(url, request) {
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(APP_CACHE).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting())
+    caches.open(APP_CACHE).then(async cache => {
+      await Promise.all(
+        APP_SHELL.map(async path => {
+          try {
+            await cache.add(path)
+          } catch (error) {
+            // Don't fail SW install if one optional shell asset is missing.
+            console.warn('[sw] Failed to cache shell asset:', path, error)
+          }
+        })
+      )
+    }).then(() => self.skipWaiting())
   )
 })
 

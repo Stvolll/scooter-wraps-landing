@@ -87,6 +87,7 @@ export async function GET() {
           verified: true,
           date: formatDate(deal.updatedAt || deal.createdAt),
           designSlug: deal.design?.slug || '',
+          modelSlug: deal.design?.scooterModel?.slug || '',
         }
       } catch (dealError) {
         console.warn('Testimonials API: Error processing deal:', dealError)
